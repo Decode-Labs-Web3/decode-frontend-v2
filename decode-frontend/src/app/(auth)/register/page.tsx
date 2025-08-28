@@ -1,9 +1,17 @@
 'use client';
-
 import Link from 'next/link';
 import { useState } from 'react';
+import BackgroundAccents from '../components/BackgroundAccents';
+import Logo from '../components/Logo';
+import AuthCard from '../components/AuthCard';
+import PasswordField from '../components/PasswordField';
+import TextField from '../components/TextField';
+import BrandLogos from '../components/BrandLogos';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function Register() {
+
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -11,157 +19,82 @@ export default function Register() {
         confirmPassword: ''
     });
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [id]: value
         });
     };
 
+    const hasMinLength = formData.password.length >= 8;
+    const hasUppercase = /[A-Z]/.test(formData.password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(formData.password);
+    const passwordsMatch = formData.password !== '' && formData.password === formData.confirmPassword;
+    const isPasswordValid = hasMinLength && hasUppercase && hasSpecial && passwordsMatch;
+
     return (
-        <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+        <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
+            <BackgroundAccents />
             {/* Logo */}
             <div className="mb-8">
-                <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                        <div className="w-4 h-4 bg-black rounded-sm"></div>
-                    </div>
-                    <span className="text-xl font-semibold">decode protocol</span>
-                </div>
+                <Logo />
             </div>
 
-            {/* Main Card */}
-            <div className="bg-gray-800 rounded-xl p-8 w-full max-w-md">
-                <h1 className="text-2xl font-bold text-center mb-8">Create Account</h1>
-                
-                {/* Connect Wallet Button */}
-                <button className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold py-3 px-4 rounded-lg mb-6 flex items-center justify-center space-x-2 transition-colors">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" />
-                    </svg>
-                    <span>Connect Wallet</span>
-                </button>
+            <AuthCard title="Get Started">
+            <form noValidate>
+                    <TextField
+                        id="username"
+                        type="text"
+                        placeholder="Enter username"
+                        value={formData.username}
+                        onChange={handleChange}
+                    />
 
-                {/* Divider */}
-                <div className="flex items-center mb-6">
-                    <div className="flex-1 border-t border-gray-600"></div>
-                    <span className="px-4 text-gray-400 text-sm">OR</span>
-                    <div className="flex-1 border-t border-gray-600"></div>
-                </div>
+                    <TextField
+                        id="email"
+                        type="email"
+                        placeholder="Enter email"
+                        value={formData.email}
+                        onChange={handleChange}
+                    />
 
-                {/* Form Fields */}
-                <div className="space-y-4 mb-6">
-                    <div>
-                        <input
-                            type="text"
-                            name="username"
-                            placeholder="Username"
-                            value={formData.username}
-                            onChange={handleInputChange}
-                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
-                        />
-                    </div>
-                    
-                    <div>
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="william@decode.com"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
-                        />
-                    </div>
-                    
-                    <div>
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Password"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
-                        />
-                    </div>
-                    
-                    <div>
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            placeholder="Confirm Password"
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
-                        />
-                    </div>
-                </div>
+                    <PasswordField id="password" value={formData.password} onChange={handleChange} />
+                    <ul className="text-xs space-y-1 mb-4">
+                        <li className={`flex items-center gap-2 ${hasMinLength ? 'text-green-400' : 'text-red-400'}`}>
+                            <FontAwesomeIcon icon={hasMinLength ? faCheck : faXmark} />
+                            <span>At least 8 characters</span>
+                        </li>
+                        <li className={`flex items-center gap-2 ${hasUppercase ? 'text-green-400' : 'text-red-400'}`}>
+                            <FontAwesomeIcon icon={hasUppercase ? faCheck : faXmark} />
+                            <span>Contains an uppercase letter</span>
+                        </li>
+                        <li className={`flex items-center gap-2 ${hasSpecial ? 'text-green-400' : 'text-red-400'}`}>
+                            <FontAwesomeIcon icon={hasSpecial ? faCheck : faXmark} />
+                            <span>Contains a special character</span>
+                        </li>
+                    </ul>
 
-                {/* Create Account Button */}
-                <button className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold py-3 px-4 rounded-lg mb-6 transition-colors">
-                    Create Account
-                </button>
+                    <PasswordField id="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm password" />
+                    <p className={`text-xs mb-4 flex items-center gap-2 ${passwordsMatch || formData.confirmPassword === '' ? 'text-green-400' : 'text-red-400'}`}>
+                        <FontAwesomeIcon icon={(passwordsMatch && formData.confirmPassword !== '') ? faCheck : (formData.confirmPassword === '' ? faXmark : faXmark)} />
+                        <span>{passwordsMatch || formData.confirmPassword === '' ? (formData.confirmPassword === '' ? 'Re-enter your password to confirm' : 'Passwords match') : 'Passwords do not match'}</span>
+                    </p>
 
-                {/* Divider */}
-                <div className="flex items-center mb-6">
-                    <div className="flex-1 border-t border-gray-600"></div>
-                    <span className="px-4 text-gray-400 text-sm">OR</span>
-                    <div className="flex-1 border-t border-gray-600"></div>
-                </div>
-
-                {/* Social Signup Icons */}
-                <div className="flex justify-center space-x-4 mb-6">
-                    <button className="w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center transition-colors">
-                        <span className="text-white font-bold text-lg">X</span>
+                    <button disabled={!isPasswordValid} className={`w-full text-white font-semibold py-3 px-4 rounded-lg mb-6 transition-colors ${isPasswordValid ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-500/50 cursor-not-allowed'}`}>
+                        Register
                     </button>
-                    <button className="w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center transition-colors">
-                        <span className="text-blue-500 font-bold text-lg">M</span>
-                    </button>
-                    <button className="w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center transition-colors">
-                        <span className="text-red-500 font-bold text-lg">G</span>
-                    </button>
-                    <button className="w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-lg flex items-center justify-center transition-colors">
-                        <span className="text-blue-400 font-bold text-lg">✈</span>
-                    </button>
-                </div>
+                </form>
 
                 {/* Login Link */}
                 <p className="text-center text-gray-400">
                     Already have an account?{' '}
-                    <Link href="/login" className="text-green-500 hover:underline font-medium">
+                    <Link href="/login" className="text-blue-500 hover:underline font-medium">
                         Log in
                     </Link>
                 </p>
-
-                {/* Terms */}
-                <p className="text-xs text-gray-400 text-center mt-6">
-                    By continuing, you agree to our{' '}
-                    <Link href="/terms" className="text-green-500 hover:underline">Terms</Link>
-                    {' '}and acknowledge our{' '}
-                    <Link href="/privacy" className="text-green-500 hover:underline">Privacy Policy</Link>
-                </p>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-8 text-center">
-                <p className="text-sm text-gray-400">
-                    <span className="text-green-500 font-semibold">9,004,346</span> Decode IDs were created since Testnet launch{' '}
-                    <span className="text-green-500 font-semibold">331</span> days ago
-                </p>
-                <div className="flex justify-center space-x-2 mt-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                </div>
-            </div>
-
-            {/* reCAPTCHA Notice */}
-            <p className="mt-4 text-xs text-gray-500 text-center">
-                This site is protected by reCAPTCHA and the Google{' '}
-                <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
-                {' '}and{' '}
-                <Link href="/terms" className="hover:underline">Terms of Service</Link>
-                {' '}apply.
-            </p>
+            </AuthCard>
+            <BrandLogos />
         </main>
     );
 }
