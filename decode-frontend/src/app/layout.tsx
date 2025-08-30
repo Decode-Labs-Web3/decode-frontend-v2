@@ -2,10 +2,10 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Decode App",
-  description: "Your App Description",
+  title: "Decode Protocol",
+  description: "Decode Protocol - Secure Authentication and Identity Management",
   icons: {
-    icon: "/public/assets/3d_token_nobg.png",
+    icon: "/assets/3d_token_nobg.png",
   },
 };
 

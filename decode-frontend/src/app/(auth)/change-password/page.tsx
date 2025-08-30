@@ -1,10 +1,10 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import BackgroundAccents from '../components/BackgroundAccents';
-import Logo from '../components/Logo';
-import AuthCard from '../components/AuthCard';
-import PasswordField from '../components/PasswordField';
+import BackgroundAccents from '@/components/BackgroundAccents';
+import Logo from '@/components/Logo';
+import AuthCard from '@/components/AuthCard';
+import PasswordField from '@/components/PasswordField';
 
 export default function ChangePassword() {
     const router = useRouter();

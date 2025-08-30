@@ -2,10 +2,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import BrandLogos from '../components/BrandLogos';
-import BackgroundAccents from '../components/BackgroundAccents';
-import Logo from '../components/Logo';
-import AuthCard from '../components/AuthCard';
+import BrandLogos from '@/components/BrandLogos';
+import BackgroundAccents from '@/components/BackgroundAccents';
+import Logo from '@/components/Logo';
+import AuthCard from '@/components/AuthCard';
 
 export default function ForgotPassword() {
     const router = useRouter();
