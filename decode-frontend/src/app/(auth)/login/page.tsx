@@ -41,17 +41,20 @@ export default function Login() {
           });
           
           const responseData = await res.json();
+          console.log('Login response data:', responseData);
           
-          if (!res.ok) {
+          // Check if the response indicates success
+          if (!responseData.success) {
             throw new Error(responseData?.message || "Login failed");
           }
           
           // Check if verification is required
           if (responseData.requiresVerification) {
-            // Set verification context and redirect to verify email
-            sessionStorage.setItem('verification_required', 'true');
-            localStorage.setItem('verification_required', 'true');
-            router.push("/verify-email");
+            console.log('Device verification required, redirecting to verify-login');
+            // Store email for verification and redirect to verify login
+            sessionStorage.setItem('login_email', formData.email_or_username);
+            localStorage.setItem('login_email', formData.email_or_username);
+            router.push("/verify-login");
             return;
           }
           

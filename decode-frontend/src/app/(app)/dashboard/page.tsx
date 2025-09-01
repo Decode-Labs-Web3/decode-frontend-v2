@@ -14,29 +14,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated
-    const checkAuth = async () => {
-      try {
-        // TODO: Add proper authentication check
-        // For now, just check if we have tokens
-        const hasTokens = document.cookie.includes('token=');
-        
-        if (!hasTokens) {
-          router.push('/login');
-          return;
-        }
-
-        setUser({ name: 'User' }); // Placeholder user data
-      } catch (error) {
-        console.error('Authentication check failed:', error);
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+    // Authentication is already handled by middleware
+    // Just set user data and stop loading
+    setUser({ name: 'User' }); // Placeholder user data
+    setLoading(false);
+  }, []);
 
   const handleLogout = () => {
     // Clear cookies and redirect to login

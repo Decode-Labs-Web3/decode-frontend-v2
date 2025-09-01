@@ -42,12 +42,29 @@ export async function POST(req: Request) {
     // Handle successful registration with email verification
     if (response.success && response.message === "Email verification sent") {
       console.log('Email verification sent successfully');
-      return NextResponse.json({ 
+      
+      // Store registration data temporarily for verification
+      const res = NextResponse.json({ 
         success: true,
         message: "Email verification sent",
         requiresVerification: true,
         statusCode: response.statusCode
       }, { status: 200 });
+      
+      // Store registration data in a secure cookie for verification
+      res.cookies.set('registration_data', JSON.stringify({
+        email,
+        username,
+        password
+      }), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 10, // 10 minutes
+      });
+      
+      return res;
     }
 
     // Handle other backend errors

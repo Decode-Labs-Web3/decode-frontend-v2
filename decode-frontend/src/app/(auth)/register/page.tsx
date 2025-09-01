@@ -71,7 +71,7 @@ export default function Register() {
                 localStorage.setItem('verification_required', 'true');
                 
                 // Redirect to verify email page
-                router.push('/verify-email');
+                router.push('/verify-register');
                 return;
             }
 

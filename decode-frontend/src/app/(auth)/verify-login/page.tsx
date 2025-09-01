@@ -1,20 +1,28 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import BackgroundAccents from '@/components/BackgroundAccents';
 import Logo from '@/components/Logo';
 import AuthCard from '@/components/AuthCard';
 import BrandLogos from '@/components/BrandLogos';
 import Head from 'next/head';
 
-export default function VerifyEmail() {
+export default function VerifyLogin() {
     const router = useRouter();
     const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
     const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const [resendLoading, setResendLoading] = useState(false);
+    const [email, setEmail] = useState<string>('');
+
+    // Get email from session storage or localStorage
+    useEffect(() => {
+        const storedEmail = sessionStorage.getItem('login_email') || localStorage.getItem('login_email');
+        if (storedEmail) {
+            setEmail(storedEmail);
+        }
+    }, []);
 
     const handleVerify = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,27 +35,39 @@ export default function VerifyEmail() {
 
         setLoading(true);
         setError('');
-        setSuccess('');
 
         try {
-            const response = await fetch('/api/auth/verify-register', {
+            if (!email) {
+                setError('Email not found. Please try logging in again.');
+                return;
+            }
+
+            const response = await fetch('/api/auth/verify-login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code })
+                body: JSON.stringify({ 
+                    code,
+                })
             });
             
-            // For now, using mock verification
             const responseData = await response.json();
             console.log('Response data:', responseData);
+            
             if (responseData.success) {
-                // Success - show success message and redirect to login
-                setError(''); // Clear any previous errors
-                setSuccess('✅ Account created successfully! Redirecting to login...');
-                setTimeout(() => {
+                if (responseData.requiresRelogin) {
+                    // Device fingerprint verified - show success message and redirect to login
+                    setError(''); // Clear any previous errors
+                    // You could show a success message here
+                    setTimeout(() => {
+                        router.push('/login');
+                    }, 1500); // 1.5 second delay to show success
+                } else {
+                    // Other success case - redirect immediately
                     router.push('/login');
-                }, 1500); // 1.5 second delay to show success message
+                    router.refresh();
+                }
             } else {
-                setError('Invalid verification code. Please check your email and try again.');
+                setError(responseData.message || 'Invalid verification code. Please check your email and try again.');
                 // Clear the form on error
                 setDigits(Array(6).fill(''));
                 inputsRef.current[0]?.focus();
@@ -69,7 +89,6 @@ export default function VerifyEmail() {
         
         // Clear error when user starts typing
         if (error) setError('');
-        if (success) setSuccess('');
         
         // Auto-focus next input
         if (value && index < 5) {
@@ -112,7 +131,6 @@ export default function VerifyEmail() {
         
         // Clear error when pasting
         if (error) setError('');
-        if (success) setSuccess('');
         
         inputsRef.current[Math.min(text.length, 5)]?.focus();
         e.preventDefault();
@@ -121,11 +139,20 @@ export default function VerifyEmail() {
     const handleResend = async () => {
         setResendLoading(true);
         try {
-            if (typeof window !== 'undefined') {
-                const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-                localStorage.setItem('mockResetCode', newCode);
-                alert(`New verification code sent: ${newCode}`);
+            if (!email) {
+                setError('Email not found. Please try logging in again.');
+                return;
             }
+
+            // TODO: Implement resend verification API call
+            // const response = await fetch('/api/auth/resend-verification', { 
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ email_or_username: email })
+            // });
+            
+            // For now, show a message that resend is not implemented
+            setError('Resend functionality is not yet implemented. Please check your email for the verification code.');
         } catch (error) {
             console.error('Resend error:', error);
             setError('Failed to resend code. Please try again.');
@@ -137,13 +164,13 @@ export default function VerifyEmail() {
     return (
         <>
             <Head>
-                <title>Verify Email - Decode Protocol</title>
+                <title>Verify Device - Decode Protocol</title>
                 <meta name="robots" content="noindex, nofollow, noarchive" />
                 <meta name="googlebot" content="noindex, nofollow" />
-                <meta name="description" content="Email verification required" />
+                <meta name="description" content="Device verification required" />
                 <meta name="keywords" content="" />
-                <meta property="og:title" content="Verify Email" />
-                <meta property="og:description" content="Email verification required" />
+                <meta property="og:title" content="Verify Device" />
+                <meta property="og:description" content="Device verification required" />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content="" />
                 <meta property="og:image" content="" />
@@ -158,10 +185,20 @@ export default function VerifyEmail() {
                 </div>
 
                 {/* Main Card */}
-                <AuthCard title="Verify Code">
+                <AuthCard title="Verify Device">
                     <p className="text-sm text-gray-400 text-center mb-6">
-                        Enter the 6-digit code we sent to your email.
+                        Enter the 6-digit code we sent to your email to verify this device.
                     </p>
+                    
+                    <div className="mb-4 text-center">
+                        <button
+                            type="button"
+                            onClick={() => router.push('/login')}
+                            className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                            ← Back to Login
+                        </button>
+                    </div>
 
                     <form noValidate onSubmit={handleVerify}>
                         <div className="mb-6 flex items-center justify-center gap-1.5 max-w-full overflow-hidden px-2">
@@ -185,12 +222,6 @@ export default function VerifyEmail() {
                         {error && (
                             <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
                                 {error}
-                            </div>
-                        )}
-
-                        {success && (
-                            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 text-sm text-center">
-                                {success}
                             </div>
                         )}
 

@@ -60,6 +60,7 @@ export async function POST(req: Request) {
     if (response.success && response.message === "Device fingerprint not trusted, send email verification") {
       console.log('Device fingerprint verification required');
       return NextResponse.json({ 
+        success: true,
         message: "Device verification required",
         requiresVerification: true,
         statusCode: response.statusCode
@@ -122,6 +123,15 @@ export async function POST(req: Request) {
         maxAge: 60 * 60 * 24 * 7,
       });
     }
+
+    // Set the from_success cookie for middleware authentication
+    res.cookies.set("from_success", "1", {
+      httpOnly: false,
+      secure: isProd,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 5, // 5 minutes
+    });
 
     return res;
   } catch {
