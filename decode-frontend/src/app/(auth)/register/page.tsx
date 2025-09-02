@@ -1,24 +1,21 @@
 'use client';
 import Link from 'next/link';
+import Auth from '@/components/(auth)';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import BackgroundAccents from '@/components/BackgroundAccents';
-import Logo from '@/components/Logo';
-import AuthCard from '@/components/AuthCard';
-import PasswordField from '@/components/PasswordField';
-import TextField from '@/components/TextField';
-import BrandLogos from '@/components/BrandLogos';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { PasswordValidationService } from '@/app/services/password-validation.service';
 
 export default function Register() {
     const router = useRouter();
-    const [formData, setFormData] = useState({
+    const [error, setError] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [formData, setFormData] = useState<{ username: string, email: string, password: string, confirmPassword: string }>({
         username: '',
         email: '',
         password: '',
         confirmPassword: ''
     });
+    const { isPasswordValid } = PasswordValidationService.validate(formData.password, formData.confirmPassword);
     
     useEffect(() => {
         try {
@@ -32,10 +29,8 @@ export default function Register() {
                     setFormData(prev => ({ ...prev, username: value }));
                 }
             }
-        } catch {}
+        } catch { }
     }, []);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -84,7 +79,7 @@ export default function Register() {
                 }));
                 sessionStorage.setItem('verification_required', 'true');
                 localStorage.setItem('verification_required', 'true');
-                
+
                 // Redirect to verify email page
                 router.push('/verify-register');
                 return;
@@ -92,7 +87,7 @@ export default function Register() {
 
             // If no verification needed, redirect to login
             router.push('/login?registered=true');
-            
+
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Registration failed';
             setError(errorMessage);
@@ -101,24 +96,13 @@ export default function Register() {
         }
     };
 
-    const hasMinLength = formData.password.length >= 8;
-    const hasUppercase = /[A-Z]/.test(formData.password);
-    const hasSpecial = /[^A-Za-z0-9]/.test(formData.password);
-    const hasNumber = /\d/.test(formData.password);
-    const passwordsMatch = formData.password !== '' && formData.password === formData.confirmPassword;
-    const isPasswordValid = hasMinLength && hasUppercase && hasSpecial && hasNumber && passwordsMatch;
-    const showMatchStatus = formData.confirmPassword !== '';
-    const matchIsGood = showMatchStatus && passwordsMatch;
 
     return (
         <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-            <BackgroundAccents />
-            {/* Logo */}
-            <div className="mb-8">
-                <Logo />
-            </div>
+            <Auth.BackgroundAccents />
+            <Auth.Logo />
 
-            <AuthCard title="Get Started">
+            <Auth.AuthCard title="Get Started">
                 {error && (
                     <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
                         {error}
@@ -126,7 +110,7 @@ export default function Register() {
                 )}
 
                 <form onSubmit={handleSubmit} noValidate>
-                    <TextField
+                    <Auth.TextField
                         id="username"
                         type="text"
                         placeholder="Enter username"
@@ -134,7 +118,7 @@ export default function Register() {
                         onChange={handleChange}
                     />
 
-                    <TextField
+                    <Auth.TextField
                         id="email"
                         type="email"
                         placeholder="Enter email"
@@ -142,48 +126,32 @@ export default function Register() {
                         onChange={handleChange}
                     />
 
-                    <PasswordField id="password" value={formData.password} onChange={handleChange} />
-                    <ul className="text-xs space-y-1 mb-4">
-                        <li className={`flex items-center gap-2 ${hasMinLength ? 'text-green-400' : 'text-red-400'}`}>
-                            <FontAwesomeIcon icon={hasMinLength ? faCheck : faXmark} />
-                            <span>At least 8 characters</span>
-                        </li>
-                        <li className={`flex items-center gap-2 ${hasUppercase ? 'text-green-400' : 'text-red-400'}`}>
-                            <FontAwesomeIcon icon={hasUppercase ? faCheck : faXmark} />
-                            <span>Contains an uppercase letter</span>
-                        </li>
-                        <li className={`flex items-center gap-2 ${hasNumber ? 'text-green-400' : 'text-red-400'}`}>
-                            <FontAwesomeIcon icon={hasNumber ? faCheck : faXmark} />
-                            <span>Contains a number</span>
-                        </li>
-                        <li className={`flex items-center gap-2 ${hasSpecial ? 'text-green-400' : 'text-red-400'}`}>
-                            <FontAwesomeIcon icon={hasSpecial ? faCheck : faXmark} />
-                            <span>Contains a special character</span>
-                        </li>
-                    </ul>
+                    <Auth.PasswordField
+                        id="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Enter password"
+                    />
 
-                    <PasswordField id="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm password" />
-                    <p className={`text-xs mb-4 flex items-center gap-2 ${showMatchStatus ? (matchIsGood ? 'text-green-400' : 'text-red-400') : 'text-gray-400'}`}>
-                        <FontAwesomeIcon icon={matchIsGood ? faCheck : faXmark} />
-                        <span>{!showMatchStatus ? 'Re-enter your password to confirm' : (matchIsGood ? 'Passwords match' : 'Passwords do not match')}</span>
-                    </p>
+                    <Auth.PasswordValidation 
+                        password={formData.password} 
+                        confirmPassword={formData.confirmPassword} 
+                    />
 
-                    <button 
-                        type="submit"
-                        disabled={!isPasswordValid || loading} 
-                        className={`w-full text-white font-semibold py-3 px-4 rounded-lg mb-6 transition-colors flex items-center justify-center gap-2 ${
-                            isPasswordValid && !loading ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-500/50 cursor-not-allowed'
-                        }`}
+                    <Auth.PasswordField
+                        id="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Confirm password"
+                    />
+
+                    <Auth.SubmitButton
+                        loading={loading}
+                        disabled={!isPasswordValid}
+                        loadingText="Creating account..."
                     >
-                        {loading ? (
-                            <>
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                Creating account...
-                            </>
-                        ) : (
-                            'Register'
-                        )}
-                    </button>
+                        Register
+                    </Auth.SubmitButton>
                 </form>
 
                 {/* Login Link */}
@@ -193,8 +161,8 @@ export default function Register() {
                         Log in
                     </Link>
                 </p>
-            </AuthCard>
-            <BrandLogos />
+            </Auth.AuthCard>
+            <Auth.BrandLogos />
         </main>
     );
 }

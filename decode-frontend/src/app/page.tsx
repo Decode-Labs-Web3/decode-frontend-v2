@@ -1,21 +1,17 @@
 'use client';
-import Link from 'next/link';
 import { useState } from 'react';
-import Logo from '@/components/Logo';
-import AuthCard from '@/components/AuthCard';
-import TextField from '@/components/TextField';
-import BrandLogos from '@/components/BrandLogos';
-import BackgroundAccents from '@/components/BackgroundAccents';
+import Auth from '@/components/(auth)';
+import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWallet, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { useRouter } from 'next/navigation';
 
 export default function Home() {
-    const [formData, setFormData] = useState({
+    const router = useRouter();
+    const [loading, setLoading] = useState<boolean>(false);
+    const [formData, setFormData] = useState<{ email_or_username: string }>({
         email_or_username: "",
     });
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -29,37 +25,34 @@ export default function Home() {
         e.preventDefault();
         setLoading(true);
         try {
-          const response = await fetch("/api/auth/login-or-register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-          });
+            const response = await fetch("/api/auth/login-or-register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
 
-          const responseData = await response.json();
-          console.log(responseData);
+            const responseData = await response.json();
+            console.log(responseData);
 
-          if (responseData.success) {
-            router.push("/login");
-          } else {
-            router.push("/register");
-          }
+            if (responseData.success) {
+                router.push("/login");
+            } else {
+                router.push("/register");
+            }
         } catch (error) {
-          console.error(error);
+            console.error(error);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
     }
 
     return (
         <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-            <BackgroundAccents />
-            {/* Logo */}
-            <div className="mb-8">
-                <Logo />
-            </div>
+            <Auth.BackgroundAccents />
+            <Auth.Logo />
 
             {/* Main Card */}
-            <AuthCard title="Get Started">
+            <Auth.AuthCard title="Get Started">
 
                 {/* Connect Wallet Button */}
                 <button className="group w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg mb-6 flex items-center justify-center gap-2 transition-all shadow-lg">
@@ -76,7 +69,7 @@ export default function Home() {
                 </div>
 
                 <form onSubmit={handleSubmit} noValidate>
-                    <TextField
+                    <Auth.TextField
                         id="email_or_username"
                         type="text"
                         placeholder="Enter username or email"
@@ -84,25 +77,17 @@ export default function Home() {
                         onChange={handleChange}
                     />
 
-                    <button 
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-blue-500/90 hover:bg-blue-600 disabled:bg-blue-400 text-white font-semibold py-3 px-4 rounded-lg mb-6 transition-all shadow-lg flex items-center justify-center gap-2"
+                    <Auth.SubmitButton
+                        loading={loading}
+                        loadingText="Exploring..."
                     >
-                        {loading ? (
-                            <>
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                Exploring...
-                            </>
-                        ) : (
-                            'Explore Decode'
-                        )}
-                    </button>
+                        Explore Decode
+                    </Auth.SubmitButton>
                 </form>
 
-            </AuthCard>
+            </Auth.AuthCard>
 
-            <BrandLogos />
+            <Auth.BrandLogos />
         </main>
     );
 }

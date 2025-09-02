@@ -15,12 +15,12 @@ export function middleware(request: NextRequest) {
     console.log('RefreshToken present:', !!refreshToken);
 
     if (!token || !refreshToken) {
-      console.log('❌ Missing tokens, redirecting to login');
+      console.log('Missing tokens, redirecting to login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
     // If user has valid tokens, allow access to dashboard
-    console.log('✅ Dashboard access granted - valid tokens present');
+    console.log('Dashboard access granted - valid tokens present');
     const response = NextResponse.next();
     
     // Clear the from_success cookie if it exists (cleanup)
@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
     console.log('Verification context:', hasVerificationContext);
     
     if (!hasVerificationContext) {
-      console.log('❌ No verification context, redirecting to login');
+      console.log('No verification context, redirecting to login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
@@ -57,7 +57,7 @@ export function middleware(request: NextRequest) {
     console.log('Verification context:', hasVerificationContext);
     
     if (!hasVerificationContext) {
-      console.log('❌ No verification context, redirecting to login');
+      console.log('No verification context, redirecting to login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
