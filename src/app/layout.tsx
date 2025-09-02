@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Decode Protocol",
   description: "Decode Protocol - Secure Authentication and Identity Management",
   icons: {
-    icon: "/assets/3d_token_nobg.png",
+    icon: "/images/tokens/3d_token_nobg.png",
   },
 };
 

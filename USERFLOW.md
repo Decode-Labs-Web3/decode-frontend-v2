@@ -1,298 +1,257 @@
-## **User Flow Explanation**
+# **User Flow Documentation - Decode Protocol Authentication System**
 
-### 1. Login Page
-
-* User starts here.
-* The page shows:
-
-  * Input fields for **username/email** and **password**.
-  * Buttons: **Login**, **Register**, **Forgot Password**, and **Login by Wallet**.
-* Depending on what the user chooses:
-
-  * **Login (credentials)** → goes to **Login Success Page**.
-  * **Register** → goes to **Register Page**.
-  * **Forgot Password** → goes to **Forgot Password Page**.
-  * **Login by Wallet** → goes to **Login Success Page** (after wallet connect flow).
+## **Overview**
+This document describes the complete user authentication flow implemented in the Decode Protocol frontend application. The system includes device fingerprint verification, email verification, password reset functionality, and middleware-based route protection.
 
 ---
 
-### 2. Register Flow
+## **1. Login Flow**
 
-* On the **Register Page**, the user fills **username, email, and password**.
-* After submitting, they are redirected to the **Email Verification Page (Register)**.
-* On the verification page, they must enter the **code received via email**:
+### **Login Page (`/login`)**
+- **Input Fields**: Username/Email and Password
+- **Features**: 
+  - Auto-fills email/username from cookies if available
+  - Real-time error clearing when user types
+  - "Forgot password?" link
+  - Link to registration page
 
-  * If the code is correct → success, send them back to the **Login Page**.
-  * If incorrect → show error, let them retry or resend code.
+### **Login Process**
+1. **User submits credentials** → API call to `/api/auth/login`
+2. **Backend validates credentials and device fingerprint**
+3. **Two possible outcomes**:
 
----
+#### **A. Direct Login Success**
+- Backend returns access tokens
+- Frontend sets authentication cookies (`token`, `refreshToken`, `from_success`)
+- **Redirect**: `/dashboard`
 
-### 3. Forgot Password Flow
-
-* On the **Forgot Password Page**, the user enters **username or email**.
-* The system “sends a code” (mock for now) to the user’s email and redirects to the **Verification Page (Forgot Password)**.
-* On the verification page, the user enters the **code**:
-
-  * If correct → redirect to **Change Password Page**.
-  * If incorrect → show error, let them retry.
-* On the **Change Password Page**, the user sets a **new password**.
-* After successful change, redirect back to the **Login Page**.
-
----
-
-### 4. Login Success Page
-
-* This is an intermediate page after login.
-* It checks:
-
-  * If this login is for **SSO (Single Sign-On)** from another app → redirect user back to that app.
-  * Otherwise → continue into the **Dashboard**.
+#### **B. Device Fingerprint Verification Required**
+- Backend returns `requiresVerification: true`
+- Frontend stores email in sessionStorage/localStorage
+- **Redirect**: `/verify-login`
 
 ---
 
-### 5. Dashboard Page
+## **2. Device Fingerprint Verification Flow**
 
-* Displays user’s **profile info**: Full Name, Username, Email, Wallet(s), Linked Apps.
-* Provides navigation options to:
+### **Verify Login Page (`/verify-login`)**
+- **Purpose**: Verify device fingerprint for trusted devices
+- **Access Control**: Middleware protects route - requires verification context
+- **Features**:
+  - 6-digit code input with smart paste support
+  - Supports format: `fingerprint-email-verification:XXXXXX`
+  - Auto-focus between input fields
+  - Back to Login button
+  - Resend functionality (not yet implemented)
 
-  * **Settings**
-  * **Explore**
-  * **Wallet**
+### **Verification Process**
+1. **User enters 6-digit code** → API call to `/api/auth/verify-login`
+2. **Backend validates code and device fingerprint**
+3. **Two possible outcomes**:
 
----
+#### **A. Device Verified - Re-login Required**
+- Backend returns `requiresRelogin: true`
+- **Redirect**: `/login` (user must login again)
 
-### 6. Settings Flow
-
-* The **Settings Page** shows options: **Change Password**, **Forgot Password**, or **Change Email**.
-* Actions:
-
-  * **Change Password** → user enters old and new password → UI simulates change → stays in Settings.
-  * **Forgot Password** → redirects into the Forgot Password flow.
-  * **Change Email** → redirects to **Verify Current Email Page**.
-
-#### Verify Current Email Page
-
-* User enters **OTP sent to current email**:
-
-  * If correct → continue to **Change Email Page**.
-  * If wrong → error, retry.
-
-#### Change Email Page
-
-* User enters a **new email** and receives an OTP on that new email.
-* If OTP is correct → email updated → redirect back to **Settings Page**.
-* If not → error, retry.
+#### **B. Device Verified - Direct Access**
+- Backend returns access tokens
+- Frontend sets authentication cookies
+- **Redirect**: `/login` (then to dashboard)
 
 ---
 
-### 7. Wallet Flow
+## **3. Registration Flow**
 
-* On the **Wallet Page**, the user sees a list of wallets.
-* Options per wallet:
+### **Register Page (`/register`)**
+- **Input Fields**: Username, Email, Password, Confirm Password
+- **Features**:
+  - Real-time password validation with visual feedback
+  - Auto-fills email/username from cookies if available
+  - Link to login page
 
-  * **Make Primary** → mark that wallet as primary.
-  * **Unlink** → remove the wallet.
-* Global option:
+### **Registration Process**
+1. **User submits registration data** → API call to `/api/auth/register`
+2. **Backend validates data and sends email verification**
+3. **Frontend stores registration data in sessionStorage**
+4. **Redirect**: `/verify-register`
 
-  * **Add Wallet** → trigger connect/sign flow → adds wallet to the list.
-* User can navigate back to **Dashboard**.
+### **Verify Register Page (`/verify-register`)**
+- **Purpose**: Verify email address for new account
+- **Access Control**: Middleware protects route - requires verification context
+- **Features**:
+  - 6-digit code input with smart paste support
+  - Supports format: `fingerprint-email-verification:XXXXXX`
+  - Resend verification code functionality
+
+### **Email Verification Process**
+1. **User enters 6-digit code** → API call to `/api/auth/verify-register`
+2. **Backend validates code and creates account**
+3. **Success**: Account created successfully
+4. **Redirect**: `/login`
 
 ---
 
-### 8. Explore Flow
+## **4. Password Reset Flow**
 
-* The **Explore Page** lets the user navigate between sections:
+### **Forgot Password Page (`/forgot-password`)**
+- **Input Field**: Username or Email
+- **Features**:
+  - Clean, modern design with minimal information
+  - Back to Login button (left-aligned)
+  - Simple description: "Enter your email to receive a reset link"
 
-  * **Search Users**
-  * **Friend Requests**
-  * **Block List**
-  * **Friend Suggestions**
+### **Password Reset Process**
+1. **User submits email/username** → API call to `/api/auth/forgot-password`
+2. **Backend sends reset code to email**
+3. **Redirect**: `/verify-forgot`
 
-#### Search Users
+### **Verify Forgot Page (`/verify-forgot`)**
+- **Purpose**: Verify reset code before allowing password change
+- **Features**:
+  - 6-digit code input with smart paste support
+  - Supports format: `fingerprint-email-verification:XXXXXX`
+  - Resend functionality
 
-* Enter a search query.
-* Click on a result → open **Other User Profile**.
+### **Code Verification Process**
+1. **User enters 6-digit code** → API call to `/api/auth/verify-forgot`
+2. **Backend validates reset code**
+3. **Success**: Code verified, `forgot_code` cookie set
+4. **Redirect**: `/change-password`
 
-#### Other User Profile
+### **Change Password Page (`/change-password`)**
+- **Input Fields**: New Password, Confirm New Password
+- **Features**:
+  - Real-time password validation
+  - Visual feedback for password requirements
 
-* Shows profile details: Full Name, Username, Email (if allowed), Primary Wallet.
-* Actions:
+### **Password Change Process**
+1. **User submits new password** → API call to `/api/auth/change-password`
+2. **Backend validates code from cookie and updates password**
+3. **Success**: Password changed, `forgot_code` cookie cleared
+4. **Redirect**: `/login`
 
-  * **Add Friend** → send friend request.
-  * **Block User** → block that user.
-  * **Back** → return to Explore.
+---
 
-#### Friend Requests Page
+## **5. Dashboard Access**
 
-* Shows inbound (accept/decline) and outbound (cancel) friend requests.
-* Actions update the list immediately.
-* Back to Explore.
+### **Dashboard Page (`/dashboard`)**
+- **Access Control**: Middleware protects route - requires valid authentication tokens
+- **Features**:
+  - Displays authentication status
+  - Session information
+  - Security status
+  - Logout functionality
 
-#### Block List Page
+### **Authentication Check**
+- **Middleware validates**: `token` and `refreshToken` cookies
+- **Missing tokens**: Redirect to `/login`
+- **Valid tokens**: Allow access to dashboard
 
-* Shows all blocked users.
-* Each has an **Unblock** button.
-* Back to Explore.
+---
 
-#### Friend Suggestions Page
+## **6. Middleware Protection**
 
-* Shows suggested users with **mutual friends** info.
-* Actions per user: **Add Friend**, **Dismiss**, **Block**.
-* Back to Explore.
+### **Protected Routes**
+- `/dashboard/*` - Requires valid authentication tokens
+- `/verify-login` - Requires verification context (email in storage or referer)
+- `/verify-register` - Requires verification context (registration data or referer)
+
+### **Middleware Logic**
+1. **Dashboard Protection**: Checks for `token` and `refreshToken` cookies
+2. **Verification Route Protection**: Checks for appropriate context cookies/storage
+3. **Cookie Cleanup**: Clears `from_success` cookie after dashboard access
+
+---
+
+## **7. Smart Code Input Features**
+
+### **Enhanced User Experience**
+- **Smart Paste**: Automatically extracts 6-character codes from `fingerprint-email-verification:XXXXXX` format
+- **Auto-focus**: Automatically moves to next input field
+- **Keyboard Navigation**: Arrow keys and backspace support
+- **Input Validation**: Only allows alphanumeric characters (a-f, 0-9)
+
+---
+
+## **8. Component Architecture**
+
+### **Reusable Components**
+- **`AuthCard`**: Consistent card layout for all auth pages
+- **`BackButton`**: Reusable back navigation with customizable text
+- **`TextField`**: Standardized text input with validation
+- **`PasswordField`**: Password input with toggle visibility
+- **`PasswordValidation`**: Real-time password strength feedback
+- **`SubmitButton`**: Loading states and disabled states
+- **`BackgroundAccents`**: Animated background elements
+- **`BrandLogos`**: Brand logo display
+
+### **Component Organization**
+- **`/components/(auth)/`**: Authentication-specific components
+- **`/components/(app)/`**: Application-specific components
+- **Index exports**: Clean import structure
+
+---
+
+## **9. Security Features**
+
+### **Cookie Management**
+- **HttpOnly cookies**: For sensitive tokens
+- **Secure cookies**: In production environment
+- **SameSite protection**: Lax policy for CSRF protection
+- **Automatic expiration**: Based on backend response
+
+### **Device Fingerprinting**
+- **Automatic generation**: On login attempts
+- **Backend validation**: Server-side fingerprint verification
+- **Email verification**: For untrusted devices
+
+### **Route Protection**
+- **Middleware-based**: Server-side route protection
+- **Context validation**: Ensures proper flow progression
+- **Token validation**: Real-time authentication checks
+
+---
+
+## **10. Error Handling**
+
+### **User-Friendly Messages**
+- **Real-time clearing**: Errors clear when user starts typing
+- **Specific error messages**: Backend error messages displayed to user
+- **Fallback messages**: Generic messages for unknown errors
+- **Visual feedback**: Red error boxes with proper styling
+
+### **API Error Handling**
+- **Consistent response format**: `{ success, statusCode, message }`
+- **Proper HTTP status codes**: Matching backend responses
+- **Graceful degradation**: Fallback responses for network issues
+
+---
+
+## **11. State Management**
+
+### **Client-Side Storage**
+- **SessionStorage**: Temporary data (email, registration data)
+- **LocalStorage**: Backup storage for email
+- **Cookies**: Authentication tokens and verification context
+
+### **Form State**
+- **Real-time validation**: Immediate feedback on input
+- **Loading states**: Visual feedback during API calls
+- **Error states**: Clear error display and recovery
 
 ---
 
 ## **Summary**
 
-* The flow starts at **Login**.
-* Depending on user choice, it branches to **Register**, **Forgot Password**, or direct **Login Success**.
-* After successful login → user reaches **Dashboard**, with navigation to **Settings**, **Wallet**, or **Explore**.
-* Each of those pages has its own sub-flows (email change, wallet management, social interactions).
-* All errors (invalid codes, wrong inputs) are handled by showing inline error states and letting the user retry.
+The Decode Protocol authentication system provides a comprehensive, secure, and user-friendly authentication experience with:
 
----
+- **Multi-factor authentication** through device fingerprinting
+- **Email verification** for both registration and password reset
+- **Smart code input** with enhanced UX features
+- **Middleware-based security** for route protection
+- **Reusable component architecture** for maintainability
+- **Comprehensive error handling** for better user experience
 
-[Mermaid UI Flow Diagram](https://mermaid.live/edit#pako:eNrtWOlu2zgQfhVCQBcN6tRJmlNYdJE4NlAgiQOrbbArBwYt0TIRWdRSVNJsnHff4SFKlJXjAeofNo_hcObjzDekn7yIxcTzvUXKHqIl5gJ9P59mCH34gH4UhKMRjKMF4-g0iliZCfQHClhEcYpO83yaGdHt7W10wRKaoWucENmVE0U5TzjOl3pKzoRTrxaberdSCqGL61kgYOuPofq53bLDI8ZXYbCUJlCSxoWPSjAqwyvSJytMU_QJ5bgoHhiPa11npRAsK0Lz6xvL-mhCEloIcKqPQHHCBJihF8OIFpo_ohucpkS0TAOXvlYGVW2jX4OgRAdLRiPyNPVuljRaIpIJ_ohyRjPx19R7bhtY6dGrWkrk5LpC62PESQzaAPZia-qttbFBGUWkKLoWVp6urc8K8M4tWlBI9XrIjrximcWryyqSxU6EWPw7g6RpKcSJI2xDZTIb0TQN5ZcNhR5SsdBrh4KWVShPZj8Jp4tHx6p6ZzMLuw5VVKkujbCgDMCvLNlqWDGArAmHmbTvviksswktOFtpmxx5Y8k5iWgBshAmavQepzSu46MWUED_TYq1jcJOiSu2Nht0Yd4OdJXPbejd8w43YsI9g9HsW5aXwrhfnQIaTxyfR7MAbAnll0ZFsNa80qJA0bKm-dpJjeqTcs-oZfBWw9jGUUk7nHGz5RtHMuo4ksESZwlxU2S0eTCjzYOxzrgqwCU98ALqg-vZFXkwjmTkoR3tMH-a0_D0-huKICPRAxVL5XBPSs82pUGbcl8vrMjIxlk7kHS-m-x-heaNhGX65oqa8QMgExLdAeBBMEaplGxQpJmt0QYhKDfhhMSUk0igOYZZCCgmloAGzvPbjpUS_3NcLOcM6xNqu2Qnu92x0-CLK2r9OIcgXjBdoXLOFjQlPhqVAP-VIqYflqKGmqI0WfZk8Sysjit8D0DAN01UONdIaP3qbJRYY4VyMSBC0CyRCJlWW2L4K08ZJ2tkGu15bdC6YvEOlCrN3SBVs4CRI2ghCmbjXDpVhObXR-047yrHRmbYYIxgdhoJnaW6UeNkN1FQVYLuMlO3WpvLuhXMZC80M1WmoHuKEaTTrdbp4NvS-c4S2m2JclEu0dSmu52E0RCoCPARDUrO4Wqg1aCP4-_XNfn9dJgapux4lX0w1ma7nw1iNoLOqjYHWoNdCZl9RtVr9Fd50wSjRXzDBvFdDW90FYF7aCFrRu0UyDWoXjqm6rCkymbdkWIvO68307w4rEtEtchV0eAnJzqceYmD1tqVXDrtulNLzwE2DSGLys3sAi4lofxCD2q--HPO-191hEGSncYyjS7xHcQ6pysMN9E--pGlNLuzKmw-mR1wK630JgqBGyenbtxIlnvV10CYjONwwLIMqLpf0CQzFupMqplmQ0_TWq3JdMJLzO-AYVXnDTXaR7lYt0L98z4bzqCwvFE1DJF2n5mZlDfJhpg9tWH9RAhIC-yhe78OCObwhpAVpJBYjGWpk71O6RGnMhsm5N-SFEIt0EN2pGvVWcogSuUZywWqpzqv7BCUSQL6ZIzVmzQHO3PdGg_AqLZ-XF7rkmnhGc9kJVXl1O-uoOj35_fnHZ-eJT3nOT9--QqhY0-xw9jhuvEm1-moV1mpuE69XrjONE0wrWx1dKg8k0tVI9RJKJ9R71iq6Klxlet4IjlpH25QQ-stN2nUEZrNWZnFfVYK1ahcalcWuNDnAqoJvHaAWYm8reEsIqmrUznzqqmWcMImFbkGnl00DJxLIRIrsJpG-VDY1Jy76G0LNugr7CK6FmSBtsgIVOagT2hVihKncO2QCjrL8TktVhQeQ33tu6ux01yv5yWcxp4veEl63opwoEHoek9SZOpBsKzANh-aKU2WQOTT7BkW5Tj7h7FVtY6zMll6_gKnBfTKPMaCnFMMKNQisB_hA_knn-cfKA2e_-T98vzt_d3Dz8e7x0fHxzsnB7t7BydHPe_R80_2Px8e7xx-2T_4cnh0dHBw8tzz_lOb7n3e2z_Z2T_Z35Piu3t7PQ-eboLxS_1vo_rT8fl_DW5W3Q)
-```mermaid
-flowchart TD
-  %% User Flow for Account & Social App
-
-  %% --- Login Page ---
-  subgraph LoginPage["Login Page"]
-    LP_Start([Start])
-    LP_Form[Show fields: username/email + password]
-    LP_Buttons[Buttons: Login / Register / Forgot Password / Login by Wallet]
-    LP_Start --> LP_Form --> LP_Buttons
-
-    LP_Choice{"Which entry point?"}
-    LP_Buttons --> LP_Choice
-    LP_Choice -->|"Login (credentials)"| LoginSuccess
-    LP_Choice -->|Register| RegisterPage
-    LP_Choice -->|"Forgot Password"| ForgotPassword
-    LP_Choice -->|"Login by Wallet"| LoginSuccess
-  end
-
-  %% --- Register Page ---
-  subgraph RegisterPage["Register Page"]
-    R_Fill[Fill username, email, password]
-    R_Fill --> R_Verify
-  end
-
-  subgraph R_Verify["Email Verification (Register)"]
-    R_Code[Enter verification code from email]
-    R_Code --> R_Decision{"Code valid?"}
-    R_Decision -->|Yes| LP_Start
-    R_Decision -->|No| R_Code
-  end
-
-  %% --- Forgot Password Flow ---
-  subgraph ForgotPassword["Forgot Password Page"]
-    F_Input[Enter username OR email]
-    F_Send[Send code to email]
-    F_Input --> F_Send --> F_Verify
-  end
-
-  subgraph F_Verify["Verification (Forgot Password)"]
-    F_Code[Enter code]
-    F_Code --> F_Decision{"Code valid?"}
-    F_Decision -->|Yes| ChangePassword
-    F_Decision -->|No| F_Code
-  end
-
-  subgraph ChangePassword["Change Password Page"]
-    CP_New[Enter new password]
-    CP_Api[API call with code, new_password]
-    CP_New --> CP_Api --> LP_Start
-  end
-
-  %% --- Login Success Page ---
-  subgraph LoginSuccess["Login Success Page"]
-    LS_Check{"SSO login?"}
-    LS_Check -->|Yes| SSOApp[Redirect back to other app]
-    LS_Check -->|No| Dashboard
-  end
-
-  %% --- Dashboard Page ---
-  subgraph Dashboard["Dashboard Page"]
-    D_Info[Show profile: Full Name, Username, Email, Wallet, Apps]
-    D_Nav{"Navigation?"}
-    D_Info --> D_Nav
-    D_Nav -->|Settings| Settings
-    D_Nav -->|Explore| Explore
-    D_Nav -->|Wallet| Wallet
-  end
-
-  %% --- Settings Page ---
-  subgraph Settings["Settings Page"]
-    S_Options[Options: Change Password / Forgot Password / Change Email]
-    S_Action{"Action?"}
-    S_Options --> S_Action
-    S_Action -->|"Change Password"| S_Pass[Change password via API] --> Settings
-    S_Action -->|"Forgot Password"| ForgotPassword
-    S_Action -->|"Change Email"| VerifyEmail
-  end
-
-  subgraph VerifyEmail["Verify Current Email (OTP)"]
-    V_Input[Enter OTP]
-    V_Check{"OTP valid?"}
-    V_Input --> V_Check
-    V_Check -->|Yes| ChangeEmail
-    V_Check -->|No| V_Input
-  end
-
-  subgraph ChangeEmail["Change Email Page"]
-    CE_New[Enter NEW email & send OTP]
-    CE_Code[Enter OTP from new email]
-    CE_Check{"OTP valid?"}
-    CE_New --> CE_Code --> CE_Check
-    CE_Check -->|Yes| Settings
-    CE_Check -->|No| CE_New
-  end
-
-  %% --- Wallet Page ---
-  subgraph Wallet["Wallet Page"]
-    W_List[List wallets<br/>Actions: Add / Make Primary / Unlink]
-    W_Action{"Wallet action?"}
-    W_List --> W_Action
-    W_Action -->|"Add Wallet"| W_Add[Connect/sign wallet] --> Wallet
-    W_Action -->|"Make Primary"| W_Primary[Mark primary] --> Wallet
-    W_Action -->|Unlink| W_Unlink[Unlink wallet] --> Wallet
-    W_Action -->|Back| Dashboard
-  end
-
-  %% --- Explore Page ---
-  subgraph Explore["Explore Page"]
-    E_Choice{"Section?"}
-    E_Choice -->|"Search Users"| OtherUser
-    E_Choice -->|"Friend Requests"| FriendRequests
-    E_Choice -->|"Block List"| BlockList
-    E_Choice -->|"Friend Suggestions"| FriendSuggestions
-  end
-
-  subgraph OtherUser["Other User Profile"]
-    O_Show[Show: Name, Username, Email                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        , Primary Wallet]
-    O_Action{"Action?"}
-    O_Show --> O_Action
-    O_Action -->|"Add Friend"| O_Add[Send request] --> OtherUser
-    O_Action -->|Block| O_Block[Block user] --> OtherUser
-    O_Action -->|Back| Explore
-  end
-
-  subgraph FriendRequests["Friend Requests Page"]
-    FR_List[List inbound/outbound requests<br/>Actions: Accept / Decline / Cancel]
-    FR_List --> Explore
-  end
-
-  subgraph BlockList["Block List Page"]
-    BL_List[List blocked users<br/>Action: Unblock]
-    BL_List --> Explore
-  end
-
-  subgraph FriendSuggestions["Friend Suggestions Page"]
-    FS_List[Suggested users + mutual friends<br/>Actions: Add / Dismiss / Block]
-    FS_List --> Explore
-  end
-
-```
+The system ensures security while maintaining usability through features like smart paste, auto-focus, and real-time validation feedback.
 
 ---

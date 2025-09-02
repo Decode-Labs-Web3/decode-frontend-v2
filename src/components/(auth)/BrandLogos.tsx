@@ -13,12 +13,12 @@ export default function BrandLogos() {
             </div>
 
             <div className='flex flex-wrap items-center justify-center gap-x-8 gap-y-4'>
-                <Image src="/assets/DeCareer_logo.png" width={120} height={40} alt="DeCareer logo" />
-                <Image src="/assets/DeCourse_logo.png" width={120} height={40} alt="DeCourse logo" />
-                <Image src="/assets/DeDao_logo.png" width={150} height={60} alt="DeDao logo" />
-                <Image src="/assets/DeFuel_logo.png" width={120} height={60} alt="DeFuel logo" />
-                <Image src="/assets/DeHive_logo.png" width={120} height={60} alt="DeHive logo" />
-                <Image src="/assets/DEiD_logo.png" width={60} height={20} alt="DEiD logo" />
+                <Image src="/images/logos/DeCareer_logo.png" width={120} height={40} alt="DeCareer logo" />
+                <Image src="/images/logos/DeCourse_logo.png" width={120} height={40} alt="DeCourse logo" />
+                <Image src="/images/logos/DeDao_logo.png" width={150} height={60} alt="DeDao logo" />
+                <Image src="/images/logos/DeFuel_logo.png" width={120} height={60} alt="DeFuel logo" />
+                <Image src="/images/logos/DeHive_logo.png" width={120} height={60} alt="DeHive logo" />
+                <Image src="/images/logos/DEiD_logo.png" width={60} height={20} alt="DEiD logo" />
             </div>
 
             {/* Terms */}
