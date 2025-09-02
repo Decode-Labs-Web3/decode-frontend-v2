@@ -58,6 +58,7 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error('Verify register error:', error);
-    return NextResponse.json({ message: "Verify register error" }, { status: 400 });
+    return NextResponse.json({ 
+      message: "Verify register error" }, { status: 400 });
   }
 }

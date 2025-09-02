@@ -55,13 +55,12 @@ export async function POST(req: Request) {
       res.cookies.set('registration_data', JSON.stringify({
         email,
         username,
-        password
       }), {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 10, // 10 minutes
+        maxAge: 60 * 3,
       });
       
       return res;

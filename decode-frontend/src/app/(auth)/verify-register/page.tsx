@@ -121,12 +121,16 @@ export default function VerifyEmail() {
     const handleResend = async () => {
         setResendLoading(true);
         try {
-            if (typeof window !== 'undefined') {
-                const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-                localStorage.setItem('mockResetCode', newCode);
-                alert(`New verification code sent: ${newCode}`);
-            }
-        } catch (error) {
+            const response = await fetch('/api/auth/resend-verification-register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ })
+            });
+
+            const responseData = await response.json();
+            console.log('Response data:', responseData);
+        }
+        catch (error) {
             console.error('Resend error:', error);
             setError('Failed to resend code. Please try again.');
         } finally {

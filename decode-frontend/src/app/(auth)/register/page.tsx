@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import BackgroundAccents from '@/components/BackgroundAccents';
 import Logo from '@/components/Logo';
@@ -19,6 +19,21 @@ export default function Register() {
         password: '',
         confirmPassword: ''
     });
+    
+    useEffect(() => {
+        try {
+            const match = document.cookie.match(/(?:^|; )email_or_username=([^;]+)/);
+            const value = match ? decodeURIComponent(match[1]) : "";
+            if (value) {
+                // Heuristic: if it contains '@', assume it's an email, else username
+                if (value.includes('@')) {
+                    setFormData(prev => ({ ...prev, email: value }));
+                } else {
+                    setFormData(prev => ({ ...prev, username: value }));
+                }
+            }
+        } catch {}
+    }, []);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -89,8 +104,11 @@ export default function Register() {
     const hasMinLength = formData.password.length >= 8;
     const hasUppercase = /[A-Z]/.test(formData.password);
     const hasSpecial = /[^A-Za-z0-9]/.test(formData.password);
+    const hasNumber = /\d/.test(formData.password);
     const passwordsMatch = formData.password !== '' && formData.password === formData.confirmPassword;
-    const isPasswordValid = hasMinLength && hasUppercase && hasSpecial && passwordsMatch;
+    const isPasswordValid = hasMinLength && hasUppercase && hasSpecial && hasNumber && passwordsMatch;
+    const showMatchStatus = formData.confirmPassword !== '';
+    const matchIsGood = showMatchStatus && passwordsMatch;
 
     return (
         <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
@@ -134,6 +152,10 @@ export default function Register() {
                             <FontAwesomeIcon icon={hasUppercase ? faCheck : faXmark} />
                             <span>Contains an uppercase letter</span>
                         </li>
+                        <li className={`flex items-center gap-2 ${hasNumber ? 'text-green-400' : 'text-red-400'}`}>
+                            <FontAwesomeIcon icon={hasNumber ? faCheck : faXmark} />
+                            <span>Contains a number</span>
+                        </li>
                         <li className={`flex items-center gap-2 ${hasSpecial ? 'text-green-400' : 'text-red-400'}`}>
                             <FontAwesomeIcon icon={hasSpecial ? faCheck : faXmark} />
                             <span>Contains a special character</span>
@@ -141,9 +163,9 @@ export default function Register() {
                     </ul>
 
                     <PasswordField id="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm password" />
-                    <p className={`text-xs mb-4 flex items-center gap-2 ${passwordsMatch || formData.confirmPassword === '' ? 'text-green-400' : 'text-red-400'}`}>
-                        <FontAwesomeIcon icon={(passwordsMatch && formData.confirmPassword !== '') ? faCheck : (formData.confirmPassword === '' ? faXmark : faXmark)} />
-                        <span>{passwordsMatch || formData.confirmPassword === '' ? (formData.confirmPassword === '' ? 'Re-enter your password to confirm' : 'Passwords match') : 'Passwords do not match'}</span>
+                    <p className={`text-xs mb-4 flex items-center gap-2 ${showMatchStatus ? (matchIsGood ? 'text-green-400' : 'text-red-400') : 'text-gray-400'}`}>
+                        <FontAwesomeIcon icon={matchIsGood ? faCheck : faXmark} />
+                        <span>{!showMatchStatus ? 'Re-enter your password to confirm' : (matchIsGood ? 'Passwords match' : 'Passwords do not match')}</span>
                     </p>
 
                     <button 

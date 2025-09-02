@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Logo from '@/components/Logo';
 import AuthCard from '@/components/AuthCard';
 import TextField from '@/components/TextField';
@@ -17,6 +17,16 @@ export default function Login() {
         email_or_username: "",
         password: ""
     });
+    
+    useEffect(() => {
+        try {
+            const match = document.cookie.match(/(?:^|; )email_or_username=([^;]+)/);
+            const value = match ? decodeURIComponent(match[1]) : "";
+            if (value) {
+                setFormData(prev => ({ ...prev, email_or_username: value }));
+            }
+        } catch {}
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -78,22 +88,7 @@ export default function Login() {
             </div>
 
             {/* Main Card */}
-            <AuthCard title="Get Started">
-
-                {/* Connect Wallet Button */}
-                <button className="group w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg mb-6 flex items-center justify-center gap-2 transition-all shadow-lg">
-                    <FontAwesomeIcon icon={faWallet} className="opacity-90" />
-                    <span>Connect Wallet</span>
-                    <FontAwesomeIcon icon={faArrowRight} className="opacity-0 -translate-x-2 group-hover:opacity-90 group-hover:translate-x-0 transition-all" />
-                </button>
-
-                {/* Divider */}
-                <div className="flex items-center mb-6">
-                    <div className="flex-1 border-t border-gray-600"></div>
-                    <span className="px-4 text-gray-400 text-sm">OR</span>
-                    <div className="flex-1 border-t border-gray-600"></div>
-                </div>
-
+            <AuthCard title="Log in">
                 <form onSubmit={handleSubmit} noValidate>
                     <TextField
                         id="email_or_username"
