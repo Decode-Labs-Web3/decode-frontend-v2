@@ -5,14 +5,14 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log('Forgot password request:', body);
 
-    const { email } = body;
+    const { username_or_email } = body;
 
-    if (!email) {
-      return NextResponse.json({ message: "Missing email" }, { status: 400 });
+    if (!username_or_email) {
+      return NextResponse.json({ message: "Missing username or email" }, { status: 400 });
     }
 
     const requestBody = { 
-      email,
+      username_or_email,
     };
     
     console.log('Sending to backend:', requestBody);
@@ -23,10 +23,27 @@ export async function POST(req: Request) {
       body: JSON.stringify(requestBody),
     });
 
-    const response = await backendRes.json();
+    const response = await backendRes.json().catch(() => null);
     console.log('Backend response:', response);
 
-    return NextResponse.json({ success: true, message: "Forgot password request sent", statusCode: response.statusCode }, { status: 200 });
+    if (!backendRes.ok) {
+      const message = response?.message || "User not found";
+      const statusCode = response?.statusCode || backendRes.status || 400;
+      return NextResponse.json({
+        success: false,
+        statusCode,
+        message,
+        error: response?.error || 'Bad Request',
+        timestamp: response?.timestamp,
+        path: response?.path || '/auth/password/forgot/initiate'
+      }, { status: statusCode });
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      statusCode: response?.statusCode || 200, 
+      message: response?.message || 'Password reset email sent' 
+    }, { status: 200 });
   }
   catch (error) {
     console.error('Forgot password error:', error);

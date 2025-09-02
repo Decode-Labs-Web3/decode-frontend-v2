@@ -12,8 +12,9 @@ import { faEnvelope, faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function ForgotPassword() {
     const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        username_or_email: "",
+    });    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -27,7 +28,7 @@ export default function ForgotPassword() {
             const response = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify( formData )
             });
 
             const responseData = await response.json();
@@ -50,8 +51,8 @@ export default function ForgotPassword() {
     };
 
     const handleResend = async () => {
-        if (!email) {
-            setError('Please enter your email first.');
+        if (!formData.username_or_email) {
+            setError('Please enter your username or email first.');
             return;
         }
         await handleSubmit(new Event('submit') as any);
@@ -84,9 +85,9 @@ export default function ForgotPassword() {
                             id="email"
                             type="email"
                             placeholder="Email address"
-                            value={email}
+                            value={formData.username_or_email}
                             onChange={(e) => {
-                                setEmail(e.target.value);
+                                setFormData(prev => ({ ...prev, username_or_email: e.target.value }));
                                 if (error) setError('');
                                 if (success) setSuccess('');
                             }}
@@ -112,7 +113,7 @@ export default function ForgotPassword() {
                     {/* Submit Button */}
                     <button 
                         type="submit"
-                        disabled={loading || !email}
+                        disabled={loading || !formData.username_or_email}
                         className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg mb-6 transition-all duration-200 flex items-center justify-center gap-2"
                     >
                         {loading ? (

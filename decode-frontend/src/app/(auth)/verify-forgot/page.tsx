@@ -7,7 +7,7 @@ import AuthCard from '@/components/AuthCard';
 import BrandLogos from '@/components/BrandLogos';
 import Head from 'next/head';
 
-export default function VerifyRegister() {
+export default function VerifyForgot() {
     const router = useRouter();
     const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
     const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
@@ -30,7 +30,7 @@ export default function VerifyRegister() {
         setSuccess('');
 
         try {
-            const response = await fetch('/api/auth/verify-register', {
+            const response = await fetch('/api/auth/verify-forgot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code })
@@ -40,11 +40,11 @@ export default function VerifyRegister() {
             const responseData = await response.json();
             console.log('Response data:', responseData);
             if (responseData.success) {
-                // Success - show success message and redirect to login
+                // Success - show success message and redirect to change password
                 setError(''); // Clear any previous errors
-                setSuccess('✅ Account created successfully! Redirecting to login...');
+                setSuccess('✅ Code verified! Redirecting to change password...');
                 setTimeout(() => {
-                    router.push('/login');
+                    router.push('/change-password');
                 }, 1500); // 1.5 second delay to show success message
             } else {
                 setError('Invalid verification code. Please check your email and try again.');

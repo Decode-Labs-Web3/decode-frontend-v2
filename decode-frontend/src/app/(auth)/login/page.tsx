@@ -7,8 +7,6 @@ import TextField from '@/components/TextField';
 import BrandLogos from '@/components/BrandLogos';
 import PasswordField from '@/components/PasswordField';
 import BackgroundAccents from '@/components/BackgroundAccents';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWallet, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from 'next/navigation';
 
 export default function Login() {
