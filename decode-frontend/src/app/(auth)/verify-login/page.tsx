@@ -5,12 +5,12 @@ import { useRef, useState, useEffect } from 'react';
 
 export default function VerifyLogin() {
     const router = useRouter();
-    const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
-    const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const [error, setError] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
-    const [resendLoading, setResendLoading] = useState<boolean>(false);
     const [email, setEmail] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+    const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
+    const [resendLoading, setResendLoading] = useState<boolean>(false);
 
     // Get email from session storage or localStorage
     useEffect(() => {
@@ -51,20 +51,14 @@ export default function VerifyLogin() {
 
             if (responseData.success) {
                 if (responseData.requiresRelogin) {
-                    // Device fingerprint verified - show success message and redirect to login
-                    setError(''); // Clear any previous errors
-                    // You could show a success message here
-                    setTimeout(() => {
-                        router.push('/login');
-                    }, 1500); // 1.5 second delay to show success
+                    setError('');
+                    router.push('/login');
                 } else {
-                    // Other success case - redirect immediately
                     router.push('/login');
                     router.refresh();
                 }
             } else {
                 setError(responseData.message || 'Invalid verification code. Please check your email and try again.');
-                // Clear the form on error
                 setDigits(Array(6).fill(''));
                 inputsRef.current[0]?.focus();
             }

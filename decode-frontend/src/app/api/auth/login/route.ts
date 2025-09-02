@@ -4,36 +4,36 @@ import { FingerprintService } from "@/app/services/fingerprint.service";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log('Request from frontend:', body);
-    
     const { email_or_username, password } = body;
 
     if (!email_or_username || !password) {
-      console.log('Missing credentials:', { email_or_username, password });
-      return NextResponse.json({ message: "Missing credentials" }, { status: 400 });
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: "Missing credentials"
+      }, { status: 400 });
     }
 
     // Generate device fingerprint using the fingerprint service
     const fingerprintResult = FingerprintService.generateFingerprint(req);
     const { fingerprint_hashed } = fingerprintResult;
-    
+
     // Validate the generated fingerprint
     const validation = FingerprintService.validateFingerprint(fingerprint_hashed);
     if (!validation.isValid) {
       console.error('Fingerprint validation failed:', validation.errors);
-      return NextResponse.json({ 
-        message: "Invalid fingerprint generated", 
-        errors: validation.errors 
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: validation.errors.join(', ')
       }, { status: 400 });
     }
 
-    const requestBody = { 
-      email_or_username, 
+    const requestBody = {
+      email_or_username,
       password,
       fingerprint_hashed
     };
-
-    console.log('Sending to backend:', requestBody);
 
     const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/login`, {
       method: "POST",
@@ -43,27 +43,25 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const err = await backendRes.json().catch(() => null);
-      console.log('Backend login failed:', { status: backendRes.status, error: err });
-      return NextResponse.json(
-        { message: err?.message || "Login failed" },
+      return NextResponse.json({ 
+          success: false,
+          statusCode: backendRes.status || 401,
+          message: err?.message || "Login failed" 
+        },
         { status: backendRes.status || 401 }
       );
     }
 
-    console.log('Backend response status:', backendRes.status);
-    console.log('Backend response headers:', Object.fromEntries(backendRes.headers.entries()));
-
     const response = await backendRes.json();
-    console.log('Backend response data:', response);
 
     // Check if this is a fingerprint verification request
     if (response.success && response.message === "Device fingerprint not trusted, send email verification") {
       console.log('Device fingerprint verification required');
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: true,
-        message: "Device verification required",
         requiresVerification: true,
-        statusCode: response.statusCode
+        statusCode: response.statusCode || 200,
+        message: response.message || "Device verification required",
       }, { status: 200 });
     }
 
@@ -77,30 +75,34 @@ export async function POST(req: Request) {
     // Handle different response scenarios
     if (!accessToken || !refreshToken) {
       console.log('No tokens found in response');
-      
+
       // Check if this is a successful response but requires verification
       if (response.success && response.statusCode === 400) {
-        return NextResponse.json({ 
-          message: "Device verification required",
+        return NextResponse.json({
+          success: true,
           requiresVerification: true,
-          statusCode: response.statusCode
+          statusCode: response.statusCode || 200,
+          message: response.message || "Device verification required",
         }, { status: 200 });
       }
-      
+
       // Return detailed error for debugging
-      return NextResponse.json({ 
+      return NextResponse.json({
+        success: false,
+        statusCode: response.statusCode || 500,
         message: response.message || "Login failed - no tokens received",
-        responseData: response,
-        statusCode: response.statusCode
       }, { status: 500 });
     }
 
-    const res = NextResponse.json({ success: true });
-    const isProd = process.env.NODE_ENV === "production";
+    const res = NextResponse.json({ 
+      success: true,
+      statusCode: response.statusCode || 200,
+      message: response.message || "Login successful"
+    });
 
     res.cookies.set("token", accessToken, {
       httpOnly: true,
-      secure: isProd,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 15,
@@ -108,10 +110,11 @@ export async function POST(req: Request) {
 
     const refreshCookieOpts = {
       httpOnly: true,
-      secure: isProd,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax" as const,
       path: "/",
     };
+
     if (expiresAtISO) {
       res.cookies.set("refreshToken", refreshToken, {
         ...refreshCookieOpts,
@@ -127,18 +130,28 @@ export async function POST(req: Request) {
     // Set the from_success cookie for middleware authentication
     res.cookies.set("from_success", "1", {
       httpOnly: false,
-      secure: isProd,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 5, // 5 minutes
+      maxAge: 60 * 5,
     });
 
     return res;
-  } catch {
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+  } catch (error) {
+    console.log('Login error:', error);
+    console.error('Login error:', error);
+    return NextResponse.json({ 
+      success: false,
+      statusCode: 500,
+      message: error instanceof Error ? error.message : "Server error from login",
+    }, { status: 500 });
   }
 }
 
 export async function GET() {
-  return NextResponse.json({ message: "Method Not Allowed" }, { status: 405 });
+  return NextResponse.json({ 
+    success: false,
+    statusCode: 405,
+    message: "Method Not Allowed" 
+  }, { status: 405 });
 }

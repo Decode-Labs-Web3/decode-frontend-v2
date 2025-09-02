@@ -7,8 +7,11 @@ export async function POST() {
     const reg = (await cookieStore).get("registration_data")?.value;
 
     if (!reg) {
-      return NextResponse.json(
-        { message: "No pending registration data" },
+      return NextResponse.json({
+          success: false,
+          statusCode: 400,
+          message: "No pending registration data",
+        },
         { status: 400 }
       );
     }
@@ -17,57 +20,73 @@ export async function POST() {
     try {
       parsed = JSON.parse(reg);
     } catch {
-      return NextResponse.json(
-        { message: "Corrupted registration data" },
+      return NextResponse.json({
+          success: false,
+          statusCode: 400,
+          message: "Corrupted registration data",
+        },
         { status: 400 }
       );
     }
 
     const email = parsed.email;
     if (!email) {
-      return NextResponse.json(
-        { message: "Email not found in cookie" },
+      return NextResponse.json({
+          success: false,
+          statusCode: 400,
+          message: "Email not found in cookie",
+        },
         { status: 400 }
       );
     }
+
+    const requestBody = {
+      email,
+    };
 
     const backendRes = await fetch(
       `${process.env.BACKEND_URL}/auth/register/send-email-verification`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(requestBody),
       }
     );
 
-    const data = await backendRes.json();
-
+    
     if (!backendRes.ok) {
+      const error = await backendRes.json().catch(() => null);
       return NextResponse.json(
         {
-          message: data.message || "Resend failed",
-          statusCode: data.statusCode || backendRes.status,
-        },
-        { status: backendRes.status || 400 }
-      );
+          success: false,
+          statusCode: backendRes.status || 400,
+          message: error?.message || "Resend failed",
+        },{ status: backendRes.status || 400 });
     }
 
+    const response = await backendRes.json().catch(() => ({}));
+    return NextResponse.json({
+        success: true,
+        statusCode: response.statusCode || 200,
+        message: response.message || "Verification email resent",
+      },{ status: 200 });
+      
+  } catch (error) {
     return NextResponse.json(
       {
-        success: true,
-        message: data.message || "Verification email resent",
+        success: false,
+        statusCode: 500,
+        message: error instanceof Error ? error.message : "Server error",
       },
-      { status: 200 }
-    );
-  } catch (e) {
-    console.error("Resend error:", e);
-    return NextResponse.json(
-      { message: "Server error", error: "Internal Server Error" },
       { status: 500 }
     );
   }
 }
 
 export async function GET() {
-  return NextResponse.json({ message: "Method Not Allowed" }, { status: 405 });
+  return NextResponse.json({
+    success: false,
+    statusCode: 405,
+    message: "Method Not Allowed",
+  }, { status: 405 });
 }

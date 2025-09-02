@@ -3,40 +3,60 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        console.log('Request from frontend:', body);
-
         const { email_or_username } = body;
+
+        if (!email_or_username) {
+            return NextResponse.json({
+                success: false,
+                statusCode: 400,
+                message: "Missing email or username",
+            }, { status: 400 });
+        }
+
+        const requestBody = {
+            email_or_username,
+        };
 
         const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/info/exist-by-email-or-username`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email_or_username }),
+            body: JSON.stringify(requestBody),
         });
 
         if (!backendRes.ok) {
             const err = await backendRes.json().catch(() => null);
-            console.log('Backend login failed:', { status: backendRes.status, error: err });
-            return NextResponse.json(
-                { message: err?.message || "Login failed" },
-                { status: backendRes.status || 401 }
-            );
+            return NextResponse.json({
+                success: false,
+                statusCode: backendRes.status || 401,
+                message: err?.message || "Login failed"
+            }, { status: backendRes.status || 401 });
         }
-        
-        const response = await backendRes.json();
-        console.log('Backend response:', response);
 
+        const response = await backendRes.json();
         let payload: { success: boolean; message: string; statusCode?: number } = {
             success: false,
-            message: response.message,
-            statusCode: response.statusCode,
+            statusCode: response.statusCode || 400,
+            message: response.message || "Login or register failed",
         };
 
         if (response.success && response.message === "User found" && response.statusCode === 200) {
-            payload = { success: true, message: response.message, statusCode: response.statusCode };
+            payload = {
+                success: true,
+                statusCode: response.statusCode || 200,
+                message: response.message || "User found",
+            };
         } else if (response.success && response.message === "User not found" && response.statusCode === 400) {
-            payload = { success: false, message: response.message, statusCode: response.statusCode };
+            payload = {
+                success: false,
+                statusCode: response.statusCode || 400,
+                message: response.message || "User not found",
+            };
         } else {
-            payload = { success: false, message: response.message, statusCode: response.statusCode };
+            payload = {
+                success: false,
+                statusCode: response.statusCode || 400,
+                message: response.message || "Login or register failed",
+            };
         }
 
         const res = NextResponse.json(payload);
@@ -50,9 +70,18 @@ export async function POST(req: Request) {
         return res;
 
     } catch (error) {
-        console.error('Login or register error:', error);
         return NextResponse.json({
-            message: "Login or register error"
+            success: false,
+            statusCode: 400,
+            message: error instanceof Error ? error.message : "Server error from login or register",
         }, { status: 400 });
     }
+}
+
+export async function GET() {
+    return NextResponse.json({
+        success: false,
+        statusCode: 405,
+        message: "Method Not Allowed",
+    }, { status: 405 });
 }

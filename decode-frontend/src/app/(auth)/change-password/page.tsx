@@ -20,7 +20,6 @@ export default function ChangePassword() {
             ...formData,
             [id]: value
         });
-        // Clear error when user starts typing
         if (error) setError('');
     };
 
@@ -33,16 +32,20 @@ export default function ChangePassword() {
         }
         setLoading(true);
         try {
-            const res = await fetch('/api/auth/change-password', {
+            const response = await fetch('/api/auth/change-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify( formData )
             });
-            const data = await res.json();
-            if (!res.ok || !data?.success) {
-                throw new Error(data?.message || 'Password change failed');
+
+            const responseData = await response.json();
+
+            if (responseData.statusCode === 400 || !responseData.success === false) {
+                throw new Error(responseData.message);
             }
+
             router.push('/login');
+
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Password change failed';
             setError(message);

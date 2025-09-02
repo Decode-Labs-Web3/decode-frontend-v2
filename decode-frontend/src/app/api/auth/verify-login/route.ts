@@ -2,21 +2,20 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    console.log('Verification request:', body);
-    
+    const body = await req.json();    
     const { code } = body;
 
     if (!code ) {
-      console.log('Missing verification data:', { code });
-      return NextResponse.json({ message: "Missing verification code" }, { status: 400 });
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: "Missing verification code",
+      }, { status: 400 });
     }
 
     const requestBody = { 
       code,
     };
-
-    console.log('Sending verification to backend:', requestBody);
 
     const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/login/fingerprint/email-verification`, {
       method: "POST",
@@ -25,29 +24,26 @@ export async function POST(req: Request) {
     });
 
     if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => null);
-      console.log('Backend verification failed:', { status: backendRes.status, error: err });
+      const error = await backendRes.json().catch(() => null);
       return NextResponse.json(
-        { message: err?.message || "Verification failed" },
-        { status: backendRes.status || 401 }
-      );
+        {
+          success: false,
+          statusCode: backendRes.status || 401,
+          message: error?.message || "Verification failed",
+        },{ status: backendRes.status || 401 });
     }
 
-    const response = await backendRes.json();
-    console.log('Backend verification response:', response);
+    const response = await backendRes.json().catch(() => ({}));
 
-    // Check if verification was successful
     if (response.success && response.message === "Device fingerprint verified") {
-      // Device fingerprint verified - user needs to login again to get tokens
-      console.log('Device fingerprint verified successfully');
       return NextResponse.json({ 
         success: true,
-        message: "Device fingerprint verified. Please login again.",
+        statusCode: response.statusCode || 200,
+        message: response.message || "Device fingerprint verified. Please login again.",
         requiresRelogin: true
       });
     }
     
-    // Check if verification was successful and tokens are provided
     if (response.success && response.data?.access_token) {
       const accessToken = response.data.access_token;
       const refreshToken = response.data.session_token;
@@ -89,23 +85,32 @@ export async function POST(req: Request) {
         secure: isProd,
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 5, // 5 minutes
+        maxAge: 60 * 5,
       });
 
       return res;
     }
 
     return NextResponse.json({ 
+      success: false,
+      statusCode: response.statusCode || 400,
       message: response.message || "Verification failed",
-      success: false 
     }, { status: 400 });
 
   } catch (error) {
     console.error('Verification error:', error);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+    return NextResponse.json({
+      success: false,
+      statusCode: 500,
+      message: error instanceof Error ? error.message : "Server error from verify login",
+    }, { status: 500 });
   }
 }
 
 export async function GET() {
-  return NextResponse.json({ message: "Method Not Allowed" }, { status: 405 });
+  return NextResponse.json({
+    success: false,
+    statusCode: 405,
+    message: "Method Not Allowed",
+  }, { status: 405 });
 }

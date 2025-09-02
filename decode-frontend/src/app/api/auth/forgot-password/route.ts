@@ -3,42 +3,37 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log('Forgot password request:', body);
+    const { email_or_username } = body;
 
-    const { username_or_email } = body;
-
-    if (!username_or_email) {
-      return NextResponse.json({ message: "Missing username or email" }, { status: 400 });
+    if (!email_or_username) {
+      return NextResponse.json({ 
+        success: false,
+        statusCode: 400,
+        message: "Missing email or username",
+      }, { status: 400 });
     }
 
     const requestBody = { 
-      username_or_email,
+      email_or_username,
     };
     
-    console.log('Sending to backend:', requestBody);
-
     const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/password/forgot/initiate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify( requestBody ),
     });
 
-    const response = await backendRes.json().catch(() => null);
-    console.log('Backend response:', response);
-
+    
     if (!backendRes.ok) {
-      const message = response?.message || "User not found";
-      const statusCode = response?.statusCode || backendRes.status || 400;
+      const error = await backendRes.json().catch(() => null);
       return NextResponse.json({
         success: false,
-        statusCode,
-        message,
-        error: response?.error || 'Bad Request',
-        timestamp: response?.timestamp,
-        path: response?.path || '/auth/password/forgot/initiate'
-      }, { status: statusCode });
+        statusCode: backendRes.status || 400,
+        message: error?.message || "User not found",
+      }, { status: backendRes.status || 400 });
     }
-
+    
+    const response = await backendRes.json().catch(() => ({}));
     return NextResponse.json({ 
       success: true, 
       statusCode: response?.statusCode || 200, 
@@ -46,7 +41,18 @@ export async function POST(req: Request) {
     }, { status: 200 });
   }
   catch (error) {
-    console.error('Forgot password error:', error);
-    return NextResponse.json({ message: "Forgot password error" }, { status: 400 });
+    return NextResponse.json({ 
+      success: false,
+      statusCode: 400,
+      message: error instanceof Error ? error.message : "Server error from forgot password",
+    }, { status: 400 });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ 
+    success: false,
+    statusCode: 405,
+    message: "Method Not Allowed",
+  }, { status: 405 });
 }

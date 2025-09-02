@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 
 export default function VerifyForgot() {
     const router = useRouter();
-    const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
-    const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+    const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
     const [resendLoading, setResendLoading] = useState<boolean>(false);
 
     const handleVerify = async (e: React.FormEvent) => {
@@ -30,16 +30,13 @@ export default function VerifyForgot() {
                 body: JSON.stringify({ code })
             });
 
-            // For now, using mock verification
             const responseData = await response.json();
             console.log('Response data:', responseData);
             if (responseData.success) {
-                // Success - show success message and redirect to change password
-                setError(''); // Clear any previous errors
+                setError('');
                 router.push('/change-password');
             } else {
                 setError('Invalid verification code. Please check your email and try again.');
-                // Clear the form on error
                 setDigits(Array(6).fill(''));
                 inputsRef.current[0]?.focus();
             }

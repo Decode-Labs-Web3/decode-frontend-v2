@@ -7,8 +7,8 @@ export default function ForgotPassword() {
     const router = useRouter();
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
-    const [formData, setFormData] = useState<{ username_or_email: string }>({
-        username_or_email: "",
+    const [formData, setFormData] = useState<{ email_or_username: string }>({
+        email_or_username: "",
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,17 +30,17 @@ export default function ForgotPassword() {
             const response = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify( formData )
             });
 
             const responseData = await response.json();
-            console.log('Response data:', responseData);
 
-            if (responseData.success) {
-                router.push('/verify-forgot');
-            } else {
-                setError(responseData.message || 'Failed to send reset link. Please try again.');
+            if (!response.ok || !responseData.success) {
+                throw new Error(responseData?.message || 'Failed to send reset link. Please try again.');
             }
+
+            router.push('/verify-forgot');
+
         } catch (error) {
             console.error('Forgot password error:', error);
             setError('Something went wrong. Please try again.');
@@ -50,7 +50,7 @@ export default function ForgotPassword() {
     };
 
     const handleResend = async () => {
-        if (!formData.username_or_email) {
+        if (!formData.email_or_username) {
             setError('Please enter your username or email first.');
             return;
         }
@@ -74,10 +74,10 @@ export default function ForgotPassword() {
 
                 <form onSubmit={handleSubmit} noValidate>
                     <Auth.TextField
-                        id="username_or_email"
+                        id="email_or_username"
                         type="email"
                         placeholder="Enter username or email"
-                        value={formData.username_or_email}
+                        value={formData.email_or_username}
                         onChange={handleChange}
                     />
 
@@ -89,7 +89,7 @@ export default function ForgotPassword() {
 
                     <Auth.SubmitButton
                         loading={loading}
-                        disabled={!formData.username_or_email}
+                        disabled={!formData.email_or_username}
                         loadingText="Sending..."
                     >
                         Send Reset Link

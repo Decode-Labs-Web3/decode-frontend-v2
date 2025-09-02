@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 
 export default function VerifyRegister() {
     const router = useRouter();
-    const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
-    const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+    const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
     const [resendLoading, setResendLoading] = useState<boolean>(false);
 
     const handleVerify = async (e: React.FormEvent) => {

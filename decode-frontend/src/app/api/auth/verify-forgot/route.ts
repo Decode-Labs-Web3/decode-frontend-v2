@@ -3,19 +3,19 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log('Verification request:', body);
-
     const { code } = body;
 
     if (!code) {
-      return NextResponse.json({ message: "Missing verification code" }, { status: 400 });
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: "Missing verification code",
+      }, { status: 400 });
     }
 
     const requestBody = { 
       code,
     };
-
-    console.log('Sending verification to backend:', requestBody);
 
     const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/password/forgot/verify-email`, {
       method: "POST",
@@ -24,26 +24,21 @@ export async function POST(req: Request) {
     });
 
     if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => null);
-      console.log('Backend verification failed:', { status: backendRes.status, error: err });
+      const error = await backendRes.json().catch(() => null);
       return NextResponse.json(
-        { message: err?.message || "Verification failed" },
-        { status: backendRes.status || 401 }
-      );
+        {
+          success: false,
+          statusCode: backendRes.status || 401,
+          message: error?.message || "Verification failed",
+        }, { status: backendRes.status || 401 });
     }
 
-    const response = await backendRes.json();
-    console.log('Backend verification response:', response);
-
-    // Check if verification was successful
+    const response = await backendRes.json().catch(() => ({}));
     if (response.success) {
-      console.log('Password reset verification successful');
-
-      // Save the verification code in a cookie so the client can proceed
       const res = NextResponse.json({ 
         success: true,
+        statusCode: response.statusCode || 200,
         message: response.message || "Verification successful",
-        statusCode: response.statusCode
       });
 
       res.cookies.set('forgot_code', code, {
@@ -59,16 +54,32 @@ export async function POST(req: Request) {
 
     // Handle other responses
     const failRes = NextResponse.json({ 
+      success: false,
+      statusCode: response.statusCode || 400,
       message: response.message || "Verification failed",
-      success: false 
     }, { status: 400 });
-    // Optionally clear any stale code cookie
-    failRes.cookies.set('forgot_code', '', { maxAge: 0, path: '/' });
+    failRes.cookies.set('forgot_code', '', {
+      maxAge: 0,
+      path: '/',
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
     return failRes;
 
   } catch (error) {
-    console.error('Verify register error:', error);
     return NextResponse.json({ 
-      message: "Verify register error" }, { status: 400 });
+      success: false,
+      statusCode: 400,
+      message: error instanceof Error ? error.message : "Server error from verify forgot",
+    }, { status: 400 });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    success: false,
+    statusCode: 405,
+    message: "Method Not Allowed",
+  }, { status: 405 });
 }
