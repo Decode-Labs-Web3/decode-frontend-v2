@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
 
     if (!token || !refreshToken) {
       console.log('Missing tokens, redirecting to login');
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
 
     // If user has valid tokens, allow access to dashboard
@@ -43,7 +43,7 @@ export function middleware(request: NextRequest) {
     
     if (!hasVerificationContext) {
       console.log('No verification context, redirecting to login');
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
@@ -58,7 +58,7 @@ export function middleware(request: NextRequest) {
     
     if (!hasVerificationContext) {
       console.log('No verification context, redirecting to login');
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
