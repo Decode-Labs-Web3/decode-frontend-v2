@@ -100,7 +100,7 @@ export async function POST(req: Request) {
       message: response.message || "Login successful"
     });
 
-    res.cookies.set("token", accessToken, {
+    res.cookies.set("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

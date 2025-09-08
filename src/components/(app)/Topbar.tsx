@@ -37,7 +37,7 @@ export default function Topbar({ user, onLogout }: TopbarProps) {
             {user && (
               <div className="hidden sm:flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-bold flex items-center justify-center">
-                  {user.name.charAt(0)}
+                  {user.name}
                 </div>
                 <div className="leading-tight">
                   <p className="text-xs text-white font-medium">{user.name}</p>

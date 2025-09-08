@@ -3,7 +3,24 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldHalved, faWallet, faKey, faPlug, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 
-export default function Overview() {
+interface UserOverviewData {
+  _id: string;
+  user_id: string;
+  email: string;
+  username: string;
+  role: string;
+  display_name: string;
+  bio?: string;
+  avatar_ipfs_hash?: string;
+  avatar_fallback_url?: string;
+  last_login?: string;
+}
+
+interface OverviewProps {
+  user?: UserOverviewData;
+}
+
+export default function Overview({ user }: OverviewProps) {
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
       {/* Headline */}
@@ -11,6 +28,33 @@ export default function Overview() {
         <h2 className="text-2xl font-semibold">Overview</h2>
         <p className="text-gray-400 text-sm">Manage your Decode account, security and Web3 connections.</p>
       </div>
+
+      {/* Profile */}
+      {user && (
+        <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-8">
+          <div className="flex items-center gap-4">
+            <img
+              src={user.avatar_fallback_url || '/images/icons/user-placeholder.png'}
+              alt={user.display_name || user.username}
+              className="w-14 h-14 rounded-lg object-cover border border-white/10"
+            />
+            <div className="min-w-0">
+              <p className="text-lg font-semibold truncate">{user.display_name || user.username}</p>
+              <p className="text-sm text-gray-400 truncate">{user.email}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                <span className="px-2 py-0.5 rounded bg-white/10">Role: {user.role}</span>
+                {user.last_login && (
+                  <span className="px-2 py-0.5 rounded bg-white/10">
+                    Last login: {new Date(user.last_login).toLocaleString()}
+                  </span>
+                )}
+                <span className="px-2 py-0.5 rounded bg-white/10">User ID: {user.user_id}</span>
+              </div>
+            </div>
+          </div>
+          {user.bio && <p className="mt-3 text-sm text-gray-300">{user.bio}</p>}
+        </div>
+      )}
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">

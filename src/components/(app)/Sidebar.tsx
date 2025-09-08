@@ -1,7 +1,7 @@
 'use client';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGaugeHigh, faUserShield, faWallet, faLink, faNewspaper, faBell, faDevice, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { faGaugeHigh, faUserShield, faWallet, faLink, faNewspaper, faBell, faLaptop, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 
 interface SidebarProps {
   active: string;
@@ -16,7 +16,7 @@ const items = [
   { key: 'connections', label: 'Connections', icon: faLink },
   { key: 'news', label: 'News', icon: faNewspaper },
   { key: 'notifications', label: 'Notifications', icon: faBell },
-  { key: 'devices', label: 'Devices', icon: faDevice },
+  { key: 'devices', label: 'Devices', icon: faLaptop },
 ];
 
 export default function Sidebar({ active, onChange, onLogout }: SidebarProps) {
@@ -36,17 +36,6 @@ export default function Sidebar({ active, onChange, onLogout }: SidebarProps) {
           </button>
         ))}
       </nav>
-      {onLogout && (
-        <div className="mt-auto p-3">
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm bg-red-600 hover:bg-red-700 text-white"
-          >
-            <FontAwesomeIcon icon={faRightFromBracket} className="w-4 h-4" />
-            <span>Sign out</span>
-          </button>
-        </div>
-      )}
     </aside>
   );
 }

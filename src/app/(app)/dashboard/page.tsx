@@ -5,28 +5,70 @@ import { useEffect, useState } from 'react';
 import App from '@/components/(app)';
 import Auth from '@/components/(auth)';
 
-interface User {
-  name: string;
-  email?: string;
+interface UserProfile {
+  _id: string;
+  user_id: string;
+  email: string;
+  username: string;
+  role: string;
+  display_name: string;
+  biography?: string;
+  avatar_ipfs_hash?: string;
+  avatar_fallback_url?: string;
+  last_login?: string;
 }
 
 export default function Dashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<string>('overview');
 
   useEffect(() => {
-    // Authentication is already handled by middleware
-    // Just set user data and stop loading
-    setUser({ name: 'User' }); // Placeholder user data
-    setLoading(false);
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/users/overview');
+        const data = await response.json();
+        setUser(
+          {
+            _id: data.data._id,
+            username: data.data.username,
+            email: data.data.email,
+            display_name: data.data.display_name,
+            biography: data.data.biography,
+            avatar_ipfs_hash: data.data.avatar_ipfs_hash,
+            avatar_fallback_url: data.data.avatar_fallback_url,
+            user_id: data.data.user_id,
+            role: data.data.role,
+            last_login: data.data.last_login,
+          }
+        );
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
   }, []);
 
-  const handleLogout = () => {
-    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    router.push('/');
+  const handleLogout = async () => {
+    try{
+      const response = await fetch('/api/auth/logout', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      if (data.success && data.statusCode === 200) {
+        router.push('/');
+      }
+      console.log(data);
+
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleChange = (key: string) => {
@@ -47,7 +89,7 @@ export default function Dashboard() {
   const renderContent = () => {
     switch (active) {
       case 'overview':
-        return <App.Overview />;
+        return <App.Overview user={user || undefined} />;
       case 'security':
         return <App.Security />;
       case 'wallets':
@@ -69,7 +111,10 @@ export default function Dashboard() {
     <div className="relative min-h-screen bg-black text-white overflow-hidden">
       <Auth.BackgroundAccents />
       {/* Fixed Topbar */}
-      <App.Topbar user={user || undefined} onLogout={handleLogout} />
+      <App.Topbar
+        user={user ? { name: user.display_name || user.username, email: user.email } : undefined}
+        onLogout={handleLogout}
+      />
 
       {/* Sidebar */}
       <App.Sidebar active={active} onChange={handleChange} onLogout={handleLogout} />

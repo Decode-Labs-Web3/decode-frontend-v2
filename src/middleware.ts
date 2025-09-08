@@ -8,13 +8,13 @@ export function middleware(request: NextRequest) {
   // Protect dashboard routes - check for authentication tokens
   if (pathname.startsWith('/dashboard')) {
     console.log('CHECKING DASHBOARD ACCESS...');
-    const token = request.cookies.get('token')?.value;
+    const accessToken = request.cookies.get('accessToken')?.value;
     const refreshToken = request.cookies.get('refreshToken')?.value;
 
-    console.log('Token present:', !!token);
+    console.log('AccessToken present:', !!accessToken);
     console.log('RefreshToken present:', !!refreshToken);
 
-    if (!token || !refreshToken) {
+    if (!accessToken || !refreshToken) {
       console.log('Missing tokens, redirecting to login');
       return NextResponse.redirect(new URL('/', request.url));
     }
