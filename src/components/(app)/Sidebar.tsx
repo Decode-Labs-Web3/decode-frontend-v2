@@ -1,7 +1,7 @@
 'use client';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGaugeHigh, faUserShield, faWallet, faLink, faNewspaper, faBell, faLaptop, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { faGaugeHigh, faUserShield, faWallet, faLink, faNewspaper, faBell, faLaptop, faRightFromBracket, faUser } from '@fortawesome/free-solid-svg-icons';
 
 interface SidebarProps {
   active: string;
@@ -17,6 +17,7 @@ const items = [
   { key: 'news', label: 'News', icon: faNewspaper },
   { key: 'notifications', label: 'Notifications', icon: faBell },
   { key: 'devices', label: 'Devices', icon: faLaptop },
+  { key: 'personal', label: 'Personal', icon: faUser },
 ];
 
 export default function Sidebar({ active, onChange, onLogout }: SidebarProps) {

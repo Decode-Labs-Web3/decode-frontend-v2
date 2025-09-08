@@ -7,6 +7,7 @@ import Connections from './Connections';
 import News from './News';
 import Notifications from './Notifications';
 import Devices from './Devices';
+import Personal from './Personal';
 
 const App = {
   Topbar,
@@ -18,6 +19,7 @@ const App = {
   News,
   Notifications,
   Devices,
+  Personal,
 } as const;
 
 export default App;

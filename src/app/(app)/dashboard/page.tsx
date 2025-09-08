@@ -7,12 +7,11 @@ import Auth from '@/components/(auth)';
 
 interface UserProfile {
   _id: string;
-  user_id: string;
   email: string;
   username: string;
   role: string;
-  display_name: string;
-  biography?: string;
+  display_name?: string;
+  bio?: string;
   avatar_ipfs_hash?: string;
   avatar_fallback_url?: string;
   last_login?: string;
@@ -32,14 +31,13 @@ export default function Dashboard() {
         setUser(
           {
             _id: data.data._id,
-            username: data.data.username,
             email: data.data.email,
+            username: data.data.username,
+            role: data.data.role,
             display_name: data.data.display_name,
-            biography: data.data.biography,
+            bio: data.data.bio,
             avatar_ipfs_hash: data.data.avatar_ipfs_hash,
             avatar_fallback_url: data.data.avatar_fallback_url,
-            user_id: data.data.user_id,
-            role: data.data.role,
             last_login: data.data.last_login,
           }
         );
@@ -90,6 +88,8 @@ export default function Dashboard() {
     switch (active) {
       case 'overview':
         return <App.Overview user={user || undefined} />;
+      case 'personal':
+        return <App.Personal user={user || undefined} />;
       case 'security':
         return <App.Security />;
       case 'wallets':
@@ -103,7 +103,7 @@ export default function Dashboard() {
       case 'devices':
         return <App.Devices />;
       default:
-        return <App.Overview />;
+        return <App.Overview user={user || undefined} />;
     }
   };
 
