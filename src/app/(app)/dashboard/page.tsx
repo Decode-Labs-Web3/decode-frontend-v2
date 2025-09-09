@@ -1,9 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import App from '@/components/(app)';
-import Auth from '@/components/(auth)';
 
 interface UserProfile {
   _id: string;
@@ -18,29 +16,25 @@ interface UserProfile {
 }
 
 export default function Dashboard() {
-  const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [active, setActive] = useState<string>('overview');
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await fetch('/api/users/overview');
         const data = await response.json();
-        setUser(
-          {
-            _id: data.data._id,
-            email: data.data.email,
-            username: data.data.username,
-            role: data.data.role,
-            display_name: data.data.display_name,
-            bio: data.data.bio,
-            avatar_ipfs_hash: data.data.avatar_ipfs_hash,
-            avatar_fallback_url: data.data.avatar_fallback_url,
-            last_login: data.data.last_login,
-          }
-        );
+        setUser({
+          _id: data.data._id,
+          email: data.data.email,
+          username: data.data.username,
+          role: data.data.role,
+          display_name: data.data.display_name,
+          bio: data.data.bio,
+          avatar_ipfs_hash: data.data.avatar_ipfs_hash,
+          avatar_fallback_url: data.data.avatar_fallback_url,
+          last_login: data.data.last_login,
+        });
       } catch (error) {
         console.error(error);
       } finally {
@@ -50,77 +44,68 @@ export default function Dashboard() {
     fetchUser();
   }, []);
 
-  const handleLogout = async () => {
-    try{
-      const response = await fetch('/api/auth/logout', { 
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      if (data.success && data.statusCode === 200) {
-        router.push('/');
-      }
-      console.log(data);
-
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleChange = (key: string) => {
-    setActive(key);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Loading dashboard...</p>
+      <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
+        {/* Headline skeleton */}
+        <div className="mb-6">
+          <div className="h-6 w-40 bg-white/10 rounded" />
+          <div className="mt-2 h-4 w-72 bg-white/5 rounded" />
+        </div>
+
+        {/* Profile skeleton */}
+        <div className="relative border border-white/10 rounded-2xl p-6 mb-10 bg-white/[0.03]">
+          <div className="flex items-center gap-5">
+            <div className="w-20 h-20 rounded-full bg-white/10 animate-pulse" />
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="h-5 w-48 bg-white/10 rounded" />
+              <div className="h-4 w-64 bg-white/5 rounded" />
+              <div className="flex gap-2 mt-2">
+                <div className="h-5 w-24 bg-white/5 rounded" />
+                <div className="h-5 w-32 bg-white/5 rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Cards skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 animate-pulse">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-9 h-9 rounded-lg bg-white/10" />
+                <div className="h-4 w-28 bg-white/10 rounded" />
+              </div>
+              <div className="h-4 w-24 bg-white/10 rounded" />
+              <div className="h-3 w-36 bg-white/5 rounded mt-2" />
+            </div>
+          ))}
+        </div>
+
+        {/* Recent activity skeleton */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="h-4 w-32 bg-white/10 rounded" />
+            <div className="h-4 w-16 bg-white/10 rounded" />
+          </div>
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-white/10" />
+                  <div>
+                    <div className="h-4 w-64 bg-white/10 rounded" />
+                    <div className="mt-1 h-3 w-32 bg-white/5 rounded" />
+                  </div>
+                </div>
+                <div className="h-4 w-14 bg-white/10 rounded" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
-  const renderContent = () => {
-    switch (active) {
-      case 'overview':
-        return <App.Overview user={user || undefined} />;
-      case 'personal':
-        return <App.Personal user={user || undefined} />;
-      case 'security':
-        return <App.Security />;
-      case 'wallets':
-        return <App.Wallets />;
-      case 'connections':
-        return <App.Connections />;
-      case 'news':
-        return <App.News />;
-      case 'notifications':
-        return <App.Notifications />;
-      case 'devices':
-        return <App.Devices />;
-      default:
-        return <App.Overview user={user || undefined} />;
-    }
-  };
-
-  return (
-    <div className="relative min-h-screen bg-black text-white overflow-hidden">
-      <Auth.BackgroundAccents />
-      {/* Fixed Topbar */}
-      <App.Topbar
-        user={user ? { name: user.display_name || user.username, email: user.email } : undefined}
-        onLogout={handleLogout}
-      />
-
-      {/* Sidebar */}
-      <App.Sidebar active={active} onChange={handleChange} onLogout={handleLogout} />
-
-      {/* Content */}
-      {renderContent()}
-    </div>
-  );
+  return <App.Overview user={user || undefined} />;
 }

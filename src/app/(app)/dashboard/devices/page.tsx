@@ -3,10 +3,10 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLaptop, faMobileScreen, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-export default function Devices() {
+export default function Page() {
   const devices = [
-    { name: 'MacBook Pro', type: 'desktop', browser: 'Chrome', lastActive: 'Just now', location: 'San Francisco, US' },
-    { name: 'iPhone 15 Pro', type: 'mobile', browser: 'Safari', lastActive: '2 days ago', location: 'San Francisco, US' },
+    { name: 'MacBook Pro', type: 'desktop', lastActive: 'Just now' },
+    { name: 'iPhone 15 Pro', type: 'mobile', lastActive: '2 days ago' },
   ];
 
   return (
@@ -24,12 +24,12 @@ export default function Devices() {
                 <FontAwesomeIcon icon={d.type === 'mobile' ? faMobileScreen : faLaptop} className="text-gray-300" />
               </div>
               <div>
-                <p className="text-sm font-medium">{d.name} • {d.browser}</p>
-                <p className="text-xs text-gray-400">{d.lastActive} • {d.location}</p>
+                <p className="text-sm font-medium">{d.name}</p>
+                <p className="text-xs text-gray-400">Active {d.lastActive}</p>
               </div>
             </div>
             <button className="text-sm text-red-400 hover:text-red-300 flex items-center gap-2">
-              <FontAwesomeIcon icon={faTrash} /> Remove
+              <FontAwesomeIcon icon={faTrash} /> Revoke
             </button>
           </div>
         ))}
@@ -37,5 +37,7 @@ export default function Devices() {
     </div>
   );
 }
+
+ 
 
 

@@ -3,7 +3,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faCircle } from '@fortawesome/free-solid-svg-icons';
 
-export default function Notifications() {
+export default function Page() {
   const notifications = [
     { title: 'New login from Chrome (Mac)', time: 'Just now' },
     { title: 'Wallet MetaMask linked', time: '2 hours ago' },
@@ -36,5 +36,7 @@ export default function Notifications() {
     </div>
   );
 }
+
+ 
 
 

@@ -21,7 +21,7 @@ const initialSuggestions: User[] = [
   { id: 6, name: 'Fiona Park', handle: 'fiona', avatar: 'https://i.pravatar.cc/80?img=6', following: true },
 ];
 
-export default function Connections() {
+export default function Page() {
   const [people, setPeople] = useState<User[]>(initialSuggestions);
 
   const toggleFollow = (id: number) => {
@@ -33,27 +33,41 @@ export default function Connections() {
 
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold">Connections</h2>
-        <p className="text-gray-400 text-sm">Discover people and manage who you follow.</p>
+      <div className="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight">Connections</h2>
+          <p className="text-gray-400 text-sm">Discover people and manage who you follow.</p>
+        </div>
+        <div className="hidden sm:block">
+          <div className="relative">
+            <input
+              placeholder="Search people"
+              className="w-64 bg-white/5 border border-white/10 rounded-lg pl-3 pr-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Suggestions */}
       <section className="mb-8">
         <h3 className="text-sm font-semibold text-gray-300 mb-3">Suggestions for you</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
           {suggestions.map(u => (
-            <div key={u.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between">
+            <div
+              key={u.id}
+              className="group bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between transition hover:bg-white/7.5 hover:border-white/20"
+            >
               <div className="flex items-center gap-3">
-                <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
+                <div className="relative">
+                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" />
+                </div>
                 <div>
-                  <p className="text-sm font-medium">{u.name}</p>
+                  <p className="text-sm font-medium tracking-tight">{u.name}</p>
                   <p className="text-xs text-gray-400">@{u.handle}</p>
                 </div>
               </div>
               <button
                 onClick={() => toggleFollow(u.id)}
-                className="text-xs px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                className="text-xs px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center gap-2 shadow-sm hover:from-blue-500 hover:to-indigo-500"
               >
                 <FontAwesomeIcon icon={faUserPlus} /> Follow
               </button>
@@ -62,25 +76,33 @@ export default function Connections() {
         </div>
       </section>
 
-      {/* Following */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-300 mb-3">Following</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-300">Following</h3>
+          {following.length > 0 && (
+            <span className="text-[11px] px-2 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300">
+              {following.length} following
+            </span>
+          )}
+        </div>
         {following.length === 0 ? (
-          <p className="text-sm text-gray-400">You aren't following anyone yet.</p>
+          <div className="text-sm text-gray-400 bg-white/5 border border-white/10 rounded-xl p-4">
+            You aren't following anyone yet.
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {following.map(u => (
-              <div key={u.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between">
+              <div key={u.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
+                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" />
                   <div>
-                    <p className="text-sm font-medium">{u.name}</p>
+                    <p className="text-sm font-medium tracking-tight">{u.name}</p>
                     <p className="text-xs text-gray-400">@{u.handle}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => toggleFollow(u.id)}
-                  className="text-xs px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white flex items-center gap-2"
+                  className="text-xs px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white flex items-center gap-2 border border-white/10"
                 >
                   <FontAwesomeIcon icon={faUserCheck} /> Following
                 </button>
@@ -92,5 +114,7 @@ export default function Connections() {
     </div>
   );
 }
+
+ 
 
 

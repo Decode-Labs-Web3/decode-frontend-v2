@@ -3,7 +3,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldHalved, faMobileScreen, faLock, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
-export default function Security() {
+export default function Page() {
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
       <div className="mb-6">
@@ -69,5 +69,7 @@ export default function Security() {
     </div>
   );
 }
+
+ 
 
 
