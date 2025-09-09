@@ -41,6 +41,8 @@ export async function POST(req: Request) {
       body: JSON.stringify(requestBody),
     });
 
+    console.log('Backend response:', backendRes);
+
     if (!backendRes.ok) {
       const err = await backendRes.json().catch(() => null);
       return NextResponse.json({ 
