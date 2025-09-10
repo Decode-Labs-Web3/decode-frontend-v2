@@ -12,9 +12,8 @@ export default function VerifyLogin() {
     const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
     const [resendLoading, setResendLoading] = useState<boolean>(false);
 
-    // Get email from session storage or localStorage
     useEffect(() => {
-        const storedEmail = sessionStorage.getItem('login_email') || localStorage.getItem('login_email');
+        const storedEmail = sessionStorage.getItem('login_email');
         if (storedEmail) {
             setEmail(storedEmail);
         }

@@ -19,9 +19,86 @@ export interface DeviceInfo {
 
 export interface FingerprintResult {
   fingerprint_hashed: string;
-  deviceInfo: DeviceInfo;
-  hashLength: number;
-  meetsRequirements: boolean;
+  device: string;
+  browser: string;
+}
+
+/**
+ * Extract browser name from user agent string
+ * @param req - The incoming request object
+ * @returns Browser name (Chrome, Safari, Firefox, etc.)
+ */
+function getBrowserName(req: Request): string {
+  const userAgent = req.headers.get('user-agent') || '';
+  
+  if (userAgent.includes('Cốc Cốc') || userAgent.includes('CocCoc')) {
+    return 'Cốc Cốc';
+  }
+  if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+    return 'Chrome';
+  }
+  if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+    return 'Safari';
+  }
+  if (userAgent.includes('Firefox')) {
+    return 'Firefox';
+  }
+  if (userAgent.includes('Edg')) {
+    return 'Edge';
+  }
+  if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+    return 'Opera';
+  }
+  if (userAgent.includes('Brave')) {
+    return 'Brave';
+  }
+  
+  return 'Unknown';
+}
+
+/**
+ * Extract operating system from user agent string
+ * @param req - The incoming request object
+ * @returns Operating system name (macOS, Windows, Linux, iOS, Android, etc.)
+ */
+function getOperatingSystem(req: Request): string {
+  const userAgent = req.headers.get('user-agent') || '';
+  
+  // Check for mobile devices first
+  if (userAgent.includes('iPhone')) {
+    return 'iOS';
+  }
+  if (userAgent.includes('iPad')) {
+    return 'iPadOS';
+  }
+  if (userAgent.includes('Android')) {
+    return 'Android';
+  }
+  
+  // Check for desktop operating systems
+  if (userAgent.includes('Mac OS X') || userAgent.includes('Macintosh')) {
+    return 'macOS';
+  }
+  if (userAgent.includes('Windows NT')) {
+    return 'Windows';
+  }
+  if (userAgent.includes('Linux')) {
+    return 'Linux';
+  }
+  if (userAgent.includes('FreeBSD')) {
+    return 'FreeBSD';
+  }
+  if (userAgent.includes('OpenBSD')) {
+    return 'OpenBSD';
+  }
+  if (userAgent.includes('NetBSD')) {
+    return 'NetBSD';
+  }
+  if (userAgent.includes('SunOS')) {
+    return 'Solaris';
+  }
+  
+  return 'Unknown';
 }
 
 export class FingerprintService {
@@ -52,9 +129,10 @@ export class FingerprintService {
     // Create a deterministic device string using key characteristics
     const deviceType = deviceInfo.mobile === '?0' ? 'desktop' : 'mobile';
     const platformShort = deviceInfo.platform.toLowerCase().replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+    const browserName = getBrowserName(req).toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
     
     // Create a consistent device string using only stable characteristics
-    const deviceString = `${deviceType}_${platformShort}_${deviceInfo.userAgent.slice(0, 50)}`;
+    const deviceString = `${deviceType}_${platformShort}_${browserName}_${deviceInfo.userAgent.slice(0, 50)}`;
     
     // Generate SHA-256 hash of the device info
     const hash = crypto.createHash('sha256');
@@ -71,9 +149,8 @@ export class FingerprintService {
     
     return {
       fingerprint_hashed,
-      deviceInfo,
-      hashLength,
-      meetsRequirements,
+      device: getOperatingSystem(req),
+      browser: getBrowserName(req),
     };
   }
 

@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import App from '@/components/(app)';
+import { useRouter } from 'next/navigation';
 
 interface UserProfile {
-  _id: string;
+  id: string;
   email: string;
   username: string;
   role: string;
@@ -16,6 +16,7 @@ interface UserProfile {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +26,7 @@ export default function Dashboard() {
         const response = await fetch('/api/users/overview');
         const responseData = await response.json();
         setUser({
-          _id: responseData.data._id,
+          id: responseData.data._id,
           email: responseData.data.email,
           username: responseData.data.username,
           role: responseData.data.role,
@@ -43,6 +44,13 @@ export default function Dashboard() {
     };
     fetchUser();
   }, []);
+
+  // Redirect to overview page
+  useEffect(() => {
+    if (!loading) {
+      router.push('/dashboard/overview');
+    }
+  }, [loading, router]);
 
   if (loading) {
     return (
@@ -107,5 +115,5 @@ export default function Dashboard() {
     );
   }
 
-  return <App.Overview user={user || undefined} />;
+  return null; // Will redirect to overview
 }

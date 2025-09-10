@@ -29,7 +29,6 @@ export default function Login() {
             ...prevData,
             [id]: value
         }))
-        // Clear error when user starts typing
         if (error) setError('');
     }
 
@@ -48,7 +47,6 @@ export default function Login() {
             const responseData = await res.json();
             console.log('Login response data:', responseData);
 
-            // Check if the response indicates success
             if (!responseData.success) {
                 throw new Error(responseData?.message || "Login failed");
             }
@@ -56,9 +54,7 @@ export default function Login() {
             // Check if verification is required
             if (responseData.requiresVerification) {
                 console.log('Device verification required, redirecting to verify-login');
-                // Store email for verification and redirect to verify login
                 sessionStorage.setItem('login_email', formData.email_or_username);
-                localStorage.setItem('login_email', formData.email_or_username);
                 router.push("/verify-login");
                 return;
             }

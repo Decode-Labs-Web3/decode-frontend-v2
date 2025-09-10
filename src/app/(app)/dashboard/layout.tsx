@@ -6,7 +6,7 @@ import App from '@/components/(app)';
 import Auth from '@/components/(auth)';
 
 interface UserProfile {
-  _id: string;
+  id: string;
   email: string;
   username: string;
   role: string;
@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const response = await fetch('/api/users/overview');
         const responseData = await response.json();
         setUser({
-          _id: responseData.data._id,
+          id: responseData.data._id,
           email: responseData.data.email,
           username: responseData.data.username,
           role: responseData.data.role,

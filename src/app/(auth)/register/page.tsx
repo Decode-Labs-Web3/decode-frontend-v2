@@ -78,7 +78,6 @@ export default function Register() {
                     username: formData.username
                 }));
                 sessionStorage.setItem('verification_required', 'true');
-                localStorage.setItem('verification_required', 'true');
 
                 // Redirect to verify email page
                 router.push('/verify-register');
