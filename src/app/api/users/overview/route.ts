@@ -11,7 +11,7 @@ export async function GET(req: Request) {
             }
         });
         const data = await response.json();
-        console.log("data.data.user_id:", data.data.user_id);
+        console.log("data.data.display_name:", data.data.display_name);
         return NextResponse.json(data);
     } catch (error) {
         return NextResponse.json({ 

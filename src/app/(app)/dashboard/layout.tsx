@@ -20,25 +20,25 @@ interface UserProfile {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<string>('overview');
+  const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await fetch('/api/users/overview');
-        const data = await response.json();
+        const responseData = await response.json();
         setUser({
-          _id: data.data._id,
-          email: data.data.email,
-          username: data.data.username,
-          role: data.data.role,
-          display_name: data.data.display_name,
-          bio: data.data.bio,
-          avatar_ipfs_hash: data.data.avatar_ipfs_hash,
-          avatar_fallback_url: data.data.avatar_fallback_url,
-          last_login: data.data.last_login,
+          _id: responseData.data._id,
+          email: responseData.data.email,
+          username: responseData.data.username,
+          role: responseData.data.role,
+          display_name: responseData.data.display_name,
+          bio: responseData.data.bio,
+          avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
+          avatar_fallback_url: responseData.data.avatar_fallback_url,
+          last_login: responseData.data.last_login,
         });
       } catch (error) {
         console.error(error);
@@ -51,7 +51,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
       const data = await response.json();
       if (data.success && data.statusCode === 200) {
         router.push('/');
@@ -93,11 +97,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="relative min-h-screen bg-black text-white overflow-hidden">
       <Auth.BackgroundAccents />
-      <App.Topbar
-        user={user ? { name: user.display_name || user.username, email: user.email } : undefined}
+      <App.Navbar
+        user={{ username: user?.username || '', email: user?.email || '' }}
         onLogout={handleLogout}
       />
-      <App.Sidebar active={active} onChange={handleChange} onLogout={handleLogout} />
+      <App.Sidebar active={active} onChange={handleChange} />
       {children}
     </div>
   );

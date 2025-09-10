@@ -73,7 +73,7 @@ export class FingerprintService {
       fingerprint_hashed,
       deviceInfo,
       hashLength,
-      meetsRequirements
+      meetsRequirements,
     };
   }
 

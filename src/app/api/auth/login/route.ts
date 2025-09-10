@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
     // Generate device fingerprint using the fingerprint service
     const fingerprintResult = FingerprintService.generateFingerprint(req);
-    const { fingerprint_hashed } = fingerprintResult;
+    const { fingerprint_hashed, deviceInfo} = fingerprintResult;
 
     // Validate the generated fingerprint
     const validation = FingerprintService.validateFingerprint(fingerprint_hashed);
@@ -29,10 +29,14 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
+    console.log('Device info:', deviceInfo);
+
     const requestBody = {
       email_or_username,
       password,
-      fingerprint_hashed
+      fingerprint_hashed,
+      browser: "Chrome",
+      device: "Macbook Pro"
     };
 
     const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/login`, {
