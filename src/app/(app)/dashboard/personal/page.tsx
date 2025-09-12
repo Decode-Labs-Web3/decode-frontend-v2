@@ -1,45 +1,24 @@
 'use client';
 
 import Image from 'next/image';
+import { UserInfoContext } from '../layout';
+import { useEffect, useState, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faCamera, faPen, faXmark, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useState } from 'react';
 
 export default function Page() {
+  const user = useContext(UserInfoContext);
   const [form, setForm] = useState({
-    display_name: '',
-    username: '',
-    role: '',
-    email: '',
-    bio: '',
+    display_name: user?.display_name || '',
+    username: user?.username || '',
+    role: user?.role || '',
+    email: user?.email || '',
+    bio: user?.bio || '',
   });
-  const [avatarUrl, setAvatarUrl] = useState<string>('/images/icons/user-placeholder.png');
+  const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatar_fallback_url || '/images/icons/user-placeholder.png');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [editSection, setEditSection] = useState<'avartar'| 'displayName' | 'username' | 'email' | 'bio' | 'none'>('none');
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch('/api/users/overview', {
-          headers: {
-            'Frontend-Internal-Request': 'true'
-          }
-        });
-        const data = await res.json();
-        const user = data?.data || {};
-        setForm({
-          display_name: user.display_name || '',
-          username: user.username || '',
-          role: user.role || '',
-          email: user.email || '',
-          bio: user.bio || '',
-        });
-        setAvatarUrl(user.avatar_fallback_url || '/images/icons/user-placeholder.png');
-      } catch {}
-    };
-    load();
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

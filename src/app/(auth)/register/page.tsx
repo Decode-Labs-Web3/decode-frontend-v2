@@ -160,11 +160,11 @@ export default function Register() {
                 {/* Login Link */}
                 <p className="text-center text-gray-400">
                     Already have an account?{' '}
-                    <a href="/login"
+                    <Link href="/login"
                         onClick={handleCookie}
                         className="text-blue-500 hover:underline font-medium">
                         Log in
-                    </a>
+                    </Link>
                 </p>
             </Auth.AuthCard>
             <Auth.BrandLogos />
