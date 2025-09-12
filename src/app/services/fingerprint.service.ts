@@ -85,19 +85,18 @@ function getOperatingSystem(req: Request): string {
   if (userAgent.includes('Linux')) {
     return 'Linux';
   }
-  if (userAgent.includes('FreeBSD')) {
-    return 'FreeBSD';
+  if (userAgent.includes('Arch')) {
+    return 'Arch';
   }
-  if (userAgent.includes('OpenBSD')) {
-    return 'OpenBSD';
+  if (userAgent.includes('Debian')) {
+    return 'Debian';
   }
-  if (userAgent.includes('NetBSD')) {
-    return 'NetBSD';
+  if (userAgent.includes('Ubuntu')) {
+    return 'Ubuntu';
   }
-  if (userAgent.includes('SunOS')) {
-    return 'Solaris';
+  if (userAgent.includes('Fedora')) {
+    return 'Fedora';
   }
-  
   return 'Unknown';
 }
 

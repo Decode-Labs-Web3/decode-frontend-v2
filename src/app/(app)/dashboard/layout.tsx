@@ -55,6 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         });
 
         const responseData = await apiResponse.json();
+        
         const userData: UserProfile = {
           id: responseData.data._id,
           email: responseData.data.email,

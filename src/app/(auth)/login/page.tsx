@@ -42,8 +42,13 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.email_or_username.trim() || !formData.password.trim() || loading) return;
+        if (loading) return;
         if (error) setError("");
+        if (!formData.email_or_username.trim() || !formData.password.trim() || loading) {
+            setError("Please fill in all fields"); 
+            return;
+        }
+        
         setLoading(true);
 
         try {

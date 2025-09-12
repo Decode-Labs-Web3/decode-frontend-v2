@@ -3,6 +3,14 @@ import { cookies } from "next/headers";
 
 export async function GET(req: Request) {
     try {
+        const internalRequest = req.headers.get('frontend-internal-request');
+        if (internalRequest !== 'true') {
+            return NextResponse.json({
+                success: false,
+                statusCode: 400,
+                message: 'Missing Frontend-Internal-Request header'
+            }, { status: 400 });
+        }
         const cookieStore = await cookies();
         const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -17,9 +25,12 @@ export async function GET(req: Request) {
         }
 
         const backendRes = await fetch(`${process.env.BACKEND_URL}/users/profile/me`, {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${accessToken}`
-            }
+            },
+            cache: 'no-store',
+            signal: AbortSignal.timeout(5000),
         });
 
         if (!backendRes.ok) {
