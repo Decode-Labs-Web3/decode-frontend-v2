@@ -18,7 +18,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
           {/* Navbar */}
           <div className="flex items-center gap-3">
             <div className="bg-white/10 border border-white/20 rounded-lg p-1.5 backdrop-blur-sm">
-              <Image src="/images/tokens/3d_token_nobg.png" width={28} height={28} alt="Logo Icon" />
+              <Image src="/images/tokens/3d_token_nobg.png" width={28} height={28} alt="Logo Icon" className="w-7 h-7" unoptimized />
             </div>
               <h1 className="text-sm md:text-base font-semibold text-white">Decode Protocol</h1>
           </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldHalved, faWallet, faLaptop, faPlug, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
@@ -23,21 +24,35 @@ export default function Page() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch('/api/users/overview');
-        const responseData = await response.json();
-        setUser({
-          id: responseData.data._id,
-          email: responseData.data.email,
-          username: responseData.data.username,
-          role: responseData.data.role,
-          display_name: responseData.data.display_name,
-          bio: responseData.data.bio,
-          avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
-          avatar_fallback_url: responseData.data.avatar_fallback_url,
-          last_login: responseData.data.last_login,
+        const response = await fetch('/api/users/overview', {
+          headers: {
+            'frontend-internal-request': 'true'
+          },
+          cache: 'no-store',
+          signal: AbortSignal.timeout(5000),
         });
+        const responseData = await response.json();
+        
+        if (!response.ok || !responseData.success) {
+          console.error('API Error:', responseData.message);
+          return;
+        }
+        
+        if (responseData.data) {
+          setUser({
+            id: responseData.data._id,
+            email: responseData.data.email,
+            username: responseData.data.username,
+            role: responseData.data.role,
+            display_name: responseData.data.display_name,
+            bio: responseData.data.bio,
+            avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
+            avatar_fallback_url: responseData.data.avatar_fallback_url,
+            last_login: responseData.data.last_login,
+          });
+        }
       } catch (error) {
-        console.error(error);
+        console.error('Fetch error:', error);
       } finally {
         setLoading(false);
       }
@@ -121,10 +136,13 @@ export default function Page() {
           {/* Avatar with ring */}
           <div className="relative flex-shrink-0">
             <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-500/30 to-purple-500/30 flex items-center justify-center border-4 border-blue-600/30 shadow-lg">
-              <img
+              <Image
                 src={user.avatar_fallback_url || '/images/icons/user-placeholder.png'}
                 alt={user.username}
+                width={64}
+                height={64}
                 className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
+                unoptimized
               />
             </div>
             {/* Status badge */}
@@ -142,7 +160,7 @@ export default function Page() {
             </div>
             <p className="text-sm text-gray-400 truncate mt-1">{user.email}</p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-              <span className="px-2 py-0.5 rounded bg-white/10 text-gray-300">User ID: <span className="font-mono">{user._id}</span></span>
+              <span className="px-2 py-0.5 rounded bg-white/10 text-gray-300">User ID: <span className="font-mono">{user.id}</span></span>
               {user.last_login && (
                 <span className="px-2 py-0.5 rounded bg-white/10 text-gray-300">
                   Last login: <span className="font-mono">{new Date(user.last_login).toLocaleString()}</span>

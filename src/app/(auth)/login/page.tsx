@@ -13,15 +13,23 @@ export default function Login() {
         password: ""
     });
 
+    const handleCookie = () => {
+        document.cookie = "gate-key-for-register=true; max-age=60; path=/register; samesite=lax";
+      };
+
+    const handleCookieForgotPassword = () => {
+        document.cookie = "gate-key-for-forgot-password=true; max-age=60; path=/forgot-password; samesite=lax";
+    };
+
     useEffect(() => {
-        try {
-            const match = document.cookie.match(/(?:^|; )email_or_username=([^;]+)/);
-            const value = match ? decodeURIComponent(match[1]) : "";
-            if (value) {
-                setFormData(prev => ({ ...prev, email_or_username: value }));
-            }
-        } catch { }
+        const match = document.cookie.match(/(?:^|; )email_or_username=([^;]+)/);
+        const value = match ? decodeURIComponent(match[1]) : "";
+        if (value) {
+            setFormData(prev => ({ ...prev, email_or_username: value }));
+            document.cookie = "email_or_username=; Max-Age=0; path=/";
+        }
     }, []);
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -34,37 +42,40 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
+        if (!formData.email_or_username.trim() || !formData.password.trim() || loading) return;
+        if (error) setError("");
         setLoading(true);
 
         try {
-            const res = await fetch("/api/auth/login", {
+            const apiResponse = await fetch("/api/auth/login", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "frontend-internal-request": "true",
+                },
                 body: JSON.stringify(formData),
+                cache: "no-store",
+                signal: AbortSignal.timeout(5000),
             });
 
-            const responseData = await res.json();
-            console.log('Login response data:', responseData);
-
-            if (!responseData.success) {
-                throw new Error(responseData?.message || "Login failed");
-            }
-
-            // Check if verification is required
-            if (responseData.requiresVerification) {
-                console.log('Device verification required, redirecting to verify-login');
-                sessionStorage.setItem('login_email', formData.email_or_username);
+            const responseData = await apiResponse.json();
+            if (responseData.success && responseData.statusCode === 200 && responseData.message === "Login successful") {
+                router.push("/dashboard");
+            } else if (responseData.success && responseData.statusCode === 400 && responseData.message === "Device fingerprint not trusted, send email verification") {
                 router.push("/verify-login");
+            } else {
+                setError(responseData?.message || "Login failed");
+                setLoading(false);
                 return;
             }
-
-            // Normal login success - redirect to dashboard
-            router.push("/dashboard");
-            router.refresh();
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : "Login failed";
-            setError(errorMessage);
+        } catch (error: any) {
+            if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+                setError("Request timeout/aborted. Please try again.");
+            } else {
+                const errorMessage = error instanceof Error ? error.message : error.message || "Something went wrong. Please try again.";
+                setError(errorMessage);
+            }
         } finally {
             setLoading(false);
         }
@@ -100,7 +111,12 @@ export default function Login() {
                     )}
 
                     <div className="mb-5 text-right">
-                        <Link href="/forgot-password" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">Forgot password?</Link>
+                        <a 
+                        href="/forgot-password"
+                        onClick={handleCookieForgotPassword}
+                        className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                        Forgot password?
+                        </a>
                     </div>
 
                     <Auth.SubmitButton
@@ -114,14 +130,17 @@ export default function Login() {
                 {/* Register Link */}
                 <p className="text-center text-gray-400">
                     Don&apos;t have an account yet?{' '}
-                    <Link href="/register" className="text-blue-500 hover:underline font-medium">
+                    <a 
+                        href="/register"
+                        onClick={handleCookie}
+                        className="text-blue-500 hover:underline font-medium">
                         Register
-                    </Link>
+                    </a>
                 </p>
 
             </Auth.AuthCard>
 
             <Auth.BrandLogos />
-        </main>
+        </main >
     );
 }

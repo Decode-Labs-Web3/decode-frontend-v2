@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faCamera, faPen, faXmark, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
@@ -20,7 +21,11 @@ export default function Page() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/users/overview');
+        const res = await fetch('/api/users/overview', {
+          headers: {
+            'Frontend-Internal-Request': 'true'
+          }
+        });
         const data = await res.json();
         const user = data?.data || {};
         setForm({
@@ -48,8 +53,11 @@ export default function Page() {
     try {
       const res = await fetch('/api/users/overview', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form, editSection),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Frontend-Internal-Request': 'true'
+        },
+        body: JSON.stringify(form),
       });
       const data = await res.json();
       if (!res.ok || data?.success === false) {
@@ -76,7 +84,7 @@ export default function Page() {
         <div className="flex items-center gap-5">
           <div className="relative">
             <div className="w-20 h-20 rounded-full bg-white/10 border border-white/20 overflow-hidden ring-2 ring-blue-500/30">
-              <img src={avatarUrl} alt={'Avatar'} className="w-full h-full object-cover" />
+              <Image src={avatarUrl} alt={'Avatar'} width={80} height={80} className="w-full h-full object-cover" unoptimized />
             </div>
             <button
               type="button"

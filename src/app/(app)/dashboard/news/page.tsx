@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faNewspaper, faClock, faThumbsUp, faComment, faShare } from '@fortawesome/free-solid-svg-icons';
 
@@ -25,7 +26,7 @@ export default function Page() {
           <article key={i} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl">
             {p.image && (
               <div className="relative aspect-video overflow-hidden">
-                <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                <Image src={p.image} alt={p.title} width={400} height={225} className="w-full h-full object-cover" unoptimized />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0" />
                 <span className="absolute left-3 top-3 text-xs px-2 py-1 rounded-md bg-blue-500/80 text-white">{p.tag}</span>
               </div>

@@ -26,8 +26,13 @@ export default function VerifyRegister() {
         try {
             const response = await fetch('/api/auth/verify-register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'frontend-internal-request': 'true' 
+                },
+                body: JSON.stringify({ code }),
+                cache: "no-store",
+                signal: AbortSignal.timeout(5000),
             });
 
             // For now, using mock verification

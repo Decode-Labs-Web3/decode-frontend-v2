@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from 'react';
 import Auth from '@/components/(auth)';
 import { useRouter } from 'next/navigation';
@@ -13,7 +14,7 @@ export default function ChangePassword() {
         confirm_new_password: '',
     });
     const { isPasswordValid } = PasswordValidationService.validate(formData.new_password, formData.confirm_new_password);
-    
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         setFormData({
@@ -25,17 +26,25 @@ export default function ChangePassword() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        if (!formData.new_password.trim() || !formData.confirm_new_password.trim() || loading) return;
+        if (error) setError('');
+        setLoading(true);
         if (!isPasswordValid) {
             setError('Please meet all password requirements.');
+            setLoading(false);
             return;
         }
-        setLoading(true);
+
         try {
             const response = await fetch('/api/auth/change-password', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify( formData )
+                headers: {
+                    'Content-Type': 'application/json',
+                    'frontend-internal-request': 'true'
+                },
+                body: JSON.stringify(formData),
+                cache: "no-store",
+                signal: AbortSignal.timeout(5000),
             });
 
             const responseData = await response.json();
@@ -46,9 +55,13 @@ export default function ChangePassword() {
 
             router.push('/login');
 
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'Password change failed';
-            setError(message);
+        } catch (error: any) {
+            if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+                setError("Request timeout/aborted. Please try again.");
+            } else {
+                const message = error instanceof Error ? error.message : error?.message || 'Password change failed';
+                setError(message);
+            }
         } finally {
             setLoading(false);
         }
@@ -72,9 +85,9 @@ export default function ChangePassword() {
                         placeholder="New password"
                     />
 
-                    <Auth.PasswordValidation 
-                        password={formData.new_password} 
-                        confirmPassword={formData.confirm_new_password} 
+                    <Auth.PasswordValidation
+                        password={formData.new_password}
+                        confirmPassword={formData.confirm_new_password}
                     />
 
                     <Auth.PasswordField

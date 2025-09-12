@@ -7,15 +7,9 @@ interface BackButtonProps {
     href?: string;
     onClick?: () => void;
     text: string;
-    className?: string;
 }
 
-export default function BackButton({ 
-    href, 
-    onClick, 
-    text, 
-    className = "text-left" 
-}: BackButtonProps) {
+export default function BackButton({href, onClick, text}: BackButtonProps) {
     const router = useRouter();
 
     const handleClick = () => {
@@ -29,15 +23,15 @@ export default function BackButton({
     };
 
     return (
-        <div className={`mb-6 ${className}`}>
+        <div className={`mb-6 text-left`}>
             <button
                 type="button"
                 onClick={handleClick}
                 className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors group"
             >
-                <FontAwesomeIcon 
-                    icon={faArrowLeft} 
-                    className="transition-transform group-hover:-translate-x-1" 
+                <FontAwesomeIcon
+                    icon={faArrowLeft}
+                    className="transition-transform group-hover:-translate-x-1"
                 />
                 {text}
             </button>

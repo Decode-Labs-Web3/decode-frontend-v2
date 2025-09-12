@@ -5,6 +5,17 @@ export async function GET(req: Request) {
     try {
         const cookieStore = await cookies();
         const accessToken = cookieStore.get("accessToken")?.value;
+
+        console.log('Access token:', accessToken);
+        
+        if (!accessToken) {
+            return NextResponse.json({
+                success: false,
+                statusCode: 401,
+                message: 'No access token found'
+            }, { status: 401 });
+        }
+
         const backendRes = await fetch(`${process.env.BACKEND_URL}/users/profile/me`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -12,15 +23,17 @@ export async function GET(req: Request) {
         });
 
         if (!backendRes.ok) {
-            const err = await backendRes.json().catch(() => null);
+            console.error('Backend API error:', backendRes.status, backendRes.statusText);
+            const errorData = await backendRes.json().catch(() => ({}));
             return NextResponse.json({
                 success: false,
-                statusCode: backendRes.status || 401,
-                message: err?.message || 'Failed to fetch overview'
-            }, { status: backendRes.status || 401 });
+                statusCode: backendRes.status,
+                message: errorData.message || `Backend API error: ${backendRes.status}`
+            }, { status: backendRes.status });
         }
 
         const data = await backendRes.json();
+        console.log('Overview data:', data);
         return NextResponse.json({
             success: true,
             statusCode: data.statusCode || 200,
@@ -29,7 +42,7 @@ export async function GET(req: Request) {
         }, { status: data.statusCode || 200 });
 
     } catch (error) {
-        console.error('Overview error:', error);
+        console.error('Overview API error:', error);
         return NextResponse.json({
             success: false,
             statusCode: 500,

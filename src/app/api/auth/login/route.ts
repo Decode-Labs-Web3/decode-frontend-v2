@@ -3,6 +3,15 @@ import { FingerprintService } from "@/app/services/fingerprint.service";
 
 export async function POST(req: Request) {
   try {
+    const internalRequest = req.headers.get('frontend-internal-request');
+    if (internalRequest !== 'true') {
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: 'Missing Frontend-Internal-Request header'
+      }, { status: 400 });
+    }
+
     const body = await req.json();
     const { email_or_username, password } = body;
 
@@ -14,11 +23,22 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // Generate device fingerprint using the fingerprint service
-    const fingerprintResult = FingerprintService.generateFingerprint(req);
-    const { fingerprint_hashed, device, browser} = fingerprintResult;
+    let fingerprintResult;
+    try {
+      fingerprintResult = FingerprintService.generateFingerprint(req);
+      console.log('Fingerprint result:', fingerprintResult);
+    } catch (fingerprintError) {
+      console.error('Fingerprint generation failed:', fingerprintError);
+      throw new Error(`Fingerprint generation failed: ${fingerprintError instanceof Error ? fingerprintError.message : 'Unknown error'}`);
+    }
 
-    // Validate the generated fingerprint
+    const { fingerprint_hashed, device, browser } = fingerprintResult;
+    console.log('Backend URL:', process.env.BACKEND_URL);
+
+    if (!process.env.BACKEND_URL) {
+      throw new Error('BACKEND_URL environment variable is not set');
+    }
+
     const validation = FingerprintService.validateFingerprint(fingerprint_hashed);
     if (!validation.isValid) {
       console.error('Fingerprint validation failed:', validation.errors);
@@ -37,125 +57,95 @@ export async function POST(req: Request) {
       device,
     };
 
-    const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/login`, {
+    const backendResponse = await fetch(`${process.env.BACKEND_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody),
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
     });
 
-    console.log('Backend response:', backendRes);
-
-    if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => null);
-      return NextResponse.json({ 
-          success: false,
-          statusCode: backendRes.status || 401,
-          message: err?.message || "Login failed" 
-        },
-        { status: backendRes.status || 401 }
+    if (!backendResponse.ok) {
+      const error = await backendResponse.json().catch(() => null);
+      return NextResponse.json({
+        success: false,
+        statusCode: backendResponse.status || 401,
+        message: error?.message || "Login failed"
+      },
+        { status: backendResponse.status || 401 }
       );
     }
 
-    const response = await backendRes.json();
+    const response = await backendResponse.json();
 
-    // Check if this is a fingerprint verification request
-    if (response.success && response.message === "Device fingerprint not trusted, send email verification") {
-      console.log('Device fingerprint verification required');
-      return NextResponse.json({
+    if (response.success && response.statusCode === 200 && response.message === "Login successful") {
+      const res = NextResponse.json({
         success: true,
-        requiresVerification: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Device verification required",
+        message: response.message || "Login successful"
+      });
+
+      res.cookies.set("accessToken", response.data.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 15,
+      });
+
+      res.cookies.set("refreshToken", response.data.session_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        expires: new Date(response.data.expires_at) || new Date(Date.now() + 60 * 60 * 24 * 30),
+      });
+
+      console.log('Cookies set - accessToken:', response.data.access_token ? 'present' : 'missing');
+      console.log('Cookies set - refreshToken:', response.data.session_token ? 'present' : 'missing');
+
+      return res;
+    }
+
+    if (response.success && response.statusCode === 400 && response.message === "Device fingerprint not trusted, send email verification") {
+      const res = NextResponse.json({
+        success: true,
+        statusCode: response.statusCode || 400,
+        message: response.message || "Device fingerprint not trusted, send email verification",
       }, { status: 200 });
-    }
 
-    // Check if response has tokens
-    const accessToken = response?.data?.access_token;
-    const refreshToken = response?.data?.session_token;
-    const expiresAtISO = response?.data?.expires_at as string | undefined;
-
-    console.log('Extracted tokens:', { accessToken, refreshToken, expiresAtISO });
-
-    // Handle different response scenarios
-    if (!accessToken || !refreshToken) {
-      console.log('No tokens found in response');
-
-      // Check if this is a successful response but requires verification
-      if (response.success && response.statusCode === 400) {
-        return NextResponse.json({
-          success: true,
-          requiresVerification: true,
-          statusCode: response.statusCode || 200,
-          message: response.message || "Device verification required",
-        }, { status: 200 });
-      }
-
-      // Return detailed error for debugging
-      return NextResponse.json({
-        success: false,
-        statusCode: response.statusCode || 500,
-        message: response.message || "Login failed - no tokens received",
-      }, { status: 500 });
-    }
-
-    const res = NextResponse.json({ 
-      success: true,
-      statusCode: response.statusCode || 200,
-      message: response.message || "Login successful"
-    });
-
-    res.cookies.set("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 15,
-    });
-
-    const refreshCookieOpts = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
-      path: "/",
-    };
-
-    if (expiresAtISO) {
-      res.cookies.set("refreshToken", refreshToken, {
-        ...refreshCookieOpts,
-        expires: new Date(expiresAtISO),
+      res.cookies.set("gate-key-for-verify-login", "true", {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 5,
       });
-    } else {
-      res.cookies.set("refreshToken", refreshToken, {
-        ...refreshCookieOpts,
-        maxAge: 60 * 60 * 24 * 7,
-      });
+
+      return res;
     }
 
-    // Set the from_success cookie for middleware authentication
-    res.cookies.set("from_success", "1", {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 5,
-    });
+    return NextResponse.json({
+      success: false,
+      statusCode: response.statusCode || 400,
+      message: response.message || "Login failed",
+    }, { status: 400 });
 
-    return res;
+
   } catch (error) {
-    console.log('Login error:', error);
-    console.error('Login error:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: false,
       statusCode: 500,
       message: error instanceof Error ? error.message : "Server error from login",
+      error: error instanceof Error ? error.stack : String(error)
     }, { status: 500 });
   }
 }
 
 export async function GET() {
-  return NextResponse.json({ 
+  return NextResponse.json({
     success: false,
     statusCode: 405,
-    message: "Method Not Allowed" 
+    message: "Method Not Allowed"
   }, { status: 405 });
 }

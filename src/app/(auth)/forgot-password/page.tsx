@@ -17,20 +17,29 @@ export default function ForgotPassword() {
             ...prevData,
             [id]: value
         }));
-        // Clear error when user starts typing
         if (error) setError('');
+    };
+
+    const handleCookie = () => {
+        document.cookie = "gate-key-for-login=true; max-age=60; path=/login; samesite=lax";
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.email_or_username.trim() || loading) return;
+        if (error) setError('');
         setLoading(true);
-        setError('');
 
         try {
             const response = await fetch('/api/auth/forgot-password', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify( formData )
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'frontend-internal-request': 'true' 
+                },
+                body: JSON.stringify( formData ),
+                cache: "no-store",
+                signal: AbortSignal.timeout(5000),
             });
 
             const responseData = await response.json();
@@ -65,7 +74,7 @@ export default function ForgotPassword() {
             {/* Main Card */}
             <Auth.AuthCard title="Reset Password">
                 {/* Back to Login Button */}
-                <Auth.BackButton href="/login" text="Back to Login" />
+                <Auth.BackButton href="/login" onClick={handleCookie} text="Back to Login" />
 
                 {/* Simple Description */}
                 <p className="text-sm text-gray-400 text-center mb-8">

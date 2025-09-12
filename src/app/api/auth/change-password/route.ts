@@ -1,11 +1,21 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
+    const internalRequest = req.headers.get('frontend-internal-request');
+    if (internalRequest !== 'true') {
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: 'Missing Frontend-Internal-Request header'
+      }, { status: 400 });
+    }
+
+    const body = await req.json();
     const { new_password } = body;
-    const code = (await cookies()).get("forgot_code")?.value;
+    const cookieStore = await cookies();
+    const code = cookieStore.get("forgot_code")?.value;
 
     if (!code) {
       return NextResponse.json({
@@ -32,6 +42,8 @@ export async function POST(req: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(resquestBody),
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!backendRes.ok) {

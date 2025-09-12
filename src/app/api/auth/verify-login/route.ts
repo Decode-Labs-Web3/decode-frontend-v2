@@ -2,10 +2,19 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();    
+    const internalRequest = req.headers.get('frontend-internal-request');
+    if (internalRequest !== 'true') {
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: 'Missing Frontend-Internal-Request header'
+      }, { status: 400 });
+    }
+
+    const body = await req.json();
     const { code } = body;
 
-    if (!code ) {
+    if (!code) {
       return NextResponse.json({
         success: false,
         statusCode: 400,
@@ -13,7 +22,7 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    const requestBody = { 
+    const requestBody = {
       code,
     };
 
@@ -21,6 +30,8 @@ export async function POST(req: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody),
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!backendRes.ok) {
@@ -30,13 +41,13 @@ export async function POST(req: Request) {
           success: false,
           statusCode: backendRes.status || 401,
           message: error?.message || "Verification failed",
-        },{ status: backendRes.status || 401 });
+        }, { status: backendRes.status || 401 });
     }
 
     const response = await backendRes.json().catch(() => ({}));
 
     if (response.success && response.message === "Device fingerprint verified") {
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: true,
         statusCode: response.statusCode || 200,
         message: response.message || "Device fingerprint verified. Please login again.",
@@ -44,7 +55,7 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: false,
       statusCode: response.statusCode || 400,
       message: response.message || "Verification failed",

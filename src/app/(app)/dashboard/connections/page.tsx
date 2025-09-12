@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
@@ -58,7 +59,7 @@ export default function Page() {
             >
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" />
+                  <Image src={u.avatar} alt={u.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" unoptimized />
                 </div>
                 <div>
                   <p className="text-sm font-medium tracking-tight">{u.name}</p>
@@ -94,7 +95,7 @@ export default function Page() {
             {following.map(u => (
               <div key={u.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" />
+                  <Image src={u.avatar} alt={u.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-white/10" unoptimized />
                   <div>
                     <p className="text-sm font-medium tracking-tight">{u.name}</p>
                     <p className="text-xs text-gray-400">@{u.handle}</p>

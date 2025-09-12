@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   env: {
     BACKEND_URL: process.env.BACKEND_URL,
   },
+  images: {
+    unoptimized: true,
+    domains: [],
+    remotePatterns: [],
+  },
 };
 
 export default nextConfig;

@@ -1,17 +1,26 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
+    const internalRequest = req.headers.get('frontend-internal-request');
+    if (internalRequest !== 'true') {
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: 'Missing Frontend-Internal-Request header'
+      }, { status: 400 });
+    }
+
     const cookieStore = cookies();
     const reg = (await cookieStore).get("registration_data")?.value;
 
     if (!reg) {
       return NextResponse.json({
-          success: false,
-          statusCode: 400,
-          message: "No pending registration data",
-        },
+        success: false,
+        statusCode: 400,
+        message: "No pending registration data",
+      },
         { status: 400 }
       );
     }
@@ -21,10 +30,10 @@ export async function POST() {
       parsed = JSON.parse(reg);
     } catch {
       return NextResponse.json({
-          success: false,
-          statusCode: 400,
-          message: "Corrupted registration data",
-        },
+        success: false,
+        statusCode: 400,
+        message: "Corrupted registration data",
+      },
         { status: 400 }
       );
     }
@@ -32,10 +41,10 @@ export async function POST() {
     const email = parsed.email;
     if (!email) {
       return NextResponse.json({
-          success: false,
-          statusCode: 400,
-          message: "Email not found in cookie",
-        },
+        success: false,
+        statusCode: 400,
+        message: "Email not found in cookie",
+      },
         { status: 400 }
       );
     }
@@ -50,10 +59,12 @@ export async function POST() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
       }
     );
 
-    
+
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
       return NextResponse.json(
@@ -61,16 +72,16 @@ export async function POST() {
           success: false,
           statusCode: backendRes.status || 400,
           message: error?.message || "Resend failed",
-        },{ status: backendRes.status || 400 });
+        }, { status: backendRes.status || 400 });
     }
 
     const response = await backendRes.json().catch(() => ({}));
     return NextResponse.json({
-        success: true,
-        statusCode: response.statusCode || 200,
-        message: response.message || "Verification email resent",
-      },{ status: 200 });
-      
+      success: true,
+      statusCode: response.statusCode || 200,
+      message: response.message || "Verification email resent",
+    }, { status: 200 });
+
   } catch (error) {
     return NextResponse.json(
       {

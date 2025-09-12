@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
+    const internalRequest = req.headers.get('frontend-internal-request');
+    if (internalRequest !== 'true') {
+      return NextResponse.json({
+        success: false,
+        statusCode: 400,
+        message: 'Missing Frontend-Internal-Request header'
+      }, { status: 400 });
+    }
+
     const body = await req.json();
     const { email, username, password } = body;
 
@@ -23,6 +32,8 @@ export async function POST(req: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody),
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
     });
 
     const response = await backendRes.json();

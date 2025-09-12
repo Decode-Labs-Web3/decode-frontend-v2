@@ -23,7 +23,11 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch('/api/users/overview');
+        const response = await fetch('/api/users/overview', {
+          headers: {
+            'Frontend-Internal-Request': 'true'
+          }
+        });
         const responseData = await response.json();
         setUser({
           id: responseData.data._id,

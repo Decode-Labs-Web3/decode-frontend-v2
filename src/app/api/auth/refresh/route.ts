@@ -3,6 +3,15 @@ import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
     try {
+        const internalRequest = request.headers.get('frontend-internal-request');
+        if (internalRequest !== 'true') {
+            return NextResponse.json({
+                success: false,
+                statusCode: 400,
+                message: 'Missing Frontend-Internal-Request header'
+            }, { status: 400 });
+        }
+
         const cookieStore = await cookies();
         const refreshToken = cookieStore.get('refreshToken')?.value;
         if (!refreshToken) {
@@ -10,8 +19,12 @@ export async function POST(request: NextRequest) {
         }
         const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/session/refresh`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ refreshToken }),
+            cache: "no-store",
+            signal: AbortSignal.timeout(5000),
         });
 
         if (!backendRes.ok) {

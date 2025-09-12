@@ -7,6 +7,7 @@ import { faWallet, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 export default function Home() {
     const router = useRouter();
+    const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [formData, setFormData] = useState<{ email_or_username: string }>({
         email_or_username: "",
@@ -23,24 +24,44 @@ export default function Home() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.email_or_username.trim() || loading) return;
+        setError("");
         setLoading(true);
         try {
-            const response = await fetch("/api/auth/login-or-register", {
+            const apiResponse = await fetch("/api/auth/login-or-register", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "frontend-internal-request": "true",
+                },
                 body: JSON.stringify(formData),
+                cache: "no-store",
+                signal: AbortSignal.timeout(5000),
             });
 
-            const responseData = await response.json();
-            console.log(responseData);
-
-            if (responseData.success) {
-                router.push("/login");
-            } else {
-                router.push("/register");
+            if (!apiResponse.ok) {
+                throw Object.assign(new Error(`HTTP ${apiResponse.status}`), { status: apiResponse.status });
             }
-        } catch (error) {
-            console.error(error);
+
+            const responseData = await apiResponse.json();
+            console.log('Login or register response data:', responseData);
+
+            if (responseData.success && responseData.statusCode === 200 && responseData.message === "User found") {
+                router.push("/login");
+            } else if (!responseData.success && responseData.statusCode === 400 && responseData.message === "User not found") {
+                router.push("/register");
+            } else {
+                throw new Error(responseData.message);
+            }
+        } catch (error: any) {
+            if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+                console.error("Request timeout/aborted");
+                setError("Request timeout/aborted. Please try again.");
+            } else {
+                console.error(error);
+                setError(error.message || "Something went wrong. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
@@ -76,6 +97,12 @@ export default function Home() {
                         value={formData.email_or_username}
                         onChange={handleChange}
                     />
+
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+                            {error}
+                        </div>
+                    )}
 
                     <Auth.SubmitButton
                         loading={loading}

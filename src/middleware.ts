@@ -17,6 +17,7 @@ const GATE_RULES: GateRule[] = [
   { prefix: "/change-password", cookie: "gate-key-for-change-password", exact: false },
 ];
 
+// Handle gate rules for specific routes, checking for required cookies and clearing them after use
 function handleGate(request: NextRequest, pathname: string): NextResponse | null {
   for (const rule of GATE_RULES) {
     const match = rule.exact
@@ -35,9 +36,10 @@ function handleGate(request: NextRequest, pathname: string): NextResponse | null
   return null;
 }
 
+// Check if a JWT token is expired (with a small skew)
 function isJwtExpired(token: string): boolean {
   try {
-    const skewSec = 10;
+    const skewSecond = 10;
     const payload = token.split(".")[1];
     if (!payload) return true;
     const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
@@ -45,31 +47,40 @@ function isJwtExpired(token: string): boolean {
     const json = JSON.parse(atob(padded));
     const expirationTime = Number(json.exp) || 0;
     const now = Math.floor(Date.now() / 1000);
-    return now + skewSec >= expirationTime;
+    return now + skewSecond >= expirationTime;
   } catch {
     return true;
   }
 }
 
+// Main middleware function for handling authentication, gate rules, and API/dashboard access
 export async function middleware(request: NextRequest) {
   const { pathname, origin } = request.nextUrl;
 
+  // Allow static and public files to pass through
   if (
     pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico" ||
+    pathname.startsWith("/images") ||
+    pathname.startsWith("/public") ||
+    pathname.startsWith("/favicons") ||
+    pathname.startsWith("/fonts") ||
     pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml"
+    pathname === "/sitemap.xml" ||
+    pathname.startsWith("/favicon")
   ) {
     return NextResponse.next();
   }
 
+  // Allow root path
   if (pathname === "/") {
     return NextResponse.next();
   }
 
+  // Handle gate rules for certain routes
   const gated = handleGate(request, pathname);
   if (gated) return gated;
 
+  // Special handling for API routes
   if (pathname.startsWith("/api")) {
     const mode = request.headers.get("sec-fetch-mode") || "";
     const dest = request.headers.get("sec-fetch-dest") || "";
@@ -82,9 +93,14 @@ export async function middleware(request: NextRequest) {
     if (isNavigation) {
       return NextResponse.redirect(new URL("/", request.url));
     }
-    return new NextResponse("Missing Frontend-Internal-Request header", { status: 400 });
+    return NextResponse.json({
+      success: false,
+      statusCode: 400,
+      message: "Missing Frontend-Internal-Request header"
+    }, { status: 400 });
   }
 
+  // Handle dashboard authentication and token refresh
   if (pathname.startsWith("/dashboard")) {
     const accessToken = request.cookies.get("accessToken")?.value;
     const refreshToken = request.cookies.get("refreshToken")?.value;
@@ -97,6 +113,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
     try {
+      // Attempt to refresh tokens if access token is missing or expired
       const response = await fetch(`${origin}/api/auth/refresh`, {
         method: "POST",
         headers: {
@@ -105,7 +122,6 @@ export async function middleware(request: NextRequest) {
         },
         cache: "no-store",
       });
-
 
       if (!response.ok) {
         return NextResponse.redirect(new URL('/', request.url));
@@ -132,15 +148,18 @@ export async function middleware(request: NextRequest) {
           maxAge: 60 * 60 * 24 * 7,
         });
       }
+
+      
       return res;
     } catch (error) {
       console.error('Refresh token error:', error);
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
+  // Default redirect to home for all other cases
   return NextResponse.redirect(new URL('/', request.url));
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|images/|favicons/|fonts/).*)"],
 };

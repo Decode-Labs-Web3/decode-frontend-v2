@@ -15,22 +15,25 @@ export default function Register() {
         password: '',
         confirmPassword: ''
     });
+
     const { isPasswordValid } = PasswordValidationService.validate(formData.password, formData.confirmPassword);
-    
+
     useEffect(() => {
-        try {
-            const match = document.cookie.match(/(?:^|; )email_or_username=([^;]+)/);
-            const value = match ? decodeURIComponent(match[1]) : "";
-            if (value) {
-                // Heuristic: if it contains '@', assume it's an email, else username
-                if (value.includes('@')) {
-                    setFormData(prev => ({ ...prev, email: value }));
-                } else {
-                    setFormData(prev => ({ ...prev, username: value }));
-                }
+        const match = document.cookie.match(/(?:^|; )email_or_username=([^;]+)/);
+        const value = match ? decodeURIComponent(match[1]) : "";
+        if (value) {
+            if (value.includes('@')) {
+                setFormData(prev => ({ ...prev, email: value }));
+            } else {
+                setFormData(prev => ({ ...prev, username: value }));
             }
-        } catch { }
+            document.cookie = "email_or_username=; Max-Age=0; path=/";
+        }
     }, []);
+
+    const handleCookie = () => {
+        document.cookie = "gate-key-for-login=true; max-age=60; path=/login; samesite=lax";
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -38,29 +41,30 @@ export default function Register() {
             ...formData,
             [id]: value
         });
-        // Clear error when user starts typing
         if (error) setError('');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        if (!formData.email.trim() || !formData.username.trim() || !formData.password.trim() || !formData.confirmPassword.trim() || loading) return;
+        if (error) setError('');
         setLoading(true);
 
         try {
-            const res = await fetch('/api/auth/register', {
+            const apiResponse = await fetch('/api/auth/register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: formData.email,
-                    username: formData.username,
-                    password: formData.password
-                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'frontend-internal-request': 'true',
+                },
+                body: JSON.stringify(formData),
+                cache: "no-store",
+                signal: AbortSignal.timeout(5000),
             });
 
-            const data = await res.json();
+            const data = await apiResponse.json();
 
-            if (!res.ok) {
+            if (!apiResponse.ok) {
                 // Handle specific error cases
                 if (data.message === "Email already exists") {
                     setError('This email is already registered. Please use a different email or try logging in.');
@@ -87,8 +91,8 @@ export default function Register() {
             // If no verification needed, redirect to login
             router.push('/login?registered=true');
 
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Registration failed';
+        } catch (error: any) {
+            const errorMessage = error instanceof Error ? error.message : error.message || 'Registration failed';
             setError(errorMessage);
         } finally {
             setLoading(false);
@@ -132,9 +136,9 @@ export default function Register() {
                         placeholder="Enter password"
                     />
 
-                    <Auth.PasswordValidation 
-                        password={formData.password} 
-                        confirmPassword={formData.confirmPassword} 
+                    <Auth.PasswordValidation
+                        password={formData.password}
+                        confirmPassword={formData.confirmPassword}
                     />
 
                     <Auth.PasswordField
@@ -156,9 +160,11 @@ export default function Register() {
                 {/* Login Link */}
                 <p className="text-center text-gray-400">
                     Already have an account?{' '}
-                    <Link href="/login" className="text-blue-500 hover:underline font-medium">
+                    <a href="/login"
+                        onClick={handleCookie}
+                        className="text-blue-500 hover:underline font-medium">
                         Log in
-                    </Link>
+                    </a>
                 </p>
             </Auth.AuthCard>
             <Auth.BrandLogos />
