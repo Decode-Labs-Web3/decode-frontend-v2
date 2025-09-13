@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus, faUserCheck } from '@fortawesome/free-solid-svg-icons';
 
@@ -35,10 +36,10 @@ export default function Page() {
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
       <div className="mb-8 flex items-end justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Connections</h2>
-          <p className="text-gray-400 text-sm">Discover people and manage who you follow.</p>
-        </div>
+        <App.PageHeader 
+          title="Connections" 
+          description="Discover people and manage who you follow." 
+        />
         <div className="hidden sm:block">
           <div className="relative">
             <input

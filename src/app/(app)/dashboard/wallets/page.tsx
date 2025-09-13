@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWallet, faCircleCheck, faPlus, faTrash, faGripVertical } from '@fortawesome/free-solid-svg-icons';
 
@@ -41,24 +42,20 @@ export default function Page() {
 
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Wallets</h2>
-          <p className="text-gray-400 text-sm">Drag to reorder. Top wallet is treated as primary.</p>
-        </div>
-        <button className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors">
-          <FontAwesomeIcon icon={faPlus} />
-          Add wallet
-        </button>
-      </div>
-
+      <App.PageHeader
+        title="Wallets"
+        description="Drag to reorder. Top wallet is treated as primary."
+      />
+      <button className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors">
+        <FontAwesomeIcon icon={faPlus} />
+        Add wallet
+      </button>
       <div className="space-y-3">
         {wallets.map((w, i) => (
           <div
             key={i}
-            className={`rounded-xl p-4 flex items-center justify-between cursor-move transition shadow-sm border ${
-              overIndex === i ? 'bg-white/[0.08] border-blue-400/30 ring-2 ring-blue-400/30' : 'bg-white/5 border-white/10 hover:bg-white/[0.07]'
-            }`}
+            className={`rounded-xl p-4 flex items-center justify-between cursor-move transition shadow-sm border ${overIndex === i ? 'bg-white/[0.08] border-blue-400/30 ring-2 ring-blue-400/30' : 'bg-white/5 border-white/10 hover:bg-white/[0.07]'
+              }`}
             draggable
             onDragStart={handleDragStart(i)}
             onDragOver={handleDragOver}
@@ -101,6 +98,6 @@ export default function Page() {
   );
 }
 
- 
+
 
 

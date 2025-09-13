@@ -1,5 +1,6 @@
 'use client';
 
+import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -12,10 +13,10 @@ export default function Page() {
 
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold">Notifications</h2>
-        <p className="text-gray-400 text-sm">Security and account events.</p>
-      </div>
+      <App.PageHeader 
+        title="Notifications" 
+        description="Security and account events." 
+      />
 
       <div className="bg-white/5 border border-white/10 rounded-xl">
         <ul className="divide-y divide-white/10">

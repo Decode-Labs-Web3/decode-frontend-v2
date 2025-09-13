@@ -64,19 +64,19 @@ export async function POST(req: Request) {
     }
 
     // Handle other responses
-    const failRes = NextResponse.json({
+    const res = NextResponse.json({
       success: false,
       statusCode: response.statusCode || 400,
       message: response.message || "Verification failed",
     }, { status: 400 });
-    failRes.cookies.set('forgot_code', '', {
+    res.cookies.set('forgot_code', '', {
       maxAge: 0,
       path: '/',
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
     });
-    return failRes;
+    return res;
 
   } catch (error) {
     return NextResponse.json({

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useContext } from 'react';
+import App from '@/components/(app)';
 import { UserInfoContext } from '../layout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldHalved, faWallet, faLaptop, faPlug, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
@@ -11,10 +12,10 @@ export default function Page() {
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
       {/* Headline */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold">Overview</h2>
-        <p className="text-gray-400 text-sm">Manage your Decode account, security and Web3 connections.</p>
-      </div>
+      <App.PageHeader 
+        title="Overview" 
+        description="Manage your Decode account, security and Web3 connections." 
+      />
 
       {/* Profile */}
       {user && (

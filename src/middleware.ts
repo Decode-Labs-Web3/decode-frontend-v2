@@ -36,22 +36,28 @@ function handleGate(request: NextRequest, pathname: string): NextResponse | null
   return null;
 }
 
-// Check if a JWT token is expired (with a small skew)
-function isJwtExpired(token: string): boolean {
+// Check if a JWT token is still valid & return TTL (seconds)
+function getJwtRemainingSeconds(token: string, skewSeconds = 10): number | null {
   try {
-    const skewSecond = 10;
     const payload = token.split(".")[1];
-    if (!payload) return true;
+    if (!payload) return null;
+
     const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
     const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
     const json = JSON.parse(atob(padded));
-    const expirationTime = Number(json.exp) || 0;
+
+    const exp = Number(json.exp);
+    if (!exp || Number.isNaN(exp)) return null;
+
     const now = Math.floor(Date.now() / 1000);
-    return now + skewSecond >= expirationTime;
+    const remaining = exp - now - skewSeconds;
+
+    return Math.max(0, remaining);
   } catch {
-    return true;
+    return null;
   }
 }
+
 
 // Main middleware function for handling authentication, gate rules, and API/dashboard access
 export async function middleware(request: NextRequest) {
@@ -109,29 +115,32 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
-    if (accessToken && !isJwtExpired(accessToken)) {
+    const remaining = accessToken ? getJwtRemainingSeconds(accessToken) : null;
+    const expired = (remaining ?? 0) <= 0;
+
+    if (accessToken && !expired) {
       return NextResponse.next();
     }
     try {
       // Attempt to refresh tokens if access token is missing or expired
       const response = await fetch(`${origin}/api/auth/refresh`, {
-        method: "POST",
+        method: "GET",
         headers: {
-          cookie: request.headers.get("cookie") ?? "",
           "frontend-internal-request": "true",
         },
         cache: "no-store",
+        signal: AbortSignal.timeout(5000),
       });
 
       if (!response.ok) {
         return NextResponse.redirect(new URL('/', request.url));
       }
 
-      const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await response.json();
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken, _id: newSessionId, expires_at: newExpiresAt } = await response.json();
       const res = NextResponse.next();
 
-      if (newAccessToken) {
-        res.cookies.set("accessToken", newAccessToken, {
+      if (newSessionId) {
+        res.cookies.set("sessionId", newSessionId, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
@@ -139,17 +148,32 @@ export async function middleware(request: NextRequest) {
           maxAge: 60 * 15,
         });
       }
+
+      const accessTokenAge = getJwtRemainingSeconds(newAccessToken);
+
+      if (newAccessToken) {
+        res.cookies.set("accessToken", newAccessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: accessTokenAge ?? 60 * 15,
+        });
+      }
+
+      const refreshTokenAge = Math.floor((new Date(newExpiresAt).getTime() - Date.now()) / 1000);
+
       if (newRefreshToken) {
         res.cookies.set("refreshToken", newRefreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",
-          maxAge: 60 * 60 * 24 * 7,
+          maxAge: refreshTokenAge > 0 ? refreshTokenAge : 0
         });
       }
 
-      
+
       return res;
     } catch (error) {
       console.error('Refresh token error:', error);

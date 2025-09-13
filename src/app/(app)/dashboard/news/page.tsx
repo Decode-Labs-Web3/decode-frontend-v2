@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faNewspaper, faClock, faThumbsUp, faComment, faShare } from '@fortawesome/free-solid-svg-icons';
 
@@ -16,10 +17,10 @@ export default function Page() {
 
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold">News</h2>
-        <p className="text-gray-400 text-sm">Latest updates from the Decode team.</p>
-      </div>
+      <App.PageHeader 
+        title="News" 
+        description="Latest updates from the Decode team." 
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
         {posts.map((p, i) => (

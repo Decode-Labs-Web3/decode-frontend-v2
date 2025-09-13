@@ -1,10 +1,11 @@
 'use client';
 
 import Image from 'next/image';
+import App from '@/components/(app)';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLaptop, faMobileScreen, faTablet, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faLaptop, faMobileScreen, faTablet } from '@fortawesome/free-solid-svg-icons';
 
 interface Fingerprint {
   "_id": string;
@@ -35,7 +36,15 @@ interface Session {
 
 export default function Page() {
   const router = useRouter();
-  const [changed, setChanged] = useState(false);
+  const [deviceId, setDeviceId] = useState<string>("");
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|; )email_or_username=([^;]+)/);
+    const value = match ? decodeURIComponent(match[1]) : "";
+    if (value) {
+      setDeviceId(value);
+    }
+  }, []);
+  const [version, setVersion] = useState(0);
   const [fingerprintsData, setFingerprintsData] = useState<Fingerprint[]>([]);
 
   useEffect(() => {
@@ -48,58 +57,76 @@ export default function Page() {
             'Frontend-Internal-Request': 'true'
           },
           cache: 'no-store',
+          credentials: 'include',
           signal: AbortSignal.timeout(5000),
         });
         const responseData = await apiResponse.json();
-        setFingerprintsData(responseData.data);
+        if (responseData.success || responseData.statusCode === 200 || responseData.message === 'Device fingerprint fetched') {
+          setFingerprintsData(responseData.data);
+        }
+        else if (responseData.statusCode === 401) {
+          router.push('/');
+        }
+        else {
+          console.log('Fingerprints data from API: ', responseData);
+        }
       } catch (error) {
         console.error(error);
       }
     };
     fetchFingerprints();
-  }, [changed]);
+  }, [version]);
 
   const handleRevokeAll = async (deviceFingerprintId: string) => {
-    setChanged(true);
     try {
       const apiResponse = await fetch(`/api/auth/revoke-all`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Frontend-Internal-Request': 'true'
+          'frontend-internal-request': 'true'
         },
-        body: JSON.stringify({deviceFingerprintId}),
+        body: JSON.stringify({ deviceFingerprintId }),
         cache: 'no-store',
+        credentials: 'include',
         signal: AbortSignal.timeout(5000),
       });
       const responseData = await apiResponse.json();
-      if(responseData.success || responseData.statusCode === 200 || responseData.message === 'Device fingerprint revoked') {
+      if (responseData.success || responseData.statusCode === 200 || responseData.message === 'Device fingerprint revoked') {
         router.push('/');
       }
-      setChanged(false);
+      else if (responseData.statusCode === 401) {
+        router.push('/');
+      }
+      else {
+        console.error(responseData.message);
+      }
     } catch (error) {
       console.error(error);
     }
   }
 
   const handleRevoke = async (sessionId: string) => {
-    setChanged(true);
     try {
       const apiResponse = await fetch(`/api/auth/revoke`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Frontend-Internal-Request': 'true'
+          'frontend-internal-request': 'true'
         },
-        body: JSON.stringify({sessionId}),
+        body: JSON.stringify({ sessionId, deviceId }),
         cache: 'no-store',
         signal: AbortSignal.timeout(5000),
       });
       const responseData = await apiResponse.json();
-      if(responseData.success || responseData.statusCode === 200 || responseData.message === 'Session revoked') {
-        router.refresh();
+      if (responseData.success || responseData.statusCode === 200 || responseData.message === 'Session revoked') {
+        if (sessionId === deviceId) {
+          router.push('/');
+        }
+        else {
+          router.refresh();
+        }
       }
-      setChanged(false);
+      setVersion(version + 1);
     } catch (error) {
       console.error(error);
     }
@@ -107,10 +134,10 @@ export default function Page() {
 
   return (
     <div className="px-4 sm:px-6 lg:pl-72 lg:pr-8 pt-20 sm:pt-24 pb-8 sm:pb-10">
-      <div className="mb-6 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mb-2">Devices</h2>
-        <p className="text-gray-400 text-sm sm:text-base">Trusted devices that have signed in to your account.</p>
-      </div>
+      <App.PageHeader
+        title="Devices"
+        description="Trusted devices that have signed in to your account."
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {fingerprintsData.map(fingerprint => (
@@ -127,9 +154,9 @@ export default function Page() {
                 </p></h3>
               </div>
               {fingerprint.sessions.length > 1 && (
-                <button 
-                onClick={() => handleRevokeAll(fingerprint._id)}
-                className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors w-full sm:w-auto">
+                <button
+                  onClick={() => handleRevokeAll(fingerprint._id)}
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors w-full sm:w-auto">
                   Revoke All
                 </button>
               )}
@@ -152,12 +179,12 @@ export default function Page() {
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold text-white truncate">{session.app.charAt(0).toUpperCase() + session.app.slice(1)}</h3>
                       <p className="text-xs text-gray-400 truncate">
-                        Last access: {session.last_used_at}
+                        {new Date(session.last_used_at).toLocaleString()}
                       </p>
                     </div>
-                    <button 
-                    onClick={() => handleRevoke(session._id)}
-                    className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors flex-shrink-0 px-2 py-1 rounded hover:bg-red-400/10">
+                    <button
+                      onClick={() => handleRevoke(session._id)}
+                      className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors flex-shrink-0 px-2 py-1 rounded hover:bg-red-400/10">
                       Revoke
                     </button>
                   </div>

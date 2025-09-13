@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import App from '@/components/(app)';
 import { UserInfoContext } from '../layout';
 import { useEffect, useState, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,7 +19,7 @@ export default function Page() {
   const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatar_fallback_url || '/images/icons/user-placeholder.png');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [editSection, setEditSection] = useState<'avartar'| 'displayName' | 'username' | 'email' | 'bio' | 'none'>('none');
+  const [editSection, setEditSection] = useState<'profile' | 'username' | 'email' | 'none'>('none');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -54,70 +55,140 @@ export default function Page() {
 
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold">Personal info</h2>
-        <p className="text-gray-400 text-sm">Manage your personal details and how they appear.</p>
-      </div>
+      <App.PageHeader 
+        title="Personal info" 
+        description="Manage your personal details and how they appear." 
+      />
 
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.03] p-6 mb-8 shadow-xl">
-        <div className="flex items-center gap-5">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-white/10 border border-white/20 overflow-hidden ring-2 ring-blue-500/30">
-              <Image src={avatarUrl} alt={'Avatar'} width={80} height={80} className="w-full h-full object-cover" unoptimized />
-            </div>
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/[0.02] to-white/5 backdrop-blur-sm p-8 mb-8 shadow-2xl">
+        {/* Header with Edit Button */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-1">Profile Information</h3>
+            <p className="text-sm text-gray-400">Manage your personal details and appearance</p>
+          </div>
+          {editSection !== 'profile' ? (
             <button
               type="button"
-              onClick={() => setEditSection(editSection === 'avartar' ? 'none' : 'avartar')}
-              className="absolute -bottom-1 -right-1 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
+              onClick={() => setEditSection('profile')}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              <FontAwesomeIcon icon={faCamera} />
-              Change
+              <FontAwesomeIcon icon={faPen} className="text-sm" />
+              Edit Profile
             </button>
-          </div>
-          <div className="min-w-0 flex-1">
-            {editSection !== 'displayName' ? (
-              <div className="flex items-center gap-3">
-                <p className="text-xl md:text-2xl font-semibold tracking-tight truncate">{form.display_name || 'Your name'}</p>
-                {form.role && (
-                  <span className="px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-300 text-xs font-medium inline-block ring-1 ring-blue-300/20">
-                    {form.role.charAt(0).toUpperCase() + form.role.slice(1)}
-                  </span>
-                )}
+          ) : (
+            <div className="flex gap-3">
+              <button 
+                type="button" 
+                onClick={() => setEditSection('none')} 
+                className="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Avatar Section */}
+          <div className="flex flex-col items-center lg:items-start">
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-white/20 overflow-hidden shadow-xl">
+                <Image src={avatarUrl} alt={'Avatar'} width={128} height={128} className="w-full h-full object-cover" unoptimized />
+              </div>
+              {editSection === 'profile' && (
                 <button
                   type="button"
-                  onClick={() => setEditSection('displayName')}
-                  className="text-xs bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1 rounded-full"
+                  className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center"
                 >
-                  Edit
+                  <div className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
+                    <FontAwesomeIcon icon={faCamera} />
+                    Change Photo
+                  </div>
                 </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="flex items-center gap-2">
-                <input
-                  name="display_name"
-                  value={form.display_name}
-                  onChange={handleChange}
-                  className="w-64 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
-                  placeholder="Your display name"
-                />
-                <button type="submit" disabled={saving} className="text-xs bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-2 px-3 rounded-full">
-                  {saving ? 'Saving...' : 'Save'}
-                </button>
-                <button type="button" onClick={() => setEditSection('none')} className="text-xs bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-3 rounded-full">
-                  Close
-                </button>
-              </form>
+              )}
+            </div>
+            {editSection === 'profile' && (
+              <p className="text-xs text-gray-400 mt-3 text-center lg:text-left">Click to change avatar</p>
             )}
           </div>
+
+          {/* Profile Info Section */}
+          <div className="flex-1 space-y-6">
+            {/* Display Name */}
+            <div>
+              {editSection !== 'profile' ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-3xl font-bold text-white">{form.display_name || 'Your name'}</h2>
+                    {form.role && (
+                      <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-300 text-sm font-medium border border-blue-500/30">
+                        {form.role.charAt(0).toUpperCase() + form.role.slice(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-300">Display Name</label>
+                  <input
+                    name="display_name"
+                    value={form.display_name}
+                    onChange={handleChange}
+                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200"
+                    placeholder="Enter your display name"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Bio Section */}
+            <div className="pt-6 border-t border-white/10">
+              {editSection !== 'profile' ? (
+                <div className="space-y-3">
+                  <h4 className="text-lg font-semibold text-white">About me</h4>
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <p className="text-gray-200 leading-relaxed">
+                      {form.bio || 'No bio added yet. Click edit to add a short description about yourself.'}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-gray-300">About me</label>
+                  <textarea 
+                    name="bio" 
+                    value={form.bio} 
+                    onChange={handleChange} 
+                    rows={4} 
+                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 resize-none" 
+                    placeholder="Tell us about yourself..." 
+                  />
+                  <div className="flex justify-end">
+                    <button type="submit" disabled={saving} onClick={handleSubmit} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200">
+                      <FontAwesomeIcon icon={faCheck} />
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Status Messages */}
         {message && (
-          <div className="mt-4 text-sm px-3 py-2 rounded bg-white/10 border border-white/10 text-gray-200">
+          <div className="mt-8 p-4 rounded-xl bg-white/10 border border-white/20 text-sm text-gray-200">
             {message}
           </div>
         )}
-        {editSection === 'avartar' && (
-          <div className="mt-4 p-3 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-300">
-            Avatar upload is not implemented yet.
+        
+        {editSection === 'profile' && (
+          <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 text-sm text-blue-200">
+            <div className="flex items-center gap-2">
+              <FontAwesomeIcon icon={faCamera} />
+              Avatar upload functionality will be available soon
+            </div>
           </div>
         )}
       </div>
@@ -198,36 +269,6 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 lg:col-span-2 hover:bg-white/[0.06] transition shadow-sm">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-            <div>
-              <h3 className="font-semibold tracking-tight">About me</h3>
-              <p className="text-xs text-gray-400">A short description about you</p>
-            </div>
-            <button type="button" onClick={() => setEditSection(editSection === 'bio' ? 'none' : 'bio')} className="text-xs bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-1">
-              <FontAwesomeIcon icon={faXmark} />
-              {editSection === 'bio' ? 'Close' : 'Edit'}
-            </button>
-          </div>
-          <div className="p-5">
-            {editSection !== 'bio' ? (
-              <p className="text-sm text-gray-300 whitespace-pre-wrap min-h-[48px] leading-6">{form.bio || '—'}</p>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="text-sm text-gray-400">Bio</label>
-                  <textarea name="bio" value={form.bio} onChange={handleChange} rows={4} className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40" placeholder="A short bio about you" />
-                </div>
-                <div className="flex items-center gap-3">
-                  <button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2">
-                    <FontAwesomeIcon icon={faCheck} />
-                    {saving ? 'Saving...' : 'Save'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );

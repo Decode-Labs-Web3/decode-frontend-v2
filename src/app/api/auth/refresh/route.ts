@@ -31,11 +31,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({
                 success: false,
                 statusCode: backendRes.status || 401,
-                message: 'Failed to refresh token'
+                message: 'Invalid session token'
             }, { status: backendRes.status || 401 });
         }
 
         const response = await backendRes.json();
+
         return NextResponse.json({
             success: true,
             statusCode: response.statusCode || 200,
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: false,
             statusCode: 500,
-            message: error instanceof Error ? error.message : 'Failed to refresh token'
+            message: error instanceof Error ? error.message : 'Invalid session token'
         }, { status: 500 });
     }
 }

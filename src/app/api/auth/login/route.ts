@@ -85,6 +85,14 @@ export async function POST(req: Request) {
         message: response.message || "Login successful"
       });
 
+      res.cookies.set("sessionId", response.data._id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 15,
+      });
+
       res.cookies.set("accessToken", response.data.access_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -93,19 +101,18 @@ export async function POST(req: Request) {
         maxAge: 60 * 15,
       });
 
+      const refreshTokenAge = Math.floor((new Date(response.data.expires_at).getTime() - Date.now()) / 1000);
+
       res.cookies.set("refreshToken", response.data.session_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        expires: new Date(response.data.expires_at) || new Date(Date.now() + 60 * 60 * 24 * 30),
+        maxAge: refreshTokenAge > 0 ? refreshTokenAge : 0
       });
 
-      console.log('Cookies set - accessToken:', response.data.access_token ? 'present' : 'missing');
-      console.log('Cookies set - refreshToken:', response.data.session_token ? 'present' : 'missing');
-
       return res;
-    }
+    }1
 
     if (response.success && response.statusCode === 400 && response.message === "Device fingerprint not trusted, send email verification") {
       const res = NextResponse.json({

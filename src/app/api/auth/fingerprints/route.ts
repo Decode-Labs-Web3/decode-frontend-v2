@@ -21,10 +21,12 @@ export async function GET(req: Request) {
         });
 
         if (!backendRes.ok) {
+            const error = await backendRes.json().catch(() => null);
+            console.log('Backend response Fingerprints API:', error);
             return NextResponse.json({
                 success: false,
                 statusCode: backendRes.status,
-                message: "Failed to fetch fingerprints"
+                message: error?.message || "Failed to fetch fingerprints"
             }, { status: backendRes.status });
         }
 

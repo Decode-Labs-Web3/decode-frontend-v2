@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
@@ -12,19 +12,23 @@ export async function POST(req: Request) {
             }, { status: 400 });
         }
 
+        
         const body = await req.json();
         const { sessionId } = body;
-
-        if (!sessionId) {
+        console.log('Request body Revoke API:', body);
+        
+        const cookieStore = await cookies();
+        const deviceId = cookieStore.get("sessionId")?.value;
+        const accessToken = cookieStore.get("accessToken")?.value;
+        
+        if (!sessionId || !deviceId) {
             return NextResponse.json({
                 success: false,
                 statusCode: 400,
-                message: 'Missing session ID'
+                message: 'Missing session ID or device ID'
             }, { status: 400 });
         }
-
-        const cookieStore = await cookies();
-        const accessToken = cookieStore.get("accessToken")?.value;
+        
 
         if (!accessToken) {
             return NextResponse.json({
@@ -38,27 +42,62 @@ export async function POST(req: Request) {
             session_id: sessionId
         };
 
+        console.log('Request body Revoke API:', requestBody);
+
         const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/session/revoke`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestBody),
+            body: JSON.stringify( requestBody ),
             cache: 'no-store',
             signal: AbortSignal.timeout(5000),
         });
 
         if (!backendRes.ok) {
+            const error = await backendRes.json().catch(() => null);
+            console.log('Backend response Revoke API:', error);
             return NextResponse.json({
                 success: false,
                 statusCode: backendRes.status || 400,
-                message: 'Failed to revoke all device fingerprints'
+                message: error?.message || 'Failed to revoke all device fingerprints'
             }, { status: backendRes.status || 400 });
         }
 
         const response = await backendRes.json();
-        console.log('Backend response:', response);
+        console.log('Backend response Revoke API:', response);
+
+        if (sessionId === deviceId) {
+            const res = NextResponse.json({
+                success: true,
+                statusCode: response.statusCode || 200,
+                message: response.message || 'Device fingerprint revoked'
+            }, { status: 200 });
+
+            cookieStore.set("sessionId", "", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/",
+                maxAge: 0,
+            });
+            cookieStore.set("accessToken", "", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/",
+                maxAge: 0,
+            });
+            cookieStore.set("refreshToken", "", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/",
+                maxAge: 0,
+            });
+            return res;
+        }
 
         return NextResponse.json({
             success: response.success || true,

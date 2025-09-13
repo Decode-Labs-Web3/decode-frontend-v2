@@ -13,8 +13,8 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const {deviceFingerprintId} = body;
-        
+        const { deviceFingerprintId } = body;
+
         if (!deviceFingerprintId) {
             return NextResponse.json({
                 success: false,
@@ -65,10 +65,22 @@ export async function POST(req: Request) {
             statusCode: response.statusCode || 200,
             message: response.message || 'Device fingerprint revoked'
         }, { status: response.statusCode || 200 });
-        res.cookies.delete('accessToken');
-        res.cookies.delete('refreshToken');
+        res.cookies.set('accessToken', '', {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+            path: '/',
+            maxAge: 0,
+        });
+        res.cookies.set('refreshToken', '', {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+            path: '/',
+            maxAge: 0
+        });
         return res;
-        
+
     } catch (error) {
         return NextResponse.json({
             success: false,
