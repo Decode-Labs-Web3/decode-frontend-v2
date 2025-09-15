@@ -1,23 +1,14 @@
 'use client';
 import Auth from '@/components/(auth)';
 import { useRouter } from 'next/navigation';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 
 export default function VerifyLogin() {
     const router = useRouter();
     const [error, setError] = useState<string>('');
-    const [email, setEmail] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
     const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
-    const [resendLoading, setResendLoading] = useState<boolean>(false);
-
-    useEffect(() => {
-        const storedEmail = sessionStorage.getItem('login_email');
-        if (storedEmail) {
-            setEmail(storedEmail);
-        }
-    }, []);
 
     const handleVerify = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,15 +23,10 @@ export default function VerifyLogin() {
         setError('');
 
         try {
-            if (!email) {
-                setError('Email not found. Please try logging in again.');
-                return;
-            }
-
             const response = await fetch('/api/auth/verify-login', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
+                headers: {
+                    'Content-Type': 'application/json',
                     'frontend-internal-request': 'true'
                 },
                 body: JSON.stringify({ code }),
@@ -128,31 +114,6 @@ export default function VerifyLogin() {
         e.preventDefault();
     };
 
-    const handleResend = async () => {
-        setResendLoading(true);
-        try {
-            if (!email) {
-                setError('Email not found. Please try logging in again.');
-                return;
-            }
-
-            // TODO: Implement resend verification API call
-            // const response = await fetch('/api/auth/resend-verification', { 
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ email_or_username: email })
-            // });
-
-            // For now, show a message that resend is not implemented
-            setError('Resend functionality is not yet implemented. Please check your email for the verification code.');
-        } catch (error) {
-            console.error('Resend error:', error);
-            setError('Failed to resend code. Please try again.');
-        } finally {
-            setResendLoading(false);
-        }
-    };
-
     return (
         <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
             <Auth.BackgroundAccents />
@@ -207,18 +168,6 @@ export default function VerifyLogin() {
                         Verify
                     </Auth.SubmitButton>
                 </form>
-
-                <p className="text-center text-gray-400">
-                    Didn&apos;t get the code?{' '}
-                    <button
-                        type="button"
-                        className="text-blue-500 hover:text-blue-400 hover:underline font-medium transition-colors disabled:text-blue-600 disabled:cursor-not-allowed"
-                        onClick={handleResend}
-                        disabled={resendLoading}
-                    >
-                        {resendLoading ? 'Sending...' : 'Resend'}
-                    </button>
-                </p>
             </Auth.AuthCard>
 
             <Auth.BrandLogos />
