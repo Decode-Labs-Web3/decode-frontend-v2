@@ -1,207 +1,227 @@
-import crypto from 'crypto';
-
-export interface DeviceInfo {
-  userAgent: string;
-  platform: string;
-  mobile: string;
-  acceptLanguage: string;
-  acceptEncoding: string;
-  secChUa: string;
-  secChUaPlatform: string;
-  secChUaMobile: string;
-  secChUaArch: string;
-  secChUaModel: string;
-  secChUaPlatformVersion: string;
-  secChUaFullVersion: string;
-  secChUaBitness: string;
-  secChUaFormFactor: string;
-}
-
-export interface FingerprintResult {
+export type FingerprintResult = {
   fingerprint_hashed: string;
-  device: string;
   browser: string;
+  device: string;
+};
+
+interface UserAgentData {
+  brands: Array<{ brand: string; version: string }>;
 }
 
-/**
- * Extract browser name from user agent string
- * @param req - The incoming request object
- * @returns Browser name (Chrome, Safari, Firefox, etc.)
- */
-function getBrowserName(req: Request): string {
-  const userAgent = req.headers.get('user-agent') || '';
-  
-  if (userAgent.includes('Cốc Cốc') || userAgent.includes('CocCoc')) {
-    return 'Cốc Cốc';
-  }
-  if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
-    return 'Chrome';
-  }
-  if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-    return 'Safari';
-  }
-  if (userAgent.includes('Firefox')) {
-    return 'Firefox';
-  }
-  if (userAgent.includes('Edg')) {
-    return 'Edge';
-  }
-  if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
-    return 'Opera';
-  }
-  if (userAgent.includes('Brave')) {
-    return 'Brave';
-  }
-  
-  return 'Unknown';
+interface NavigatorWithUserAgentData extends Navigator {
+  userAgentData?: UserAgentData;
 }
 
-/**
- * Extract operating system from user agent string
- * @param req - The incoming request object
- * @returns Operating system name (macOS, Windows, Linux, iOS, Android, etc.)
- */
-function getOperatingSystem(req: Request): string {
-  const userAgent = req.headers.get('user-agent') || '';
-  
-  // Check for mobile devices first
-  if (userAgent.includes('iPhone')) {
-    return 'iOS';
-  }
-  if (userAgent.includes('iPad')) {
-    return 'iPadOS';
-  }
-  if (userAgent.includes('Android')) {
-    return 'Android';
-  }
-  
-  // Check for desktop operating systems
-  if (userAgent.includes('Mac OS X') || userAgent.includes('Macintosh')) {
-    return 'macOS';
-  }
-  if (userAgent.includes('Windows NT')) {
-    return 'Windows';
-  }
-  if (userAgent.includes('Linux')) {
-    return 'Linux';
-  }
-  if (userAgent.includes('Arch')) {
-    return 'Arch';
-  }
-  if (userAgent.includes('Debian')) {
-    return 'Debian';
-  }
-  if (userAgent.includes('Ubuntu')) {
-    return 'Ubuntu';
-  }
-  if (userAgent.includes('Fedora')) {
-    return 'Fedora';
-  }
-  return 'Unknown';
+
+export async function fingerprintService(userAgent?: string): Promise<FingerprintResult> {
+  const device = detectOS(userAgent);
+  const browser = detectBrowser(userAgent);
+  const timezone = getTimeZone();
+  const language = getLanguage();
+  const audioFingerprint = await getAudioFingerprint(userAgent);
+  console.log('1. Timezone:', getTimeZone());
+  console.log('2. Language:', getLanguage());
+  console.log('3. Audio Fingerprint:', await getAudioFingerprint(userAgent));
+  console.log('4. Fingerprint:', { device, browser, timezone, language, audioFingerprint, userAgent });
+
+  const payload = JSON.stringify({ device, browser, timezone, language, audioFingerprint, userAgent });
+
+  const fingerprint_hashed = await sha256Hex(payload);
+
+  return { fingerprint_hashed, browser, device };
 }
 
-export class FingerprintService {
-  /**
-   * Generate a device fingerprint hash from request headers
-   * @param req - The incoming request object
-   * @returns FingerprintResult with hash and metadata
-   */
-  static generateFingerprint(req: Request): FingerprintResult {
-    // Extract device information from request headers
-    const deviceInfo: DeviceInfo = {
-      userAgent: req.headers.get('user-agent') || '',
-      platform: req.headers.get('sec-ch-ua-platform') || 'unknown',
-      mobile: req.headers.get('sec-ch-ua-mobile') || '?0',
-      acceptLanguage: req.headers.get('accept-language') || '',
-      acceptEncoding: req.headers.get('accept-encoding') || '',
-      secChUa: req.headers.get('sec-ch-ua') || '',
-      secChUaPlatform: req.headers.get('sec-ch-ua-platform') || '',
-      secChUaMobile: req.headers.get('sec-ch-ua-mobile') || '',
-      secChUaArch: req.headers.get('sec-ch-ua-arch') || '',
-      secChUaModel: req.headers.get('sec-ch-ua-model') || '',
-      secChUaPlatformVersion: req.headers.get('sec-ch-ua-platform-version') || '',
-      secChUaFullVersion: req.headers.get('sec-ch-ua-full-version') || '',
-      secChUaBitness: req.headers.get('sec-ch-ua-bitness') || '',
-      secChUaFormFactor: req.headers.get('sec-ch-ua-form-factor') || ''
-    };
+async function sha256Hex(str: string): Promise<string> {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest("SHA-256", enc.encode(str));
+  const bytes = new Uint8Array(buf);
+  return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+}
 
-    // Create a deterministic device string using key characteristics
-    const deviceType = deviceInfo.mobile === '?0' ? 'desktop' : 'mobile';
-    const platformShort = deviceInfo.platform.toLowerCase().replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
-    const browserName = getBrowserName(req).toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
-    
-    // Create a consistent device string using only stable characteristics
-    const deviceString = `${deviceType}_${platformShort}_${browserName}_${deviceInfo.userAgent.slice(0, 50)}`;
-    
-    // Generate SHA-256 hash of the device info
-    const hash = crypto.createHash('sha256');
-    hash.update(deviceString);
-    const fullHash = hash.digest('hex');
-    
-    // Backend requires ≤64 characters (not 32-128 as documented)
-    // SHA-256 hash is 64 characters, so we'll use first 48 characters to be safe
-    const fingerprint_hashed = fullHash.slice(0, 48);
-    
-    // Validate against backend requirements
-    const hashLength = fingerprint_hashed.length;
-    const meetsRequirements = hashLength >= 32 && hashLength <= 64;
-    
-    return {
-      fingerprint_hashed,
-      device: getOperatingSystem(req),
-      browser: getBrowserName(req),
-    };
+function getTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown";
+  } catch {
+    return "Unknown";
+  }
+}
+
+function getLanguage(): string {
+  const nav = typeof navigator !== "undefined" ? navigator : ({} as Navigator);
+  return (nav.language || (nav.languages && nav.languages[0]) || "en") as string;
+}
+
+function detectBrowser(userAgent?: string): string {
+  // Use provided user agent or try to get from navigator
+  let ua = userAgent;
+  
+  if (!ua && typeof navigator !== "undefined") {
+    ua = navigator.userAgent || "";
+  }
+  
+  if (!ua) {
+    console.log("Browser detection: No user agent available");
+    return "Unknown";
   }
 
-  /**
-   * Validate if a fingerprint meets backend requirements
-   * @param fingerprint - The fingerprint to validate
-   * @returns Validation result
-   */
-  static validateFingerprint(fingerprint: string): {
-    isValid: boolean;
-    length: number;
-    meetsMinLength: boolean;
-    meetsMaxLength: boolean;
-    errors: string[];
-  } {
-    const length = fingerprint.length;
-    const meetsMinLength = length >= 32;
-    const meetsMaxLength = length <= 64;
-    const isValid = meetsMinLength && meetsMaxLength;
-    
-    const errors: string[] = [];
-    if (!meetsMinLength) errors.push(`Fingerprint too short: ${length} chars (minimum: 32)`);
-    if (!meetsMaxLength) errors.push(`Fingerprint too long: ${length} chars (maximum: 64)`);
-    
-    return {
-      isValid,
-      length,
-      meetsMinLength,
-      meetsMaxLength,
-      errors
-    };
+  console.log("Browser detection: User Agent =", ua);
+  
+  // Check for Edge first (newer versions)
+  if (/edg\//i.test(ua)) {
+    console.log("Browser detection: Detected Edge");
+    return "Edge";
+  }
+  
+  // Check for Opera
+  if (/opr\//i.test(ua) || /opera/i.test(ua)) {
+    console.log("Browser detection: Detected Opera");
+    return "Opera";
+  }
+  
+  // Check for Chrome (but not Edge or Opera)
+  if (/chrome\//i.test(ua) && !/edg\//i.test(ua) && !/opr\//i.test(ua)) {
+    console.log("Browser detection: Detected Chrome");
+    return "Chrome";
+  }
+  
+  // Check for Firefox
+  if (/firefox/i.test(ua)) {
+    console.log("Browser detection: Detected Firefox");
+    return "Firefox";
+  }
+  
+  // Check for Safari (but not Chrome, Edge, or Opera)
+  if (/safari/i.test(ua) && !/chrome|opr|edg/i.test(ua)) {
+    console.log("Browser detection: Detected Safari");
+    return "Safari";
+  }
+  
+  // Check for Internet Explorer
+  if (/msie/i.test(ua) || /trident/i.test(ua)) {
+    console.log("Browser detection: Detected Internet Explorer");
+    return "Internet Explorer";
+  }
+  
+  // Try using userAgentData if available (for newer browsers)
+  const nav = navigator as NavigatorWithUserAgentData;
+  const uaData = nav.userAgentData;
+  console.log("Browser detection: userAgentData =", uaData);
+  if (uaData && uaData.brands && Array.isArray(uaData.brands)) {
+    const brand = uaData.brands.map((b) => b.brand).join(" ");
+    console.log("Browser detection: brands =", brand);
+    if (brand.includes("Chromium") || brand.includes("Google Chrome")) return "Chrome";
+    if (brand.includes("Microsoft Edge")) return "Edge";
+    if (brand.includes("Opera")) return "Opera";
+    if (brand.includes("Safari")) return "Safari";
+  }
+  
+  console.log("Browser detection: No browser detected, returning Unknown");
+  return "Unknown";
+}
+
+
+function detectOS(userAgent?: string): string {
+  let ua = userAgent;
+  let p = "";
+  
+  if (!ua && typeof navigator !== "undefined") {
+    const nav = navigator as Navigator;
+    ua = nav.userAgent || "";
+    p = nav.platform || "";
+  }
+  
+  if (!ua) {
+    return "Unknown";
   }
 
-  /**
-   * Get fingerprint requirements for reference
-   * @returns Backend fingerprint requirements
-   */
-  static getRequirements() {
-    return {
-      minLength: 32,
-      maxLength: 64,
-      format: 'SHA-256 hash (truncated to 48 chars)',
-      type: 'string',
-      algorithm: 'SHA-256'
-    };
+  const isTouchMac = /Mac/.test(p) && typeof document !== "undefined" && "ontouchend" in document;
+  if (/iPad/.test(ua) || isTouchMac) return "iPadOS";
+  if (/iPhone|iPod/.test(ua)) return "iOS";
+
+  if (/Mac/.test(p) || /Mac OS X/.test(ua)) return "macOS";
+  if (/Win/.test(p) || /Windows/.test(ua)) return "Windows";
+  if (/Android/.test(ua)) return "Android";
+
+  if (/Ubuntu/i.test(ua)) return "Ubuntu";
+  if (/Arch/i.test(ua)) return "Arch Linux";
+  if (/Linux/i.test(ua)) return "Linux";
+
+  return "Unknown";
+}
+
+async function getAudioFingerprint(userAgent?: string): Promise<string> {
+  async function deterministicFallback(): Promise<string> {
+    const nav = typeof navigator !== "undefined" 
+      ? (navigator as Navigator & { hardwareConcurrency?: number; deviceMemory?: number }) 
+      : (undefined as unknown as (Navigator & { hardwareConcurrency?: number; deviceMemory?: number }) | undefined);
+    const lang = nav?.language || (nav?.languages && nav.languages[0]) || "en";
+    const tz = (() => {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      } catch {
+        return "UTC";
+      }
+    })();
+    const hc = (nav && typeof nav.hardwareConcurrency === 'number') ? nav.hardwareConcurrency : 0;
+    const dm = (nav && typeof nav.deviceMemory === 'number') ? nav.deviceMemory : 0;
+    const colorDepth = typeof screen !== "undefined" ? screen.colorDepth : 24;
+    const pixelRatio = typeof window !== "undefined" ? (window.devicePixelRatio || 1) : 1;
+    const seed = JSON.stringify({
+      ua: userAgent || (typeof navigator !== "undefined" ? navigator.userAgent : ""),
+      lang,
+      tz,
+      hc,
+      dm,
+      colorDepth,
+      pixelRatio,
+      osc: { type: "sawtooth", f: 1000 },
+      comp: { t: -50, k: 40, r: 12, a: 0, rel: 0.25 },
+    });
+    const full = await sha256Hex(seed);
+    return full.slice(0, 16);
   }
 
-  /**
-   * Generate a test fingerprint for development/testing
-   * @returns A consistent test fingerprint
-   */
-  static generateTestFingerprint(): string {
-    return "test_fingerprint_48_chars_long_for_testing_purposes";
+  try {
+    if (typeof window === "undefined") {
+      return await deterministicFallback();
+    }
+
+    const sampleRate = 44100;
+    const frameCount = 4096;
+    const windowWithAudio = window as Window & { 
+      OfflineAudioContext?: typeof OfflineAudioContext; 
+      webkitOfflineAudioContext?: typeof OfflineAudioContext 
+    };
+    const OfflineCtx = windowWithAudio.OfflineAudioContext || windowWithAudio.webkitOfflineAudioContext;
+    if (!OfflineCtx) return await deterministicFallback();
+
+    const offline = new OfflineCtx(1, frameCount, sampleRate);
+
+    const osc = offline.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.value = 1000;
+
+    const comp = offline.createDynamicsCompressor();
+    comp.threshold.value = -50;
+    comp.knee.value = 40;
+    comp.ratio.value = 12;
+    comp.attack.value = 0;
+    comp.release.value = 0.25;
+
+    osc.connect(comp);
+    comp.connect(offline.destination);
+    osc.start(0);
+
+    const rendered = await offline.startRendering();
+    const ch = rendered.getChannelData(0);
+
+    let acc = 0 >>> 0;
+    for (let i = 0; i < ch.length; i += 64) {
+      const v = Math.max(-1, Math.min(1, ch[i]));
+      acc = (acc * 31 + Math.round((v + 1) * 1e6)) >>> 0;
+    }
+    return acc.toString(16).padStart(8, "0");
+  } catch {
+    return await deterministicFallback();
   }
 }

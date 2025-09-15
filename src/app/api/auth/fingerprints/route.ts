@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { fingerprintService } from "@/app/services/fingerprint.service";
 
 export async function GET(req: Request) {
     try {
@@ -14,10 +15,19 @@ export async function GET(req: Request) {
             }, { status: 400 });
         }
 
+        const userAgent = req.headers.get('user-agent') || '';
+        const fingerprintResult = await fingerprintService(userAgent);
+        const { fingerprint_hashed } = fingerprintResult;
+        console.log('Fingerprint result from fingerprints api:', fingerprintResult);
+
         const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/fingerprints`, {
+            method: 'GET',
             headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
+                'Authorization': `Bearer ${accessToken}`,
+                'fingerprint': fingerprint_hashed,
+            },
+            cache: 'no-store',
+            signal: AbortSignal.timeout(5000),
         });
 
         if (!backendRes.ok) {

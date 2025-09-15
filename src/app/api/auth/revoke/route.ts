@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextResponse, userAgent } from "next/server";
+import { fingerprintService } from "@/app/services/fingerprint.service";
 
 export async function POST(req: Request) {
     try {
@@ -42,13 +43,17 @@ export async function POST(req: Request) {
             session_id: sessionId
         };
 
-        console.log('Request body Revoke API:', requestBody);
+        const userAgent = req.headers.get('user-agent') || '';
+        const fingerprintResult = await fingerprintService(userAgent);
+        const { fingerprint_hashed } = fingerprintResult;
+
 
         const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/session/revoke`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'fingerprint': fingerprint_hashed,
             },
             body: JSON.stringify( requestBody ),
             cache: 'no-store',

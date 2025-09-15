@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { FingerprintService } from "@/app/services/fingerprint.service";
+import { fingerprintService } from "@/app/services/fingerprint.service";
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +25,8 @@ export async function POST(req: Request) {
 
     let fingerprintResult;
     try {
-      fingerprintResult = FingerprintService.generateFingerprint(req);
+      const userAgent = req.headers.get('user-agent') || '';
+      fingerprintResult = await fingerprintService(userAgent);
       console.log('Fingerprint result:', fingerprintResult);
     } catch (fingerprintError) {
       console.error('Fingerprint generation failed:', fingerprintError);
@@ -33,21 +34,7 @@ export async function POST(req: Request) {
     }
 
     const { fingerprint_hashed, device, browser } = fingerprintResult;
-    console.log('Backend URL:', process.env.BACKEND_URL);
-
-    if (!process.env.BACKEND_URL) {
-      throw new Error('BACKEND_URL environment variable is not set');
-    }
-
-    const validation = FingerprintService.validateFingerprint(fingerprint_hashed);
-    if (!validation.isValid) {
-      console.error('Fingerprint validation failed:', validation.errors);
-      return NextResponse.json({
-        success: false,
-        statusCode: 400,
-        message: validation.errors.join(', ')
-      }, { status: 400 });
-    }
+    console.log('Fingerprint result from login api:', fingerprintResult);
 
     const requestBody = {
       email_or_username,
@@ -112,7 +99,7 @@ export async function POST(req: Request) {
       });
 
       return res;
-    }1
+    }
 
     if (response.success && response.statusCode === 400 && response.message === "Device fingerprint not trusted, send email verification") {
       const res = NextResponse.json({

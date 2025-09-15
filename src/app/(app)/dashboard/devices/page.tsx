@@ -153,13 +153,11 @@ export default function Page() {
                   <span className="truncate">{fingerprint.browser}</span>
                 </p></h3>
               </div>
-              {fingerprint.sessions.length > 1 && (
-                <button
-                  onClick={() => handleRevokeAll(fingerprint._id)}
-                  className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors w-full sm:w-auto">
-                  Revoke All
-                </button>
-              )}
+              <button
+                onClick={() => handleRevokeAll(fingerprint._id)}
+                className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors w-full sm:w-auto">
+                Device Revoked
+              </button>
             </div>
 
             <div className="space-y-2 sm:space-y-3">
@@ -185,7 +183,7 @@ export default function Page() {
                     <button
                       onClick={() => handleRevoke(session._id)}
                       className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors flex-shrink-0 px-2 py-1 rounded hover:bg-red-400/10">
-                      Revoke
+                      Revoked
                     </button>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { fingerprintService } from "@/app/services/fingerprint.service";
 
 export async function GET(req: Request) {
     try {
@@ -13,8 +14,6 @@ export async function GET(req: Request) {
         }
         const cookieStore = await cookies();
         const accessToken = cookieStore.get("accessToken")?.value;
-
-        console.log('Access token:', accessToken);
         
         if (!accessToken) {
             return NextResponse.json({
@@ -24,10 +23,16 @@ export async function GET(req: Request) {
             }, { status: 401 });
         }
 
+        const userAgent = req.headers.get('user-agent') || '';
+        const fingerprintResult = await fingerprintService(userAgent);
+        const { fingerprint_hashed } = fingerprintResult;
+        console.log('Fingerprint result from overview api:', fingerprintResult);
+
         const backendRes = await fetch(`${process.env.BACKEND_URL}/users/profile/me`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${accessToken}`
+                'Authorization': `Bearer ${accessToken}`,
+                'fingerprint': fingerprint_hashed,
             },
             cache: 'no-store',
             signal: AbortSignal.timeout(5000),

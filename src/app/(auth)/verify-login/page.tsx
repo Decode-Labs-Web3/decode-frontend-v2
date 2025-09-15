@@ -65,10 +65,8 @@ export default function VerifyLogin() {
         next[index] = value;
         setDigits(next);
 
-        // Clear error when user starts typing
         if (error) setError('');
 
-        // Auto-focus next input
         if (value && index < 5) {
             inputsRef.current[index + 1]?.focus();
         }
@@ -89,15 +87,12 @@ export default function VerifyLogin() {
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
         const pastedText = e.clipboardData.getData('text');
 
-        // Check if it's in the format "fingerprint-email-verification:XXXXXX"
         const match = pastedText.match(/fingerprint-email-verification:([a-f0-9]{6})/i);
         let text = '';
 
         if (match) {
-            // Extract the 6-character code from the format
             text = match[1];
         } else {
-            // Fallback to original behavior - extract only digits/letters
             text = pastedText.replace(/[^a-f0-9]/gi, '').slice(0, 6);
         }
 
@@ -107,7 +102,6 @@ export default function VerifyLogin() {
         for (let i = 0; i < text.length; i++) next[i] = text[i];
         setDigits(next);
 
-        // Clear error when pasting
         if (error) setError('');
 
         inputsRef.current[Math.min(text.length, 5)]?.focus();
@@ -128,10 +122,10 @@ export default function VerifyLogin() {
                 <div className="mb-4 text-center">
                     <button
                         type="button"
-                        onClick={() => router.push('/login')}
+                        onClick={() => router.push('/')}
                         className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
                     >
-                        ← Back to Login
+                        ← Back to Home
                     </button>
                 </div>
 
