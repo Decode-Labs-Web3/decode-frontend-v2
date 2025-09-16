@@ -2,6 +2,20 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/app/services/fingerprint.service";
 
+interface Session {
+    "_id": string;
+    "user_id": string;
+    "device_fingerprint_id": string;
+    "session_token": string;
+    "app": string;
+    "expires_at": string;
+    "is_active": boolean;
+    "last_used_at": string;
+    "createdAt": string;
+    "updatedAt": string;
+    "__v": number;
+}
+
 export async function POST(req: Request) {
     try {
         const internalRequest = req.headers.get('frontend-internal-request');
@@ -14,9 +28,9 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { deviceFingerprintId } = body;
+        const { deviceId, sessions } = body;
 
-        if (!deviceFingerprintId) {
+        if (!deviceId) {
             return NextResponse.json({
                 success: false,
                 statusCode: 400,
@@ -25,7 +39,16 @@ export async function POST(req: Request) {
         }
 
         const cookieStore = await cookies();
+        const sessionId = cookieStore.get("sessionId")?.value;
         const accessToken = cookieStore.get("accessToken")?.value;
+
+        if (!sessionId) {
+            return NextResponse.json({
+                success: false,
+                statusCode: 400,
+                message: 'Missing session ID'
+            }, { status: 400 });
+        }
 
         if (!accessToken) {
             return NextResponse.json({
@@ -35,15 +58,17 @@ export async function POST(req: Request) {
             }, { status: 401 });
         }
 
+        const reload = sessions.some((session: Session) => session._id === sessionId);
+
         const requestBody = {
-            device_fingerprint_id: deviceFingerprintId
+            device_fingerprint_id: deviceId,
         };
 
         const userAgent = req.headers.get('user-agent') || '';
         const fingerprintResult = await fingerprintService(userAgent);
         const { fingerprint_hashed } = fingerprintResult;
 
-        const backendRes = await fetch(`${process.env.BACKEND_URL}/auth/fingerprints/revoke`, {
+        const backendResponse = await fetch(`${process.env.BACKEND_URL}/auth/fingerprints/revoke`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -55,22 +80,24 @@ export async function POST(req: Request) {
             signal: AbortSignal.timeout(5000),
         });
 
-        if (!backendRes.ok) {
+        if (!backendResponse.ok) {
             return NextResponse.json({
                 success: false,
-                statusCode: backendRes.status || 400,
+                statusCode: backendResponse.status || 400,
                 message: 'Failed to revoke all device fingerprints'
-            }, { status: backendRes.status || 400 });
+            }, { status: backendResponse.status || 400 });
         }
 
-        const response = await backendRes.json();
-        console.log('Backend response:', response);
-
+        const response = await backendResponse.json();
+        console.log('Backend response Revoke All API:', response);
+        
         const res = NextResponse.json({
             success: response.success || true,
             statusCode: response.statusCode || 200,
-            message: response.message || 'Device fingerprint revoked'
+            message: response.message || 'Device fingerprint revoked',
+            reload: reload
         }, { status: response.statusCode || 200 });
+        
         res.cookies.set('accessToken', '', {
             httpOnly: true,
             sameSite: "lax",

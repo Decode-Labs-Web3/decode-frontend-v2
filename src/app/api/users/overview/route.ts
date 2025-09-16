@@ -26,7 +26,6 @@ export async function GET(req: Request) {
         const userAgent = req.headers.get('user-agent') || '';
         const fingerprintResult = await fingerprintService(userAgent);
         const { fingerprint_hashed } = fingerprintResult;
-        console.log('Fingerprint result from overview api:', fingerprintResult);
 
         const backendRes = await fetch(`${process.env.BACKEND_URL}/users/profile/me`, {
             method: 'GET',

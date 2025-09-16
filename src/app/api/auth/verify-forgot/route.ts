@@ -36,20 +36,19 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: backendRes.status || 401,
-          message: error?.message || "Verification failed",
-        }, { status: backendRes.status || 401 });
+      return NextResponse.json({
+        success: false,
+        statusCode: backendRes.status || 400,
+        message: error?.message || "Verification failed",
+      }, { status: backendRes.status || 400 });
     }
 
     const response = await backendRes.json().catch(() => ({}));
-    if (response.success) {
+    if (response.success && response.statusCode === 200 && response.message === "Password code verified") {
       const res = NextResponse.json({
         success: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Verification successful",
+        message: response.message || "Password code verified",
       });
 
       res.cookies.set('forgot_code', code, {
@@ -57,26 +56,25 @@ export async function POST(req: Request) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        maxAge: 60 * 10,
+        maxAge: 60 * 5,
+      });
+
+      res.cookies.set('gate-key-for-change-password', 'true', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60,
       });
 
       return res;
     }
 
-    // Handle other responses
-    const res = NextResponse.json({
+    return NextResponse.json({
       success: false,
       statusCode: response.statusCode || 400,
-      message: response.message || "Verification failed",
+      message: response.message || "Invalid password reset code",
     }, { status: 400 });
-    res.cookies.set('forgot_code', '', {
-      maxAge: 0,
-      path: '/',
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
-    return res;
 
   } catch (error) {
     return NextResponse.json({

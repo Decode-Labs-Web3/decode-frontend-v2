@@ -62,15 +62,15 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: false,
       statusCode: response.statusCode || 400,
-      message: response.message || "Verification failed",
+      message: response.message || "Invalid email verification code",
     }, { status: 400 });
 
   } catch (error) {
     return NextResponse.json({
       success: false,
-      statusCode: 400,
+      statusCode: 500,
       message: error instanceof Error ? error.message : "Server error from verify register",
-    }, { status: 400 });
+    }, { status: 500 });
   }
 }
 

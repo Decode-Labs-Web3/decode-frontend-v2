@@ -64,7 +64,6 @@ export async function POST(req: Request) {
       message: response.message || "Password changed successfully"
     });
 
-    // Clear the forgot_code cookie on success
     res.cookies.set("forgot_code", "", {
       maxAge: 0,
       path: "/",

@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { NextResponse, userAgent } from "next/server";
+import { NextResponse } from "next/server";
 import { fingerprintService } from "@/app/services/fingerprint.service";
 
 export async function POST(req: Request) {

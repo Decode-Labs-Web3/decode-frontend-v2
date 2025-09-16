@@ -61,11 +61,12 @@ export default function Page() {
           signal: AbortSignal.timeout(5000),
         });
         const responseData = await apiResponse.json();
+        console.log('Response data from API: ', responseData);
         if (responseData.success || responseData.statusCode === 200 || responseData.message === 'Device fingerprint fetched') {
           setFingerprintsData(responseData.data);
         }
         else if (responseData.statusCode === 401) {
-          router.push('/');
+          setFingerprintsData([]);
         }
         else {
           console.log('Fingerprints data from API: ', responseData);
@@ -77,7 +78,7 @@ export default function Page() {
     fetchFingerprints();
   }, [version]);
 
-  const handleRevokeAll = async (deviceFingerprintId: string) => {
+  const handleRevokeAll = async (deviceId: string, sessions: Session[]) => {
     try {
       const apiResponse = await fetch(`/api/auth/revoke-all`, {
         method: 'POST',
@@ -85,14 +86,21 @@ export default function Page() {
           'Content-Type': 'application/json',
           'frontend-internal-request': 'true'
         },
-        body: JSON.stringify({ deviceFingerprintId }),
+        body: JSON.stringify({ deviceId, sessions }),
         cache: 'no-store',
         credentials: 'include',
         signal: AbortSignal.timeout(5000),
       });
+
+
       const responseData = await apiResponse.json();
       if (responseData.success || responseData.statusCode === 200 || responseData.message === 'Device fingerprint revoked') {
-        router.push('/');
+        if (responseData.reload) {
+          router.push('/');
+        }
+        else {
+          setVersion(version + 1);
+        }
       }
       else if (responseData.statusCode === 401) {
         router.push('/');
@@ -154,7 +162,7 @@ export default function Page() {
                 </p></h3>
               </div>
               <button
-                onClick={() => handleRevokeAll(fingerprint._id)}
+                onClick={() => handleRevokeAll(fingerprint._id , fingerprint.sessions)}
                 className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors w-full sm:w-auto">
                 Device Revoked
               </button>

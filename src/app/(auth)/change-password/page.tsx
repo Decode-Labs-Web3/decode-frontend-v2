@@ -36,7 +36,7 @@ export default function ChangePassword() {
         }
 
         try {
-            const response = await fetch('/api/auth/change-password', {
+            const apiResponse = await fetch('/api/auth/change-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -47,19 +47,19 @@ export default function ChangePassword() {
                 signal: AbortSignal.timeout(5000),
             });
 
-            const responseData = await response.json();
+            const responseData = await apiResponse.json();
 
-            if (responseData.statusCode === 400 || !responseData.success === false) {
+            if (responseData.statusCode === 400 && !responseData.success) {
                 throw new Error(responseData.message);
             }
 
             router.push('/login');
 
-        } catch (error: any) {
-            if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+        } catch (error: unknown) {
+            if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
                 setError("Request timeout/aborted. Please try again.");
             } else {
-                const message = error instanceof Error ? error.message : error?.message || 'Password change failed';
+                const message = error instanceof Error ? error.message : error instanceof Error ? error.message : 'Password change failed';
                 setError(message);
             }
         } finally {
@@ -79,7 +79,7 @@ export default function ChangePassword() {
 
                 <form noValidate onSubmit={handleSubmit}>
                     <Auth.PasswordField
-                        id="password"
+                        id="new_password"
                         value={formData.new_password}
                         onChange={handleChange}
                         placeholder="New password"
@@ -91,7 +91,7 @@ export default function ChangePassword() {
                     />
 
                     <Auth.PasswordField
-                        id="confirm"
+                        id="confirm_new_password"
                         value={formData.confirm_new_password}
                         onChange={handleChange}
                         placeholder="Confirm new password"

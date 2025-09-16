@@ -44,18 +44,36 @@ export async function POST(req: Request) {
     }
 
     const response = await backendRes.json().catch(() => ({}));
+    if (response.success && response.statusCode === 200 && response.message === "Password reset email sent") {
+      const res = NextResponse.json({
+        success: true,
+        statusCode: response?.statusCode || 200,
+        message: response?.message || 'Password reset email sent'
+      }, { status: 200 });
+
+      res.cookies.set('gate-key-for-verify-forgot', 'true', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60,
+      });
+
+      return res;
+    }
+
     return NextResponse.json({
-      success: true,
-      statusCode: response?.statusCode || 200,
-      message: response?.message || 'Password reset email sent'
-    }, { status: 200 });
+      success: false,
+      statusCode: response?.statusCode || 400,
+      message: response?.message || 'User not found',
+    }, { status: 400 });
   }
   catch (error) {
     return NextResponse.json({
       success: false,
-      statusCode: 400,
+      statusCode: 500,
       message: error instanceof Error ? error.message : "Server error from forgot password",
-    }, { status: 400 });
+    }, { status: 500 });
   }
 }
 

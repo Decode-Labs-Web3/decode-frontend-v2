@@ -23,18 +23,9 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    let fingerprintResult;
-    try {
-      const userAgent = req.headers.get('user-agent') || '';
-      fingerprintResult = await fingerprintService(userAgent);
-      console.log('Fingerprint result:', fingerprintResult);
-    } catch (fingerprintError) {
-      console.error('Fingerprint generation failed:', fingerprintError);
-      throw new Error(`Fingerprint generation failed: ${fingerprintError instanceof Error ? fingerprintError.message : 'Unknown error'}`);
-    }
-
+    const userAgent = req.headers.get('user-agent') || '';
+    const fingerprintResult = await fingerprintService(userAgent);
     const { fingerprint_hashed, device, browser } = fingerprintResult;
-    console.log('Fingerprint result from login api:', fingerprintResult);
 
     const requestBody = {
       email_or_username,

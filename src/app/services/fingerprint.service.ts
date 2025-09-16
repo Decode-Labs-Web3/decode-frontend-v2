@@ -19,10 +19,6 @@ export async function fingerprintService(userAgent?: string): Promise<Fingerprin
   const timezone = getTimeZone();
   const language = getLanguage();
   const audioFingerprint = await getAudioFingerprint(userAgent);
-  console.log('1. Timezone:', getTimeZone());
-  console.log('2. Language:', getLanguage());
-  console.log('3. Audio Fingerprint:', await getAudioFingerprint(userAgent));
-  console.log('4. Fingerprint:', { device, browser, timezone, language, audioFingerprint, userAgent });
 
   const payload = JSON.stringify({ device, browser, timezone, language, audioFingerprint, userAgent });
 
