@@ -1,7 +1,7 @@
 'use client';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { PasswordValidationService } from "@/app/services/password-validation.service";
+import { PasswordValidationService } from "@/services/password-validation.service";
 
 interface PasswordValidationProps {
     password: string;

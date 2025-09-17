@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/app/services/fingerprint.service";
+import { fingerprintService } from "@/services/fingerprint.service";
 
 interface Session {
     "_id": string;
@@ -28,9 +28,9 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { deviceId, sessions } = body;
+        const { deviceFingerprintId, sessions, currentSessionId } = body;
 
-        if (!deviceId) {
+        if (!deviceFingerprintId) {
             return NextResponse.json({
                 success: false,
                 statusCode: 400,
@@ -58,10 +58,13 @@ export async function POST(req: Request) {
             }, { status: 401 });
         }
 
-        const reload = sessions.some((session: Session) => session._id === sessionId);
+        // Check if any of the sessions being revoked is the current session
+        // Use currentSessionId from localStorage (sent from frontend) for comparison
+        const reload = sessions.some((session: Session) => session._id === sessionId) || 
+                      (currentSessionId && sessions.some((session: Session) => session._id === currentSessionId));
 
         const requestBody = {
-            device_fingerprint_id: deviceId,
+            device_fingerprint_id: deviceFingerprintId,
         };
 
         const userAgent = req.headers.get('user-agent') || '';
@@ -84,7 +87,7 @@ export async function POST(req: Request) {
             return NextResponse.json({
                 success: false,
                 statusCode: backendResponse.status || 400,
-                message: 'Failed to revoke all device fingerprints'
+                message: 'Failed to revoke device fingerprint'
             }, { status: backendResponse.status || 400 });
         }
 
@@ -98,27 +101,31 @@ export async function POST(req: Request) {
             reload: reload
         }, { status: response.statusCode || 200 });
         
-        res.cookies.set('accessToken', '', {
-            httpOnly: true,
-            sameSite: "lax",
-            secure: process.env.NODE_ENV === "production",
-            path: '/',
-            maxAge: 0,
-        });
-        res.cookies.set('refreshToken', '', {
-            httpOnly: true,
-            sameSite: "lax",
-            secure: process.env.NODE_ENV === "production",
-            path: '/',
-            maxAge: 0
-        });
+        // Only clear cookies if the current device is being revoked
+        if (reload) {
+            res.cookies.set('accessToken', '', {
+                httpOnly: true,
+                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production",
+                path: '/',
+                maxAge: 0,
+            });
+            res.cookies.set('refreshToken', '', {
+                httpOnly: true,
+                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production",
+                path: '/',
+                maxAge: 0
+            });
+        }
+        
         return res;
 
     } catch (error) {
         return NextResponse.json({
             success: false,
             statusCode: 500,
-            message: error instanceof Error ? error.message : 'Failed to revoke all device fingerprints'
+            message: error instanceof Error ? error.message : 'Failed to revoke device fingerprint'
         }, { status: 500 });
     }
 }

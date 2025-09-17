@@ -2,22 +2,9 @@
 
 import App from '@/components/(app)';
 import Auth from '@/components/(auth)';
-import { useEffect, useState, createContext } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  username: string;
-  role: string;
-  display_name?: string;
-  bio?: string;
-  avatar_ipfs_hash?: string;
-  avatar_fallback_url?: string;
-  last_login?: string;
-}
-
-export const UserInfoContext = createContext<UserProfile | null>(null);
+import { UserInfoContext, UserProfile } from '@/contexts/UserInfoContext';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -25,6 +12,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<string>('overview');
   const [user, setUser] = useState<UserProfile | null>(null);
+
+  const refetchUserData = async () => {
+    try {
+      const apiResponse = await fetch('/api/users/overview', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Frontend-Internal-Request': 'true',
+        },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
+      });
+
+      const responseData = await apiResponse.json();
+      
+      if (responseData.success && responseData.data) {
+        const userData: UserProfile = {
+          id: responseData.data._id,
+          email: responseData.data.email,
+          username: responseData.data.username,
+          role: responseData.data.role,
+          display_name: responseData.data.display_name,
+          bio: responseData.data.bio,
+          avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
+          last_login: responseData.data.last_login,
+        };
+
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+      }
+    } catch (error) {
+      console.error('Error refetching user data:', error);
+    }
+  };
 
   useEffect(() => {
     if (!pathname) return;
@@ -64,7 +85,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           display_name: responseData.data.display_name,
           bio: responseData.data.bio,
           avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
-          avatar_fallback_url: responseData.data.avatar_fallback_url,
           last_login: responseData.data.last_login,
         };
 
@@ -108,8 +128,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       } else {
         console.error('Logout failed:', data.message);
       }
-    } catch (error: any) {
-      if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+    } catch (error: unknown) {
+      if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
         console.error("Request timeout/aborted");
       } else {
         console.error(error);
@@ -129,7 +149,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <UserInfoContext.Provider value={user}>
+    <UserInfoContext.Provider value={{ user, refetchUserData }}>
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
         <Auth.BackgroundAccents />
         <App.Navbar

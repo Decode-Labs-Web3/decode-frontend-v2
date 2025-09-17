@@ -2,7 +2,7 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { usePasswordToggle } from "@/app/hooks/usePasswordToggle";
+import { usePasswordToggle } from "@/hooks/usePasswordToggle";
 
 export default function PasswordField({
     id,

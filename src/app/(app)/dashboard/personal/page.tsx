@@ -2,62 +2,177 @@
 
 import Image from 'next/image';
 import App from '@/components/(app)';
-import { UserInfoContext } from '../layout';
-import { useEffect, useState, useContext } from 'react';
+import { UserInfoContext } from '@/contexts/UserInfoContext';
+import { useState, useContext, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faCamera, faPen, faXmark, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-toastify';
 
 export default function Page() {
-  const user = useContext(UserInfoContext);
+  const userContext = useContext(UserInfoContext);
+  const user = userContext?.user;
+  const refetchUserData = userContext?.refetchUserData;
   const [form, setForm] = useState({
-    display_name: user?.display_name || '',
-    username: user?.username || '',
-    role: user?.role || '',
-    email: user?.email || '',
-    bio: user?.bio || '',
+    avatar_ipfs_hash: '',
+    display_name: '',
+    bio: ''
   });
-  const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatar_fallback_url || '/images/icons/user-placeholder.png');
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [editSection, setEditSection] = useState<'profile' | 'username' | 'email' | 'none'>('none');
+  
+  const [originalForm, setOriginalForm] = useState({
+    avatar_ipfs_hash: '',
+    display_name: '',
+    bio: ''
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const [username] = useState(user?.username || '');
+  const [email] = useState(user?.email || '');
+  const [saving, setSaving] = useState(false);
+  const [editSection, setEditSection] = useState<'profile' | 'username' | 'email' | 'none'>('none');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Update form when user context changes
+  useEffect(() => {
+    if (user) {
+      const userForm = {
+        avatar_ipfs_hash: user.avatar_ipfs_hash || '',
+        display_name: user.display_name || '',
+        bio: user.bio || ''
+      };
+      setForm(userForm);
+      setOriginalForm(userForm);
+    }
+  }, [user]);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
+  const handleUploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file');
+      e.target.value = '';
+      return;
+    }
+
     try {
-      const res = await fetch('/api/users/overview', {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Frontend-Internal-Request': 'true'
+      setSaving(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/users/avatar", {
+        method: "POST",
+        headers: {
+          'frontend-internal-request': 'true'
         },
-        body: JSON.stringify(form),
+        body: formData,
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
       });
-      const data = await res.json();
-      if (!res.ok || data?.success === false) {
-        setMessage(data?.message || 'Update failed');
-      } else {
-        setMessage('Profile updated');
-        setEditSection('none');
-      }
-    } catch (err) {
-      setMessage('Network error');
+
+      const apiResponse = await res.json();
+      console.log("CID:", apiResponse);
+
+      setForm((prev) => ({
+        ...prev,
+        avatar_ipfs_hash: apiResponse.ipfsHash
+      }));
+
+      console.log("Form:", form.avatar_ipfs_hash);
+    } catch {
+      toast.error('Network error');
     } finally {
       setSaving(false);
     }
   };
 
+  const handleChangeProfile = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setForm((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmitProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const apiResponse = await fetch('/api/users/profile-change', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'frontend-internal-request': 'true'
+        },
+        body: JSON.stringify({
+          current: form,
+          original: originalForm
+        }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      
+      const response = await apiResponse.json();
+      
+      if (!apiResponse.ok) {
+        toast.error(response?.message || 'Update failed');
+        return;
+      }
+
+      if (response.results) {
+        let hasErrors = false;
+        let hasSuccess = false;
+
+        Object.entries(response.results).forEach(([field, result]) => {
+          const typedResult = result as { success: boolean; message: string };
+          if (typedResult.success) {
+            hasSuccess = true;
+            const fieldName = field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            toast.success(`${fieldName} updated successfully`);
+          } else {
+            hasErrors = true;
+            const fieldName = field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            toast.error(`${fieldName} update failed: ${typedResult.message || 'Unknown error'}`);
+          }
+        });
+
+        if (hasSuccess && !hasErrors) {
+          // All updates successful, refetch user data
+          if (refetchUserData) {
+            await refetchUserData();
+          }
+          setEditSection('none');
+        }
+      } else if (response.success) {
+        // Fallback for single field updates
+        toast.success('Profile updated successfully');
+        if (refetchUserData) {
+          await refetchUserData();
+        }
+        setEditSection('none');
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      toast.error('Network error. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
+  const handleChange = () => {
+    console.log('Username/email change not implemented yet');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.info('Username and email changes are not implemented yet');
+  };
+
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader 
-        title="Personal info" 
-        description="Manage your personal details and how they appear." 
+      <App.PageHeader
+        title="Personal info"
+        description="Manage your personal details and how they appear."
       />
 
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/[0.02] to-white/5 backdrop-blur-sm p-8 mb-8 shadow-2xl">
@@ -78,9 +193,9 @@ export default function Page() {
             </button>
           ) : (
             <div className="flex gap-3">
-              <button 
-                type="button" 
-                onClick={() => setEditSection('none')} 
+              <button
+                type="button"
+                onClick={() => setEditSection('none')}
                 className="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200"
               >
                 Cancel
@@ -93,12 +208,17 @@ export default function Page() {
           {/* Avatar Section */}
           <div className="flex flex-col items-center lg:items-start">
             <div className="relative group">
-              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-white/20 overflow-hidden shadow-xl">
-                <Image src={avatarUrl} alt={'Avatar'} width={128} height={128} className="w-full h-full object-cover" unoptimized />
+              <div className="w-48 h-48 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-white/20 overflow-hidden shadow-xl">
+                <Image src={
+                  form.avatar_ipfs_hash
+                    ? `https://gateway.pinata.cloud/ipfs/${form.avatar_ipfs_hash}`
+                    : 'https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le'
+                } alt={'Avatar'} width={192} height={192} className="w-full h-full object-cover" unoptimized />
               </div>
               {editSection === 'profile' && (
                 <button
                   type="button"
+                  onClick={handleAvatarClick}
                   className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center"
                 >
                   <div className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
@@ -108,6 +228,16 @@ export default function Page() {
                 </button>
               )}
             </div>
+            {/* Hidden file input for avatar selection */}
+            {editSection === 'profile' && (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleUploadAvatar}
+                className="hidden"
+              />
+            )}
             {editSection === 'profile' && (
               <p className="text-xs text-gray-400 mt-3 text-center lg:text-left">Click to change avatar</p>
             )}
@@ -121,9 +251,9 @@ export default function Page() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
                     <h2 className="text-3xl font-bold text-white">{form.display_name || 'Your name'}</h2>
-                    {form.role && (
+                    {user?.role && (
                       <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-300 text-sm font-medium border border-blue-500/30">
-                        {form.role.charAt(0).toUpperCase() + form.role.slice(1)}
+                        {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
                       </span>
                     )}
                   </div>
@@ -132,9 +262,9 @@ export default function Page() {
                 <div className="space-y-3">
                   <label className="text-sm font-semibold text-gray-300">Display Name</label>
                   <input
-                    name="display_name"
+                    id="display_name"
                     value={form.display_name}
-                    onChange={handleChange}
+                    onChange={handleChangeProfile}
                     className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200"
                     placeholder="Enter your display name"
                   />
@@ -156,16 +286,16 @@ export default function Page() {
               ) : (
                 <div className="space-y-3">
                   <label className="text-sm font-semibold text-gray-300">About me</label>
-                  <textarea 
-                    name="bio" 
-                    value={form.bio} 
-                    onChange={handleChange} 
-                    rows={4} 
-                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 resize-none" 
-                    placeholder="Tell us about yourself..." 
+                  <textarea
+                    id="bio"
+                    value={form.bio}
+                    onChange={handleChangeProfile}
+                    rows={4}
+                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 resize-none"
+                    placeholder="Tell us about yourself..."
                   />
                   <div className="flex justify-end">
-                    <button type="submit" disabled={saving} onClick={handleSubmit} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200">
+                    <button type="submit" disabled={saving} onClick={handleSubmitProfile} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200">
                       <FontAwesomeIcon icon={faCheck} />
                       {saving ? 'Saving...' : 'Save Changes'}
                     </button>
@@ -176,21 +306,6 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Status Messages */}
-        {message && (
-          <div className="mt-8 p-4 rounded-xl bg-white/10 border border-white/20 text-sm text-gray-200">
-            {message}
-          </div>
-        )}
-        
-        {editSection === 'profile' && (
-          <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 text-sm text-blue-200">
-            <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={faCamera} />
-              Avatar upload functionality will be available soon
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -210,14 +325,14 @@ export default function Page() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Username</p>
-                  <p className="text-white font-medium">{form.username || '-'}</p>
+                  <p className="text-white font-medium">{username || '-'}</p>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="text-sm text-gray-400">Username</label>
-                  <input name="username" value={form.username} onChange={handleChange} className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40" placeholder="Your username" />
+                  <input name="username" value={username} onChange={handleChange} className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40" placeholder="Your username" />
                 </div>
                 <div className="flex items-center gap-3">
                   <button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2">
@@ -249,14 +364,14 @@ export default function Page() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Email</p>
-                  <p className="text-white font-medium">{form.email || '-'}</p>
+                  <p className="text-white font-medium">{email || '-'}</p>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="text-sm text-gray-400">Email</label>
-                  <input type="email" name="email" value={form.email} onChange={handleChange} className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40" placeholder="you@example.com" />
+                  <input type="email" name="email" value={email} onChange={handleChange} className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40" placeholder="you@example.com" />
                 </div>
                 <div className="flex items-center gap-3">
                   <button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2">

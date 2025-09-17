@@ -9,20 +9,47 @@ type GateRule = {
 
 const GATE_RULES: GateRule[] = [
   { prefix: "/login", cookie: "gate-key-for-login", exact: false },
-  { prefix: "/verify-login", cookie: "gate-key-for-verify-login", exact: false },
   { prefix: "/register", cookie: "gate-key-for-register", exact: false },
-  { prefix: "/verify-register", cookie: "gate-key-for-verify-register", exact: false },
   { prefix: "/forgot-password", cookie: "gate-key-for-forgot-password", exact: false },
-  { prefix: "/verify-forgot", cookie: "gate-key-for-verify-forgot", exact: false },
   { prefix: "/change-password", cookie: "gate-key-for-change-password", exact: false },
 ];
 
 // Handle gate rules for specific routes, checking for required cookies and clearing them after use
 function handleGate(request: NextRequest, pathname: string): NextResponse | null {
+  // Special handling for verification routes
+  if (pathname.startsWith("/verify/")) {
+    const verifyType = pathname.split('/')[2];
+    let requiredCookie = '';
+    
+    switch (verifyType) {
+      case 'login':
+        requiredCookie = 'gate-key-for-verify-login';
+        break;
+      case 'register':
+        requiredCookie = 'gate-key-for-verify-register';
+        break;
+      case 'forgot':
+        requiredCookie = 'gate-key-for-verify-forgot';
+        break;
+      default:
+        return NextResponse.redirect(new URL("/", request.url));
+    }
+    
+    const ok = request.cookies.get(requiredCookie)?.value === "true";
+    if (!ok) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    const res = NextResponse.next();
+    res.cookies.set(requiredCookie, "", { maxAge: 0, path: "/" });
+    return res;
+  }
+
+  // Handle other gate rules
   for (const rule of GATE_RULES) {
     const match = rule.exact
       ? pathname === rule.prefix
       : pathname === rule.prefix || pathname.startsWith(rule.prefix + "/");
+    
     if (!match) continue;
 
     const ok = request.cookies.get(rule.cookie)?.value === "true";
@@ -173,13 +200,24 @@ export async function middleware(request: NextRequest) {
         });
       }
 
-
       return res;
     } catch (error) {
       console.error('Refresh token error:', error);
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
+
+  // Allow other public routes (auth pages, etc.)
+  if (
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/change-password") ||
+    pathname.startsWith("/verify/")
+  ) {
+    return NextResponse.next();
+  }
+
   // Default redirect to home for all other cases
   return NextResponse.redirect(new URL('/', request.url));
 }

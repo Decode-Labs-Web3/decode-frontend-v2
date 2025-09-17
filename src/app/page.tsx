@@ -54,13 +54,13 @@ export default function Home() {
             } else {
                 throw new Error(responseData.message);
             }
-        } catch (error: any) {
-            if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+        } catch (error: unknown) {
+            if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
                 console.error("Request timeout/aborted");
                 setError("Request timeout/aborted. Please try again.");
             } else {
                 console.error(error);
-                setError(error.message || "Something went wrong. Please try again.");
+                setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
             }
         } finally {
             setLoading(false);

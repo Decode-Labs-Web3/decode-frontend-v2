@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/app/services/fingerprint.service";
+import { fingerprintService } from "@/services/fingerprint.service";
 
 export async function POST(req: Request) {
   try {

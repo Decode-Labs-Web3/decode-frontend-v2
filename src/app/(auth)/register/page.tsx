@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Auth from '@/components/(auth)';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PasswordValidationService } from '@/app/services/password-validation.service';
+import { PasswordValidationService } from '@/services/password-validation.service';
 
 export default function Register() {
     const router = useRouter();
@@ -84,15 +84,15 @@ export default function Register() {
                 sessionStorage.setItem('verification_required', 'true');
 
                 // Redirect to verify email page
-                router.push('/verify-register');
+                router.push('/verify/register');
                 return;
             }
 
             // If no verification needed, redirect to login
             router.push('/login?registered=true');
 
-        } catch (error: any) {
-            const errorMessage = error instanceof Error ? error.message : error.message || 'Registration failed';
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Registration failed';
             setError(errorMessage);
         } finally {
             setLoading(false);

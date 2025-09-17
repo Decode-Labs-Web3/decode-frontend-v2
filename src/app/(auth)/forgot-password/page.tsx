@@ -48,7 +48,7 @@ export default function ForgotPassword() {
                 throw new Error(responseData?.message || 'Failed to send reset link. Please try again.');
             }
 
-            router.push('/verify-forgot');
+            router.push('/verify/forgot');
 
         } catch (error) {
             console.error('Forgot password error:', error);
@@ -63,7 +63,7 @@ export default function ForgotPassword() {
             setError('Please enter your username or email first.');
             return;
         }
-        await handleSubmit(new Event('submit') as any);
+        await handleSubmit(new Event('submit') as unknown as React.FormEvent);
     };
 
     return (

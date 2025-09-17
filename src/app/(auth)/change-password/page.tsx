@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Auth from '@/components/(auth)';
 import { useRouter } from 'next/navigation';
-import { PasswordValidationService } from '@/app/services/password-validation.service';
+import { PasswordValidationService } from '@/services/password-validation.service';
 
 export default function ChangePassword() {
     const router = useRouter();

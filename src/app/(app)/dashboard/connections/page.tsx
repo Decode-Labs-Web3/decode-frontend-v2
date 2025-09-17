@@ -89,7 +89,7 @@ export default function Page() {
         </div>
         {following.length === 0 ? (
           <div className="text-sm text-gray-400 bg-white/5 border border-white/10 rounded-xl p-4">
-            You aren't following anyone yet.
+            You aren&apos;t following anyone yet.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">

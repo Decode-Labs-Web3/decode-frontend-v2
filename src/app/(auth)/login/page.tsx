@@ -68,17 +68,17 @@ export default function Login() {
             if (responseData.success && responseData.statusCode === 200 && responseData.message === "Login successful") {
                 router.push("/dashboard");
             } else if (responseData.success && responseData.statusCode === 400 && responseData.message === "Device fingerprint not trusted, send email verification") {
-                router.push("/verify-login");
+                router.push("/verify/login");
             } else {
                 setError(responseData?.message || "Login failed");
                 setLoading(false);
                 return;
             }
-        } catch (error: any) {
-            if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+        } catch (error: unknown) {
+            if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
                 setError("Request timeout/aborted. Please try again.");
             } else {
-                const errorMessage = error instanceof Error ? error.message : error.message || "Something went wrong. Please try again.";
+                const errorMessage = error instanceof Error ? error.message : error instanceof Error ? error.message : "Something went wrong. Please try again.";
                 setError(errorMessage);
             }
         } finally {
