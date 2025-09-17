@@ -4,11 +4,13 @@ import { useState } from 'react';
 import Auth from '@/components/(auth)';
 import { useRouter } from 'next/navigation';
 import { PasswordValidationService } from '@/services/password-validation.service';
-import { toast } from 'react-toastify';
+import { useLoading } from '@/hooks/useLoading';
+import { showSuccess, showError } from '@/utils/toast.utils';
+import { apiCallWithTimeout } from '@/utils/api.utils';
 
 export default function ChangePassword() {
     const router = useRouter();
-    const [loading, setLoading] = useState<boolean>(false);
+    const { loading, withLoading } = useLoading();
     const [formData, setFormData] = useState<{ new_password: string, confirm_new_password: string }>({
         new_password: '',
         confirm_new_password: '',
@@ -23,47 +25,34 @@ export default function ChangePassword() {
         });
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!formData.new_password.trim() || !formData.confirm_new_password.trim() || loading) return;
-        setLoading(true);
-        if (!isPasswordValid) {
-            toast.error('Please meet all password requirements.');
-            setLoading(false);
+    const handleChangePassword = async () => {
+        if (!formData.new_password.trim() || !formData.confirm_new_password.trim()) {
+            showError('Please fill in all fields');
             return;
         }
 
-        try {
-            const apiResponse = await fetch('/api/auth/change-password', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'frontend-internal-request': 'true'
-                },
-                body: JSON.stringify(formData),
-                cache: "no-store",
-                signal: AbortSignal.timeout(5000),
-            });
-
-            const responseData = await apiResponse.json();
-
-            if (responseData.statusCode === 400 && !responseData.success) {
-                throw new Error(responseData.message);
-            }
-
-            toast.success('Password changed successfully!');
-            router.push('/login');
-
-        } catch (error: unknown) {
-            if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
-                toast.error("Request timeout/aborted. Please try again.");
-            } else {
-                const message = error instanceof Error ? error.message : error instanceof Error ? error.message : 'Password change failed';
-                toast.error(message);
-            }
-        } finally {
-            setLoading(false);
+        if (!isPasswordValid) {
+            showError('Please meet all password requirements.');
+            return;
         }
+
+        const responseData = await apiCallWithTimeout('/api/auth/change-password', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (responseData.success) {
+            showSuccess('Password changed successfully!');
+            router.push('/login');
+        } else {
+            showError(responseData.message || 'Password change failed');
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (loading) return;
+        await withLoading(handleChangePassword);
     };
 
 

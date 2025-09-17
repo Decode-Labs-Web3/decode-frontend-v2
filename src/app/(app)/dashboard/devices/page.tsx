@@ -2,106 +2,106 @@
 
 import Image from 'next/image';
 import App from '@/components/(app)';
+import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { getCookie } from '@/utils/cookie.utils';
+import { Fingerprint, Session } from '@/interfaces';
+import { apiCallWithTimeout } from '@/utils/api.utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLaptop, faMobileScreen, faTablet } from '@fortawesome/free-solid-svg-icons';
-import { toast } from 'react-toastify';
-import { Fingerprint, Session } from '@/interfaces';
 
 export default function DevicesPage() {
   const router = useRouter();
   const [version, setVersion] = useState(0);
   const [fingerprintsData, setFingerprintsData] = useState<Fingerprint[]>([]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState<string>("");
 
   useEffect(() => {
-    // Skip fetching if we're in the process of logging out
+    // Debug: Show all cookies
+    console.log('All cookies:', document.cookie);
+    
+    // Try both possible cookie names
+    let sessionId = getCookie('sessionId');
+    if (!sessionId) {
+      sessionId = getCookie('sessionid');
+    }
+    console.log('Session ID from cookie (sessionId):', getCookie('sessionId'));
+    console.log('Session ID from cookie (sessionid):', getCookie('sessionid'));
+    console.log('Final sessionId:', sessionId);
+    if (sessionId) {
+      setCurrentSessionId(sessionId);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log('Fetch effect - isLoggingOut:', isLoggingOut, 'currentSessionId:', currentSessionId);
     if (isLoggingOut) {
+      console.log('Skipping fetch - isLoggingOut');
       return;
+    }
+    
+    // Temporarily try to fetch even without sessionId to see what happens
+    if (!currentSessionId) {
+      console.log('No sessionId found, but trying to fetch anyway for debugging');
     }
 
     const fetchFingerprints = async () => {
       try {
-        const apiResponse = await fetch('/api/auth/fingerprints', {
+        const apiResponse = await apiCallWithTimeout('/api/auth/fingerprints', {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-            'Frontend-Internal-Request': 'true'
-          },
-          cache: 'no-store',
-          credentials: 'include',
-          signal: AbortSignal.timeout(5000),
+            'frontend-internal-request': 'true'
+          }
         });
-        const responseData = await apiResponse.json();
-        if (responseData.success || responseData.statusCode === 200 || responseData.message === 'Device fingerprint fetched') {
-          setFingerprintsData(responseData.data);
+
+        console.log('API response:', apiResponse);
+
+        if (apiResponse.success || apiResponse.statusCode === 200 || apiResponse.message === 'Device fingerprint fetched') {
+          setFingerprintsData((apiResponse.data as unknown as Fingerprint[]) || []);
         }
-        else if (responseData.statusCode === 401) {
+        else if (apiResponse.statusCode === 401) {
           setFingerprintsData([]);
-          // Don't show error toast, just redirect silently
           router.push('/');
         }
-        else if (responseData.statusCode === 400 && responseData.message === 'Missing fingerprint') {
+        else if (apiResponse.statusCode === 400 && apiResponse.message === 'Missing fingerprint') {
           setFingerprintsData([]);
-          // Missing fingerprint means user needs to re-authenticate
           router.push('/login');
         }
         else {
           toast.error('Failed to load devices');
         }
       } catch {
-        toast.error('Network error. Please try again.');
+        toast.error('Network error for fetching devices. Please try again.');
       }
     };
     fetchFingerprints();
-  }, [version, router, isLoggingOut]);
+  }, [version, router, isLoggingOut, currentSessionId]);
 
   const handleRevokeDevice = async (fingerprintId: string, sessions: Session[]) => {
     try {
-      
-      // Get current session ID from cookies - try multiple cookie names
-      let currentSessionId = "";
-      
-      // Try sessionId first
-      let match = document.cookie.match(/(?:^|; )sessionId=([^;]+)/);
-      if (match) {
-        currentSessionId = decodeURIComponent(match[1]);
-      }
-      
-      // If no sessionId, try other possible cookie names
-      if (!currentSessionId) {
-        match = document.cookie.match(/(?:^|; )session_id=([^;]+)/);
-        if (match) {
-          currentSessionId = decodeURIComponent(match[1]);
-        }
-      }
-      
-      // Check if current session ID matches any session in this device
+      console.log('Revoking device - currentSessionId:', currentSessionId);
+      console.log('Available sessions:', sessions.map(session => session._id));
       const isCurrentDevice = currentSessionId ? sessions.some(session => session._id === currentSessionId) : false;
+      console.log('Is current device:', isCurrentDevice);
       
       
-      const apiResponse = await fetch(`/api/auth/revoke-device`, {
+      const responseData = await apiCallWithTimeout(`/api/auth/revoke-device`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'frontend-internal-request': 'true'
-        },
-        body: JSON.stringify({ 
+        body: { 
           deviceFingerprintId: fingerprintId, 
           sessions,
           currentSessionId: currentSessionId 
-        }),
-        cache: 'no-store',
-        credentials: 'include',
-        signal: AbortSignal.timeout(5000),
+        }
       });
-
-      const responseData = await apiResponse.json();
       if (responseData.success || responseData.statusCode === 200 || responseData.message === 'Device fingerprint revoked') {
-        if (isCurrentDevice) {
-          setIsLoggingOut(true); // Prevent refetching
+        if (isCurrentDevice || responseData.reload) {
+          setIsLoggingOut(true);
           toast.success('Device revoked successfully. You will be logged out.');
+          // Clear the session ID from state
+          setCurrentSessionId("");
+          // Redirect immediately without triggering refetch
           router.push('/');
         }
         else {
@@ -125,44 +125,23 @@ export default function DevicesPage() {
 
   const handleRevokeSession = async (sessionId: string) => {
     try {
-      
-      // Get current session ID from cookies - try multiple cookie names
-      let currentSessionId = "";
-      
-      // Try sessionId first
-      let match = document.cookie.match(/(?:^|; )sessionId=([^;]+)/);
-      if (match) {
-        currentSessionId = decodeURIComponent(match[1]);
-      }
-      
-      // If no sessionId, try other possible cookie names
-      if (!currentSessionId) {
-        match = document.cookie.match(/(?:^|; )session_id=([^;]+)/);
-        if (match) {
-          currentSessionId = decodeURIComponent(match[1]);
-        }
-      }
-      
-      // Check if the session being revoked is the current session
+      console.log('Revoking session - currentSessionId:', currentSessionId);
+      console.log('Revoking sessionId:', sessionId);
       const isCurrentSession = currentSessionId ? sessionId === currentSessionId : false;
+      console.log('Is current session:', isCurrentSession);
       
       
-      const apiResponse = await fetch(`/api/auth/revoke-session`, {
+      const responseData = await apiCallWithTimeout(`/api/auth/revoke-session`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'frontend-internal-request': 'true'
-        },
-        body: JSON.stringify({ sessionId }),
-        cache: 'no-store',
-        signal: AbortSignal.timeout(5000),
+        body: { sessionId }
       });
-      
-      const responseData = await apiResponse.json();
       if (responseData.success || responseData.statusCode === 200 || responseData.message === 'Session revoked') {
-        if (isCurrentSession) {
-          setIsLoggingOut(true); // Prevent refetching
+        if (isCurrentSession || responseData.reload) {
+          setIsLoggingOut(true);
           toast.success('Session revoked successfully. You will be logged out.');
+          // Clear the session ID from state
+          setCurrentSessionId("");
+          // Redirect immediately without triggering refetch
           router.push('/');
         }
         else {

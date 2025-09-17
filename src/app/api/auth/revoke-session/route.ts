@@ -77,7 +77,8 @@ export async function POST(req: Request) {
             const res = NextResponse.json({
                 success: true,
                 statusCode: response.statusCode || 200,
-                message: response.message || 'Device fingerprint revoked'
+                message: response.message || 'Session revoked',
+                reload: true
             }, { status: 200 });
 
             cookieStore.set("sessionId", "", {

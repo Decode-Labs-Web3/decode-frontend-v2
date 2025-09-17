@@ -3,30 +3,32 @@ import Link from 'next/link';
 import Auth from '@/components/(auth)';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
+import { useLoading } from '@/hooks/useLoading';
+import { apiCallWithTimeout } from '@/utils/api.utils';
+import { showSuccess, showError } from '@/utils/toast.utils';
+import { getCookie, setCookie, deleteCookie } from '@/utils/cookie.utils';
 
 export default function Login() {
     const router = useRouter();
-    const [loading, setLoading] = useState<boolean>(false);
+    const { loading, withLoading } = useLoading();
     const [formData, setFormData] = useState<{ email_or_username: string, password: string }>({
         email_or_username: "",
         password: ""
     });
 
     const handleCookie = () => {
-        document.cookie = "gate-key-for-register=true; max-age=60; path=/register; samesite=lax";
+        setCookie('gate-key-for-register', 'true', { maxAge: 60, path: '/register' });
       };
 
     const handleCookieForgotPassword = () => {
-        document.cookie = "gate-key-for-forgot-password=true; max-age=60; path=/forgot-password; samesite=lax";
+        setCookie('gate-key-for-forgot-password', 'true', { maxAge: 60, path: '/forgot-password' });
     };
 
     useEffect(() => {
-        const match = document.cookie.match(/(?:^|; )email_or_username=([^;]+)/);
-        const value = match ? decodeURIComponent(match[1]) : "";
+        const value = getCookie('email_or_username');
         if (value) {
             setFormData(prev => ({ ...prev, email_or_username: value }));
-            document.cookie = "email_or_username=; Max-Age=0; path=/";
+            deleteCookie('email_or_username');
         }
     }, []);
 
@@ -39,50 +41,34 @@ export default function Login() {
         }))
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (loading) return;
-        if (!formData.email_or_username.trim() || !formData.password.trim() || loading) {
-            toast.error("Please fill in all fields"); 
+    const handleLogin = async () => {
+        if (!formData.email_or_username.trim() || !formData.password.trim()) {
+            showError("Please fill in all fields"); 
             return;
         }
         
-        setLoading(true);
+        const responseData = await apiCallWithTimeout("/api/auth/login", {
+            method: "POST",
+            headers: {
+                "frontend-internal-request": "true",
+            },
+            body: formData
+        });
 
-        try {
-            const apiResponse = await fetch("/api/auth/login", {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                    "frontend-internal-request": "true",
-                },
-                body: JSON.stringify(formData),
-                cache: "no-store",
-                signal: AbortSignal.timeout(5000),
-            });
-
-            const responseData = await apiResponse.json();
-            if (responseData.success && responseData.statusCode === 200 && responseData.message === "Login successful") {
-                toast.success("Login successful!");
-                router.push("/dashboard");
-            } else if (responseData.success && responseData.statusCode === 400 && responseData.message === "Device fingerprint not trusted, send email verification") {
-                router.push("/verify/login");
-            } else {
-                toast.error(responseData?.message || "Login failed");
-                setLoading(false);
-                return;
-            }
-        } catch (error: unknown) {
-            if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
-                toast.error("Request timeout/aborted. Please try again.");
-            } else {
-                const errorMessage = error instanceof Error ? error.message : error instanceof Error ? error.message : "Something went wrong. Please try again.";
-                toast.error(errorMessage);
-            }
-        } finally {
-            setLoading(false);
+        if (responseData.success && responseData.statusCode === 200 && responseData.message === "Login successful") {
+            showSuccess("Login successful!");
+            router.push("/dashboard");
+        } else if (responseData.success && responseData.statusCode === 400 && responseData.message === "Device fingerprint not trusted, send email verification") {
+            router.push("/verify/login");
+        } else {
+            showError(responseData?.message || "Login failed");
         }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (loading) return;
+        await withLoading(handleLogin);
     };
 
     return (

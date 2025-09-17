@@ -90,6 +90,13 @@ export async function POST(req: Request) {
         
         // Only clear cookies if the current device is being revoked
         if (reload) {
+            res.cookies.set('sessionId', '', {
+                httpOnly: true,
+                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production",
+                path: '/',
+                maxAge: 0,
+            });
             res.cookies.set('accessToken', '', {
                 httpOnly: true,
                 sameSite: "lax",

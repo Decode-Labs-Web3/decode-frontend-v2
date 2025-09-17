@@ -130,7 +130,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (data.success && data.statusCode === 200) {
         router.push('/');
       } else {
-        console.error('Logout failed:', data.message);
+        console.log('Logout failed:', data.message);
       }
     } catch (error: unknown) {
       if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {

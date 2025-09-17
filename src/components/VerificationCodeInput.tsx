@@ -20,10 +20,8 @@ export default function VerificationCodeInput({
     next[index] = value;
     setDigits(next);
 
-    // Clear error when user starts typing
     if (error) onError('');
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputsRef.current[index + 1]?.focus();
     }
@@ -44,15 +42,12 @@ export default function VerificationCodeInput({
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = e.clipboardData.getData('text');
 
-    // Check if it's in the format "fingerprint-email-verification:XXXXXX"
     const match = pastedText.match(/fingerprint-email-verification:([a-f0-9]{6})/i);
     let text = '';
 
     if (match) {
-      // Extract the 6-character code from the format
       text = match[1];
     } else {
-      // Fallback to original behavior - extract only digits/letters
       text = pastedText.replace(/[^a-f0-9]/gi, '').slice(0, 6);
     }
 

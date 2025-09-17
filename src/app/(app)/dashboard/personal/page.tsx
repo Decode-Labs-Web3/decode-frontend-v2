@@ -6,7 +6,9 @@ import { UserInfoContext } from '@/contexts/UserInfoContext';
 import { useState, useContext, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faCamera, faPen, faXmark, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { toast } from 'react-toastify';
+import { useLoading } from '@/hooks/useLoading';
+import { showSuccess, showError } from '@/utils/toast.utils';
+import { apiCallWithTimeout } from '@/utils/api.utils';
 
 export default function PersonalPage() {
   const userContext = useContext(UserInfoContext);
@@ -26,7 +28,7 @@ export default function PersonalPage() {
 
   const [username] = useState(user?.username || '');
   const [email] = useState(user?.email || '');
-  const [saving, setSaving] = useState(false);
+  const { loading: saving, withLoading } = useLoading();
   const [editSection, setEditSection] = useState<'profile' | 'username' | 'email' | 'none'>('none');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -51,17 +53,16 @@ export default function PersonalPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
+      showError('Please select a valid image file');
       e.target.value = '';
       return;
     }
 
-    try {
-      setSaving(true);
+    const uploadAvatar = async () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("/api/users/avatar", {
+      const response = await fetch("/api/users/avatar", {
         method: "POST",
         headers: {
           'frontend-internal-request': 'true'
@@ -71,20 +72,20 @@ export default function PersonalPage() {
         signal: AbortSignal.timeout(5000),
       });
 
-      const apiResponse = await res.json();
-      console.log("CID:", apiResponse);
+      const apiResponse = await response.json();
+      
+      if (!response.ok) {
+        showError(apiResponse?.message || 'Avatar upload failed');
+        return;
+      }
 
       setForm((prev) => ({
         ...prev,
         avatar_ipfs_hash: apiResponse.ipfsHash
       }));
+    };
 
-      console.log("Form:", form.avatar_ipfs_hash);
-    } catch {
-      toast.error('Network error');
-    } finally {
-      setSaving(false);
-    }
+    await withLoading(uploadAvatar);
   };
 
   const handleChangeProfile = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -94,27 +95,18 @@ export default function PersonalPage() {
 
   const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
 
-    try {
-      const apiResponse = await fetch('/api/users/profile-change', {
+    const updateProfile = async () => {
+      const response = await apiCallWithTimeout('/api/users/profile-change', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'frontend-internal-request': 'true'
-        },
-        body: JSON.stringify({
+        body: {
           current: form,
           original: originalForm
-        }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
+        }
       });
       
-      const response = await apiResponse.json();
-      
-      if (!apiResponse.ok) {
-        toast.error(response?.message || 'Update failed');
+      if (!response.success) {
+        showError(response?.message || 'Update failed');
         return;
       }
 
@@ -127,11 +119,11 @@ export default function PersonalPage() {
           if (typedResult.success) {
             hasSuccess = true;
             const fieldName = field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-            toast.success(`${fieldName} updated successfully`);
+            showSuccess(`${fieldName} updated successfully`);
           } else {
             hasErrors = true;
             const fieldName = field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-            toast.error(`${fieldName} update failed: ${typedResult.message || 'Unknown error'}`);
+            showError(`${fieldName} update failed: ${typedResult.message || 'Unknown error'}`);
           }
         });
 
@@ -144,18 +136,15 @@ export default function PersonalPage() {
         }
       } else if (response.success) {
         // Fallback for single field updates
-        toast.success('Profile updated successfully');
+        showSuccess('Profile updated successfully');
         if (refetchUserData) {
           await refetchUserData();
         }
         setEditSection('none');
       }
-    } catch (error) {
-      console.error('Profile update error:', error);
-      toast.error('Network error. Please try again.');
-    } finally {
-      setSaving(false);
-    }
+    };
+
+    await withLoading(updateProfile);
   };
 
 
@@ -165,7 +154,7 @@ export default function PersonalPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info('Username and email changes are not implemented yet');
+    showError('Username and email changes are not implemented yet');
   };
 
   return (

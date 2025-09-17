@@ -16,7 +16,6 @@ const GATE_RULES: GateRule[] = [
 
 // Handle gate rules for specific routes, checking for required cookies and clearing them after use
 function handleGate(request: NextRequest, pathname: string): NextResponse | null {
-  // Special handling for verification routes
   if (pathname.startsWith("/verify/")) {
     const verifyType = pathname.split('/')[2];
     let requiredCookie = '';

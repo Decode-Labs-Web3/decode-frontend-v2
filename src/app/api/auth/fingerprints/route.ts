@@ -4,6 +4,15 @@ import { fingerprintService } from "@/services/fingerprint.service";
 
 export async function GET(req: Request) {
     try {
+        const internalRequest = req.headers.get('frontend-internal-request');
+        if (internalRequest !== 'true') {
+            return NextResponse.json({
+                success: false,
+                statusCode: 400,
+                message: 'Missing Frontend-Internal-Request header'
+            }, { status: 400 });
+        }
+
         const cookieStore = await cookies();
         const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -39,8 +48,10 @@ export async function GET(req: Request) {
                 message: error?.message || "Failed to fetch fingerprints"
             }, { status: backendRes.status });
         }
+        console.log('Backend response Fingerprints API:', backendRes);
 
         const responseData = await backendRes.json();
+        console.log('Response Fingerprints API:', responseData);
 
         if (responseData.success && responseData.statusCode === 200 && responseData.message === "Device fingerprint fetched") {
             return NextResponse.json({

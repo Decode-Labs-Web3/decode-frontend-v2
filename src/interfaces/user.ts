@@ -1,5 +1,3 @@
-// User-related interfaces
-
 export interface UserProfile {
   id: string;
   email: string;

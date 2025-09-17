@@ -2,11 +2,14 @@
 import { useState } from 'react';
 import Auth from '@/components/(auth)';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify';
+import { useLoading } from '@/hooks/useLoading';
+import { showSuccess, showError } from '@/utils/toast.utils';
+import { apiCallWithTimeout } from '@/utils/api.utils';
+import { setCookie } from '@/utils/cookie.utils';
 
 export default function ForgotPassword() {
     const router = useRouter();
-    const [loading, setLoading] = useState<boolean>(false);
+    const { loading, withLoading } = useLoading();
     const [formData, setFormData] = useState<{ email_or_username: string }>({
         email_or_username: "",
     });
@@ -20,41 +23,32 @@ export default function ForgotPassword() {
     };
 
     const handleCookie = () => {
-        document.cookie = "gate-key-for-login=true; max-age=60; path=/login; samesite=lax";
+        setCookie('gate-key-for-login', 'true', { maxAge: 60, path: '/login' });
+    };
+
+    const handleForgotPassword = async () => {
+        if (!formData.email_or_username.trim()) {
+            showError('Please enter your email or username');
+            return;
+        }
+
+        const responseData = await apiCallWithTimeout('/api/auth/forgot-password', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (responseData.success) {
+            showSuccess('Reset link sent successfully!');
+            router.push('/verify/forgot');
+        } else {
+            showError(responseData?.message || 'Failed to send reset link. Please try again.');
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.email_or_username.trim() || loading) return;
-        setLoading(true);
-
-        try {
-            const response = await fetch('/api/auth/forgot-password', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'frontend-internal-request': 'true' 
-                },
-                body: JSON.stringify( formData ),
-                cache: "no-store",
-                signal: AbortSignal.timeout(5000),
-            });
-
-            const responseData = await response.json();
-
-            if (!response.ok || !responseData.success) {
-                throw new Error(responseData?.message || 'Failed to send reset link. Please try again.');
-            }
-
-            toast.success('Reset link sent successfully!');
-            router.push('/verify/forgot');
-
-        } catch (error) {
-            console.error('Forgot password error:', error);
-            toast.error('Something went wrong. Please try again.');
-        } finally {
-            setLoading(false);
-        }
+        if (loading) return;
+        await withLoading(handleForgotPassword);
     };
 
 
