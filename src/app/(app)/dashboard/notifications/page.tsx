@@ -4,7 +4,7 @@ import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faCircle } from '@fortawesome/free-solid-svg-icons';
 
-export default function Page() {
+export default function NotificationsPage() {
   const notifications = [
     { title: 'New login from Chrome (Mac)', time: 'Just now' },
     { title: 'Wallet MetaMask linked', time: '2 hours ago' },

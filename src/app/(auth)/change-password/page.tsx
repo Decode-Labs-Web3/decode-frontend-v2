@@ -4,10 +4,10 @@ import { useState } from 'react';
 import Auth from '@/components/(auth)';
 import { useRouter } from 'next/navigation';
 import { PasswordValidationService } from '@/services/password-validation.service';
+import { toast } from 'react-toastify';
 
 export default function ChangePassword() {
     const router = useRouter();
-    const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [formData, setFormData] = useState<{ new_password: string, confirm_new_password: string }>({
         new_password: '',
@@ -21,16 +21,14 @@ export default function ChangePassword() {
             ...formData,
             [id]: value
         });
-        if (error) setError('');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.new_password.trim() || !formData.confirm_new_password.trim() || loading) return;
-        if (error) setError('');
         setLoading(true);
         if (!isPasswordValid) {
-            setError('Please meet all password requirements.');
+            toast.error('Please meet all password requirements.');
             setLoading(false);
             return;
         }
@@ -53,14 +51,15 @@ export default function ChangePassword() {
                 throw new Error(responseData.message);
             }
 
+            toast.success('Password changed successfully!');
             router.push('/login');
 
         } catch (error: unknown) {
             if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
-                setError("Request timeout/aborted. Please try again.");
+                toast.error("Request timeout/aborted. Please try again.");
             } else {
                 const message = error instanceof Error ? error.message : error instanceof Error ? error.message : 'Password change failed';
-                setError(message);
+                toast.error(message);
             }
         } finally {
             setLoading(false);
@@ -97,7 +96,6 @@ export default function ChangePassword() {
                         placeholder="Confirm new password"
                     />
 
-                    {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
 
                     <Auth.SubmitButton
                         loading={loading}

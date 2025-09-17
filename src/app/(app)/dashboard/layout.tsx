@@ -4,7 +4,8 @@ import App from '@/components/(app)';
 import Auth from '@/components/(auth)';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { UserInfoContext, UserProfile } from '@/contexts/UserInfoContext';
+import { UserInfoContext } from '@/contexts/UserInfoContext';
+import { UserProfile } from '@/interfaces';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -44,6 +45,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
     } catch (error) {
       console.error('Error refetching user data:', error);
+    } finally {
+      console.log('User data refetch operation completed');
     }
   };
 
@@ -91,9 +94,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
       } catch (error) {
-        console.error(error);
+        console.error('User data fetch error:', error);
       } finally {
         setLoading(false);
+        console.log('User data fetch operation completed');
       }
     };
 
@@ -134,6 +138,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       } else {
         console.error(error);
       }
+    } finally {
+      console.log('Logout operation completed');
     }
   };
 

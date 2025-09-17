@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faCamera, faPen, faXmark, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 
-export default function Page() {
+export default function PersonalPage() {
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
   const refetchUserData = userContext?.refetchUserData;
@@ -196,9 +196,19 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setEditSection('none')}
-                className="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200"
+                disabled={saving}
+                className="bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200"
               >
                 Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitProfile}
+                disabled={saving}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <FontAwesomeIcon icon={faCheck} />
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           )}
@@ -294,12 +304,6 @@ export default function Page() {
                     className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 resize-none"
                     placeholder="Tell us about yourself..."
                   />
-                  <div className="flex justify-end">
-                    <button type="submit" disabled={saving} onClick={handleSubmitProfile} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-xl flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200">
-                      <FontAwesomeIcon icon={faCheck} />
-                      {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                  </div>
                 </div>
               )}
             </div>

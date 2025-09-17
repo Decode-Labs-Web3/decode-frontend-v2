@@ -7,7 +7,7 @@ import { UserInfoContext } from '@/contexts/UserInfoContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldHalved, faWallet, faLaptop, faPlug, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 
-export default function Page() {
+export default function OverviewPage() {
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
   return (

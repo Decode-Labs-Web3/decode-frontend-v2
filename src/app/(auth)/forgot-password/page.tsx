@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import Auth from '@/components/(auth)';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 export default function ForgotPassword() {
     const router = useRouter();
-    const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [formData, setFormData] = useState<{ email_or_username: string }>({
         email_or_username: "",
@@ -17,7 +17,6 @@ export default function ForgotPassword() {
             ...prevData,
             [id]: value
         }));
-        if (error) setError('');
     };
 
     const handleCookie = () => {
@@ -27,7 +26,6 @@ export default function ForgotPassword() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.email_or_username.trim() || loading) return;
-        if (error) setError('');
         setLoading(true);
 
         try {
@@ -48,23 +46,17 @@ export default function ForgotPassword() {
                 throw new Error(responseData?.message || 'Failed to send reset link. Please try again.');
             }
 
+            toast.success('Reset link sent successfully!');
             router.push('/verify/forgot');
 
         } catch (error) {
             console.error('Forgot password error:', error);
-            setError('Something went wrong. Please try again.');
+            toast.error('Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleResend = async () => {
-        if (!formData.email_or_username) {
-            setError('Please enter your username or email first.');
-            return;
-        }
-        await handleSubmit(new Event('submit') as unknown as React.FormEvent);
-    };
 
     return (
         <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
@@ -90,11 +82,6 @@ export default function ForgotPassword() {
                         onChange={handleChange}
                     />
 
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center">
-                            {error}
-                        </div>
-                    )}
 
                     <Auth.SubmitButton
                         loading={loading}

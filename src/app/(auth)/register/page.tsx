@@ -4,10 +4,10 @@ import Auth from '@/components/(auth)';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PasswordValidationService } from '@/services/password-validation.service';
+import { toast } from 'react-toastify';
 
 export default function Register() {
     const router = useRouter();
-    const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [formData, setFormData] = useState<{ username: string, email: string, password: string, confirmPassword: string }>({
         username: '',
@@ -41,13 +41,11 @@ export default function Register() {
             ...formData,
             [id]: value
         });
-        if (error) setError('');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.email.trim() || !formData.username.trim() || !formData.password.trim() || !formData.confirmPassword.trim() || loading) return;
-        if (error) setError('');
         setLoading(true);
 
         try {
@@ -67,9 +65,9 @@ export default function Register() {
             if (!apiResponse.ok) {
                 // Handle specific error cases
                 if (data.message === "Email already exists") {
-                    setError('This email is already registered. Please use a different email or try logging in.');
+                    toast.error('This email is already registered. Please use a different email or try logging in.');
                 } else {
-                    setError(data.message || 'Registration failed. Please try again.');
+                    toast.error(data.message || 'Registration failed. Please try again.');
                 }
                 return;
             }
@@ -89,11 +87,12 @@ export default function Register() {
             }
 
             // If no verification needed, redirect to login
+            toast.success('Account created successfully!');
             router.push('/login?registered=true');
 
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Registration failed';
-            setError(errorMessage);
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -106,11 +105,6 @@ export default function Register() {
             <Auth.Logo />
 
             <Auth.AuthCard title="Get Started">
-                {error && (
-                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
-                        {error}
-                    </div>
-                )}
 
                 <form onSubmit={handleSubmit} noValidate>
                     <Auth.TextField

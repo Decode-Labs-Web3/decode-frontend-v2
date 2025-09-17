@@ -1,17 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/fingerprint.service";
-
-interface ProfileData {
-    avatar_ipfs_hash?: string;
-    display_name?: string;
-    bio?: string;
-}
-
-interface RequestBody {
-    current: ProfileData;
-    original: ProfileData;
-}
+import { ProfileData, RequestBody } from "@/interfaces";
 
 // Helper function to detect changed fields
 function getChangedFields(current: ProfileData, original: ProfileData) {

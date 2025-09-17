@@ -1,20 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/fingerprint.service";
-
-interface Session {
-    "_id": string;
-    "user_id": string;
-    "device_fingerprint_id": string;
-    "session_token": string;
-    "app": string;
-    "expires_at": string;
-    "is_active": boolean;
-    "last_used_at": string;
-    "createdAt": string;
-    "updatedAt": string;
-    "__v": number;
-}
+import { Session } from "@/interfaces";
 
 export async function POST(req: Request) {
     try {
@@ -127,6 +114,8 @@ export async function POST(req: Request) {
             statusCode: 500,
             message: error instanceof Error ? error.message : 'Failed to revoke device fingerprint'
         }, { status: 500 });
+    } finally {
+        console.log('Device revocation API operation completed');
     }
 }
 

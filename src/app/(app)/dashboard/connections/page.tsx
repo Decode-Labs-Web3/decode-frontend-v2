@@ -23,7 +23,7 @@ const initialSuggestions: User[] = [
   { id: 6, name: 'Fiona Park', handle: 'fiona', avatar: 'https://i.pravatar.cc/80?img=6', following: true },
 ];
 
-export default function Page() {
+export default function ConnectionsPage() {
   const [people, setPeople] = useState<User[]>(initialSuggestions);
 
   const toggleFollow = (id: number) => {

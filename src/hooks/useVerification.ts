@@ -1,11 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-
-interface UseVerificationProps {
-  type: 'register' | 'login' | 'forgot';
-  onSuccess: (data: { success: boolean; message: string; type: string; requiresRelogin?: boolean }) => void;
-  onError?: (error: string) => void;
-}
+import { UseVerificationProps } from '@/interfaces';
 
 export function useVerification({ type, onSuccess, onError }: UseVerificationProps) {
   const [error, setError] = useState<string>('');
@@ -73,6 +68,8 @@ export function useVerification({ type, onSuccess, onError }: UseVerificationPro
     } catch (error) {
       console.error('Resend error:', error);
       setError('Failed to resend code. Please try again.');
+    } finally {
+      console.log('Verification code resend operation completed');
     }
   };
 

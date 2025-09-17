@@ -3,11 +3,7 @@ import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
-interface BackButtonProps {
-    href?: string;
-    onClick?: () => void;
-    text: string;
-}
+import { BackButtonProps } from '@/interfaces';
 
 export default function BackButton({href, onClick, text}: BackButtonProps) {
     const router = useRouter();

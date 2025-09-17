@@ -1,13 +1,4 @@
-export interface PasswordValidationResult {
-    hasMinLength: boolean;
-    hasUppercase: boolean;
-    hasNumber: boolean;
-    hasSpecial: boolean;
-    passwordsMatch: boolean;
-    isPasswordValid: boolean;
-    showMatchStatus: boolean;
-    matchIsGood: boolean;
-}
+import { PasswordValidationResult } from '@/interfaces';
 
 export class PasswordValidationService {
     static validate(password: string, confirmPassword: string = ''): PasswordValidationResult {

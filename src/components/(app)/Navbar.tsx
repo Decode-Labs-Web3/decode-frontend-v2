@@ -2,13 +2,7 @@
 
 import Image from 'next/image';
 
-interface NavbarProps {
-  user: { 
-    username: string; 
-    email: string;
-  };
-  onLogout?: () => void;
-}
+import { NavbarProps } from '@/interfaces';
 
 export default function Navbar({ user, onLogout }: NavbarProps) {
   return (

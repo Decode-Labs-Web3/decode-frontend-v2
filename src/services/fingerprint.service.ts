@@ -1,16 +1,4 @@
-export type FingerprintResult = {
-  fingerprint_hashed: string;
-  browser: string;
-  device: string;
-};
-
-interface UserAgentData {
-  brands: Array<{ brand: string; version: string }>;
-}
-
-interface NavigatorWithUserAgentData extends Navigator {
-  userAgentData?: UserAgentData;
-}
+import { FingerprintResult, NavigatorWithUserAgentData } from '@/interfaces';
 
 
 export async function fingerprintService(userAgent?: string): Promise<FingerprintResult> {

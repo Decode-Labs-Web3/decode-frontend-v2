@@ -3,10 +3,10 @@ import Link from 'next/link';
 import Auth from '@/components/(auth)';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 export default function Login() {
     const router = useRouter();
-    const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [formData, setFormData] = useState<{ email_or_username: string, password: string }>({
         email_or_username: "",
@@ -37,15 +37,13 @@ export default function Login() {
             ...prevData,
             [id]: value
         }))
-        if (error) setError('');
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (loading) return;
-        if (error) setError("");
         if (!formData.email_or_username.trim() || !formData.password.trim() || loading) {
-            setError("Please fill in all fields"); 
+            toast.error("Please fill in all fields"); 
             return;
         }
         
@@ -66,20 +64,21 @@ export default function Login() {
 
             const responseData = await apiResponse.json();
             if (responseData.success && responseData.statusCode === 200 && responseData.message === "Login successful") {
+                toast.success("Login successful!");
                 router.push("/dashboard");
             } else if (responseData.success && responseData.statusCode === 400 && responseData.message === "Device fingerprint not trusted, send email verification") {
                 router.push("/verify/login");
             } else {
-                setError(responseData?.message || "Login failed");
+                toast.error(responseData?.message || "Login failed");
                 setLoading(false);
                 return;
             }
         } catch (error: unknown) {
             if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
-                setError("Request timeout/aborted. Please try again.");
+                toast.error("Request timeout/aborted. Please try again.");
             } else {
                 const errorMessage = error instanceof Error ? error.message : error instanceof Error ? error.message : "Something went wrong. Please try again.";
-                setError(errorMessage);
+                toast.error(errorMessage);
             }
         } finally {
             setLoading(false);
@@ -109,11 +108,6 @@ export default function Login() {
                         placeholder='Enter your password'
                     />
 
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
-                            {error}
-                        </div>
-                    )}
 
                     <div className="mb-5 text-right">
                         <a 

@@ -5,7 +5,7 @@ import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faNewspaper, faClock, faThumbsUp, faComment, faShare } from '@fortawesome/free-solid-svg-icons';
 
-export default function Page() {
+export default function NewsPage() {
   const posts = [
     { title: 'Decode Portal v1.2 released', description: 'We shipped device trust improvements, new wallet linking flow and UI polish across the portal.', time: 'Just now', image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop', tag: 'Release', source: 'Decode Team', likes: 128, comments: 24 },
     { title: 'Maintenance window – Saturday 9PM UTC', description: 'Short downtime expected while we migrate our auth database for improved resilience.', time: '6 hours ago', image: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1200&auto=format&fit=crop', tag: 'Status', source: 'Decode Ops', likes: 52, comments: 9 },

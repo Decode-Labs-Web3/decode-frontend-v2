@@ -1,8 +1,4 @@
-interface PageHeaderProps {
-  title: string;
-  description: string;
-  className?: string;
-}
+import { PageHeaderProps } from '@/interfaces';
 
 export default function PageHeader({ title, description, className = "" }: PageHeaderProps) {
   return (

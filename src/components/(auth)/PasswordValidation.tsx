@@ -3,11 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { PasswordValidationService } from "@/services/password-validation.service";
 
-interface PasswordValidationProps {
-    password: string;
-    confirmPassword?: string;
-    showConfirm?: boolean;
-}
+import { PasswordValidationProps } from '@/interfaces';
 
 export default function PasswordValidation({ 
     password, 
@@ -15,7 +11,7 @@ export default function PasswordValidation({
     showConfirm = true 
 }: PasswordValidationProps) {
     const validation = PasswordValidationService.validate(password, confirmPassword);
-    const { hasMinLength, hasUppercase, hasNumber, hasSpecial, passwordsMatch, showMatchStatus, matchIsGood } = validation;
+    const { hasMinLength, hasUppercase, hasNumber, hasSpecial, showMatchStatus, matchIsGood } = validation;
 
     return (
         <>

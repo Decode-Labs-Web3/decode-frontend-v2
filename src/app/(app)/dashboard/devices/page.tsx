@@ -7,35 +7,9 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLaptop, faMobileScreen, faTablet } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
+import { Fingerprint, Session } from '@/interfaces';
 
-interface Fingerprint {
-  "_id": string;
-  "user_id": string;
-  "device": string;
-  "browser": string;
-  "fingerprint_hashed": string;
-  "is_trusted": boolean;
-  "createdAt": string;
-  "updatedAt": string;
-  "__v": number;
-  "sessions": Session[];
-}
-
-interface Session {
-  "_id": string;
-  "user_id": string;
-  "device_fingerprint_id": string;
-  "session_token": string;
-  "app": string;
-  "expires_at": string;
-  "is_active": boolean;
-  "last_used_at": string;
-  "createdAt": string;
-  "updatedAt": string;
-  "__v": number;
-}
-
-export default function Page() {
+export default function DevicesPage() {
   const router = useRouter();
   const [version, setVersion] = useState(0);
   const [fingerprintsData, setFingerprintsData] = useState<Fingerprint[]>([]);
@@ -144,6 +118,8 @@ export default function Page() {
       }
     } catch {
       toast.error('Network error. Please try again.');
+    } finally {
+      console.log('Device revocation operation completed');
     }
   }
 
@@ -203,6 +179,8 @@ export default function Page() {
       }
     } catch {
       toast.error('Network error. Please try again.');
+    } finally {
+      console.log('Session revocation operation completed');
     }
   }
 

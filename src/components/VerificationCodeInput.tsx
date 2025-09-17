@@ -1,14 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 
-interface VerificationCodeInputProps {
-  digits: string[];
-  setDigits: (digits: string[]) => void;
-  onError: (error: string) => void;
-  loading: boolean;
-  error: string;
-}
+import { VerificationCodeInputProps } from '@/interfaces';
 
 export default function VerificationCodeInput({
   digits,

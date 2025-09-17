@@ -4,10 +4,10 @@ import Auth from '@/components/(auth)';
 import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWallet, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { toast } from 'react-toastify';
 
 export default function Home() {
     const router = useRouter();
-    const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [formData, setFormData] = useState<{ email_or_username: string }>({
         email_or_username: "",
@@ -25,7 +25,6 @@ export default function Home() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.email_or_username.trim() || loading) return;
-        setError("");
         setLoading(true);
         try {
             const apiResponse = await fetch("/api/auth/login-or-register", {
@@ -57,10 +56,10 @@ export default function Home() {
         } catch (error: unknown) {
             if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
                 console.error("Request timeout/aborted");
-                setError("Request timeout/aborted. Please try again.");
+                toast.error("Request timeout/aborted. Please try again.");
             } else {
                 console.error(error);
-                setError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+                toast.error(error instanceof Error ? error.message : "Something went wrong. Please try again.");
             }
         } finally {
             setLoading(false);
@@ -98,11 +97,6 @@ export default function Home() {
                         onChange={handleChange}
                     />
 
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
-                            {error}
-                        </div>
-                    )}
 
                     <Auth.SubmitButton
                         loading={loading}

@@ -3,10 +3,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGaugeHigh, faUserShield, faWallet, faLink, faNewspaper, faBell, faLaptop, faUser } from '@fortawesome/free-solid-svg-icons';
 
-interface SidebarProps {
-  active: string;
-  onChange: (key: string) => void;
-}
+import { SidebarProps } from '@/interfaces';
 
 const items = [
   { key: 'overview', label: 'Overview', icon: faGaugeHigh },

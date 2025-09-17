@@ -4,7 +4,7 @@ import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldHalved, faMobileScreen, faLock, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
-export default function Page() {
+export default function SecurityPage() {
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
       <App.PageHeader 

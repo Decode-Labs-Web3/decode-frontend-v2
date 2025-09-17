@@ -1,14 +1,5 @@
 'use client';
-import { ReactNode } from 'react';
-
-interface SubmitButtonProps {
-    loading: boolean;
-    disabled?: boolean;
-    loadingText?: string;
-    children: ReactNode;
-    className?: string;
-    variant?: 'primary' | 'secondary';
-}
+import { SubmitButtonProps } from '@/interfaces';
 
 export default function SubmitButton({
     loading,

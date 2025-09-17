@@ -5,7 +5,7 @@ import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWallet, faCircleCheck, faPlus, faTrash, faGripVertical } from '@fortawesome/free-solid-svg-icons';
 
-export default function Page() {
+export default function WalletsPage() {
   const initialWallets = [
     { name: 'MetaMask', address: '0xA2c4...9F1d', network: 'Ethereum', status: 'Connected' },
     { name: 'Ledger Nano X', address: 'bc1q7...k9z3', network: 'Bitcoin', status: 'Connected' },

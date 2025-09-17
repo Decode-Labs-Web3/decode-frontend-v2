@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-
-interface VerifyRequest {
-  code: string;
-  type: 'register' | 'login' | 'forgot';
-}
+import { VerifyRequest } from "@/interfaces";
 
 const VERIFY_ENDPOINTS = {
   register: '/auth/register/verify-email',
