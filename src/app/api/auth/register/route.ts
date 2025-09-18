@@ -40,6 +40,7 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
+      console.error("/api/auth/register backend error:", error || backendRes.statusText);
       return NextResponse.json({
         success: false,
         statusCode: backendRes.status || 400,
@@ -68,10 +69,11 @@ export async function POST(req: Request) {
     }
 
   } catch (error) {
+    console.error("/api/auth/register handler error:", error);
     return NextResponse.json({
       success: false,
       statusCode: 500,
-      message: error instanceof Error ? error.message : "Server error from register",
+      message: "Server error from register",
     }, { status: 500 });
   }
 }

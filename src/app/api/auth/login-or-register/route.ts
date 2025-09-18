@@ -35,6 +35,7 @@ export async function POST(req: Request) {
         });
 
         if (!backendResponse.ok && backendResponse.status !== 400) {
+            console.error('/api/auth/login-or-register backend error status:', backendResponse.status);
             throw Object.assign(new Error(`HTTP ${backendResponse.status}`), { status: backendResponse.status });
         }
 
@@ -97,10 +98,11 @@ export async function POST(req: Request) {
 
 
     } catch (error) {
+        console.error('/api/auth/login-or-register handler error:', error);
         return NextResponse.json({
             success: false,
             statusCode: 400,
-            message: error instanceof Error ? error.message : "Server error from login or register",
+            message: "Server error from login or register",
         }, { status: 400 });
     }
 }

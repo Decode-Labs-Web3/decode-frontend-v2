@@ -1,4 +1,4 @@
-import { showError, ERROR_MESSAGES } from './toast.utils';
+import { showError, ERROR_MESSAGES } from "./toast.utils";
 
 export interface ApiError {
   message?: string;
@@ -6,29 +6,35 @@ export interface ApiError {
   success?: boolean;
 }
 
-export const handleApiError = (error: unknown, customMessage?: string): string => {
-  console.error('API Error:', error);
-  
+export const handleApiError = (
+  error: unknown,
+  customMessage?: string
+): string => {
+  console.error("API Error:", error);
+
   if (error instanceof Error) {
     return customMessage || error.message || ERROR_MESSAGES.NETWORK_ERROR;
   }
-  
-  if (typeof error === 'object' && error !== null && 'message' in error) {
+
+  if (typeof error === "object" && error !== null && "message" in error) {
     const apiError = error as ApiError;
     return customMessage || apiError.message || ERROR_MESSAGES.GENERIC_ERROR;
   }
-  
+
   return customMessage || ERROR_MESSAGES.NETWORK_ERROR;
 };
 
-export const handleApiResponse = (response: ApiError, successMessage?: string): boolean => {
+export const handleApiResponse = (
+  response: ApiError,
+  successMessage?: string
+): boolean => {
   if (response.success || response.statusCode === 200) {
     if (successMessage) {
-      console.log('Success:', successMessage);
+      console.log("Success:", successMessage);
     }
     return true;
   }
-  
+
   const errorMessage = response.message || ERROR_MESSAGES.GENERIC_ERROR;
   showError(errorMessage);
   return false;

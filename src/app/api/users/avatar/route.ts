@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         console.log('Avatar data:', data);
 
         if (!res.ok) {
+            console.error('/api/users/avatar backend error:', data);
             return NextResponse.json(
                 { error: data?.error || "Upload failed" },
                 { status: 500 }
@@ -49,10 +50,8 @@ export async function POST(req: Request) {
         });
 
     } catch (err: unknown) {
-        if (err instanceof Error) {
-            return NextResponse.json({ error: err.message }, { status: 500 });
-        }
-        return NextResponse.json({ error: err instanceof Error ? err.message : 'Unknown error' }, { status: 500 });
+        console.error('/api/users/avatar handler error:', err);
+        return NextResponse.json({ error: 'Server error from avatar upload' }, { status: 500 });
     }
 }
 
