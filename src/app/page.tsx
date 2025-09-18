@@ -1,40 +1,49 @@
 "use client";
 
-import { ethers } from "ethers";
 import { useEffect, useState } from "react";
+import { ethers } from "ethers";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
 import { showError, showInfo, showSuccess } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWallet, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-
-declare global {
-  interface EthereumProvider {
-    request: (args: {
-      method: string;
-      params?: unknown[] | Record<string, unknown>;
-    }) => Promise<unknown>;
-    on?: (event: string, listener: (...args: unknown[]) => void) => void;
-    removeAllListeners?: (event?: string) => void;
-  }
-  interface Window {
-    ethereum?: EthereumProvider;
-  }
-}
+import {
+  useAppKit,
+  useAppKitAccount,
+  useAppKitProvider,
+  useAppKitNetwork,
+} from "@reown/appkit/react";
 
 export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-  const [account, setAccount] = useState<string | null>(null);
   const [formData, setFormData] = useState<{ email_or_username: string }>({
     email_or_username: "",
   });
-  const [hasProvider, setHasProvider] = useState<boolean>(true);
 
+  // 🔸 AppKit state (sau khi Connect)
+  const { open } = useAppKit();
+  const { address, caipAddress, isConnected } = useAppKitAccount();
+  const { walletProvider } = useAppKitProvider("eip155"); // EVM provider
+  const { chainId } = useAppKitNetwork();
+
+  const [balanceEth, setBalanceEth] = useState<string>("");
+
+  // Lấy balance (demo) khi đã connect
   useEffect(() => {
-    const eth = window?.ethereum;
-    setHasProvider(Boolean(eth));
-  }, []);
+    (async () => {
+      try {
+        if (!isConnected || !walletProvider || !address) return;
+        const provider = new ethers.BrowserProvider(
+          walletProvider as ethers.Eip1193Provider
+        );
+        const bal = await provider.getBalance(address);
+        setBalanceEth(ethers.formatEther(bal));
+      } catch (e) {
+        console.debug("Get balance failed:", e);
+      }
+    })();
+  }, [isConnected, walletProvider, address]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -105,65 +114,81 @@ export default function Home() {
     }
   };
 
-  async function connectWallet() {
+  const openConnectModal = async () => {
     try {
-      if (!window?.ethereum) {
-        showError("No Ethereum provider detected. Please install Wallet Extension.");
+      // 1) Mở modal connect
+      await open();
+
+      // đợi state cập nhật 1 nhịp (tránh race)
+      await new Promise((r) => setTimeout(r, 100));
+
+      if (!isConnected || !walletProvider || !address) {
+        showInfo("Connect cancelled.");
         return;
       }
-
-      const accounts = (await window.ethereum.request({
-        method: "eth_requestAccounts",
-      })) as string[];
-
-      if (!accounts || accounts.length === 0) {
-        showError("No account returned. Please unlock your wallet.");
-        return;
-      }
-
-      const selectedAccount = accounts[0];
-      setAccount(selectedAccount);
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      console.log("Connected account:", selectedAccount);
-      console.log("Signer:", signer);
-
-      // Optional success toast
       showSuccess("Wallet connected");
 
-      // Keep UI in sync with wallet events
-      window.ethereum.removeAllListeners?.("accountsChanged");
-      window.ethereum.removeAllListeners?.("chainChanged");
-
-      window.ethereum.on?.("accountsChanged", (...args: unknown[]) => {
-        const accs = (args?.[0] as string[]) ?? [];
-        const next = accs[0] ?? null;
-        setAccount(next);
-        if (!next) showInfo("No account selected.");
+      // 2) Yêu cầu challenge từ backend
+      const challengeRes = await fetch("/api/wallet/auth-challenge", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "frontend-internal-request": "true",
+        },
+        body: JSON.stringify({ address }), // <-- gửi JSON, không gửi raw string
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
       });
 
-      window.ethereum.on?.("chainChanged", () => {
-        // Reload to ensure provider/signer reflect the new chain
-        window.location.reload();
+      if (!challengeRes.ok) throw new Error(`HTTP ${challengeRes.status}`);
+      const challengeJson = await challengeRes.json();
+      console.log("Challenge data:", challengeJson);
+      const messageToSign = challengeJson?.data?.nonceMessage as string;
+      if (!messageToSign) throw new Error("Missing nonce message");
+
+      // 3) Ký message bằng ví
+      const provider = new ethers.BrowserProvider(
+        walletProvider as ethers.Eip1193Provider
+      );
+      const signer = await provider.getSigner();
+      const signature = await signer.signMessage(messageToSign);
+
+      console.log("Signature:", signature);
+
+      // 4) Gửi chữ ký về backend để verify + set cookie session
+      const verifyRes = await fetch("/api/wallet/auth-validation", {
+        method: "POST",
+        credentials: "include", // để backend set cookie phiên đăng nhập
+        headers: {
+          "Content-Type": "application/json",
+          "frontend-internal-request": "true",
+        },
+        body: JSON.stringify({
+          address,
+          signature,
+        }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
       });
+
+      const verifyJson = await verifyRes.json();
+      if (!verifyRes.ok || !verifyJson?.success) {
+        throw new Error(verifyJson?.message || "Signature verify failed");
+      }
+
+      showSuccess("Signed in with wallet");
+      router.push("/dashboard"); // tuỳ trang bạn muốn vào sau khi login
     } catch (err: unknown) {
-      const code = (err as { code?: unknown })?.code;
-      if (
-        code === 4001 ||
-        (err instanceof Error && err.message === "User rejected request")
-      ) {
-          console.error("Connection request rejected:", err);
-          showError("Connection request rejected. Please try again.");
+      // 4001 = user rejected request (Metamask)
+      if ((err as { code?: number })?.code === 4001) {
+        showInfo("You rejected the signature.");
         return;
       }
-      console.error("Failed to connect wallet:", err);
-      showError(`Failed to connect wallet. Please try again.`);
+      console.error("Wallet auth error:", err);
+      showError(err instanceof Error ? err.message : "Wallet auth failed");
     }
-    finally {
-      setLoading(false);
-    }
-  }
+  };
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
@@ -172,28 +197,10 @@ export default function Home() {
 
       {/* Main Card */}
       <Auth.AuthCard title="Get Started">
-        {/* Wallet provider notice + Connect Wallet Button */}
-        {!hasProvider && (
-          <div className="mb-4 rounded-lg border border-yellow-600 bg-yellow-900/30 text-yellow-200 p-3 text-sm">
-            No Ethereum wallet detected. Install MetaMask to continue.
-            <button
-              type="button"
-              onClick={() =>
-                window.open(
-                  "https://metamask.io/download/",
-                  "_blank",
-                  "noopener,noreferrer"
-                )
-              }
-              className="ml-2 inline-flex items-center rounded-md bg-yellow-600 px-2.5 py-1.5 text-xs font-semibold text-black hover:bg-yellow-500 transition"
-            >
-              Install MetaMask
-            </button>
-          </div>
-        )}
+        {/* Wallet Button */}
+
         <button
-          onClick={connectWallet}
-          disabled={!hasProvider}
+          onClick={openConnectModal}
           className="group w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg mb-6 flex items-center justify-center gap-2 transition-all shadow-lg"
         >
           <FontAwesomeIcon icon={faWallet} className="opacity-90" />
@@ -203,9 +210,12 @@ export default function Home() {
             className="opacity-0 -translate-x-2 group-hover:opacity-90 group-hover:translate-x-0 transition-all"
           />
         </button>
-        {account && (
+
+        {isConnected && address && (
           <div className="-mt-4 mb-6 text-xs text-gray-300 truncate max-w-full">
-            Connected: {account}
+            Connected: {address} • Chain ID: {chainId ?? "-"} • Bal:{" "}
+            {balanceEth || "-"} ETH
+            <div className="opacity-70">CAIP: {caipAddress ?? "-"}</div>
           </div>
         )}
 

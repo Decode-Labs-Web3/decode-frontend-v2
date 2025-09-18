@@ -83,15 +83,26 @@ export default function Register() {
 
       // Check if email verification is required
       if (data.requiresVerification) {
-        // Store registration data for verification
-        sessionStorage.setItem(
+        // Store registration data in cookies for API access
+        setCookie(
           "registration_data",
           JSON.stringify({
             email: formData.email,
             username: formData.username,
-          })
+          }),
+          {
+            maxAge: 60 * 10, // 10 minutes
+            path: "/",
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+          }
         );
-        sessionStorage.setItem("verification_required", "true");
+        setCookie("verification_required", "true", {
+          maxAge: 60 * 10, // 10 minutes
+          path: "/",
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+        });
 
         // Redirect to verify email page
         router.push("/verify/register");

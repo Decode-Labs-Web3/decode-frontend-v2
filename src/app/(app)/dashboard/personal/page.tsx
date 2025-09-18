@@ -70,7 +70,11 @@ export default function PersonalPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      let apiResponse: any;
+      let apiResponse: {
+        success: boolean;
+        message?: string;
+        data?: { avatar_url?: string; ipfsHash?: string };
+      };
       try {
         const response = await fetch("/api/users/avatar", {
           method: "POST",
@@ -97,7 +101,7 @@ export default function PersonalPage() {
 
       setForm((prev) => ({
         ...prev,
-        avatar_ipfs_hash: apiResponse.ipfsHash,
+        avatar_ipfs_hash: apiResponse.data?.ipfsHash || "",
       }));
     };
 
@@ -115,7 +119,11 @@ export default function PersonalPage() {
     e.preventDefault();
 
     const updateProfile = async () => {
-      let response: any;
+      let response: {
+        success: boolean;
+        message?: string;
+        data?: { results?: unknown[] };
+      };
       try {
         response = await apiCallWithTimeout("/api/users/profile-change", {
           method: "PUT",
@@ -136,11 +144,11 @@ export default function PersonalPage() {
         return;
       }
 
-      if (response.results) {
+      if (response.data?.results) {
         let hasErrors = false;
         let hasSuccess = false;
 
-        Object.entries(response.results).forEach(([field, result]) => {
+        Object.entries(response.data.results).forEach(([field, result]) => {
           const typedResult = result as { success: boolean; message: string };
           if (typedResult.success) {
             hasSuccess = true;
