@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   env: {
-    BACKEND_URL: process.env.BACKEND_URL,
+    BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
   },
 
   images: {
@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
             key: "Access-Control-Allow-Origin",
             value:
               process.env.NODE_ENV === "production"
-                ? "https://yourdomain.com"
+                ? "https://decode.com"
                 : "http://localhost:3000",
           },
           {
@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization, Frontend-Internal-Request",
+            value: "Content-Type, Authorization, frontend-internal-request",
           },
           {
             key: "Access-Control-Allow-Credentials",

@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     };
 
     const backendRes = await fetch(
-      `${process.env.BACKEND_URL}/auth/register/email-verification`,
+      `${process.env.BACKEND_BASE_URL}/auth/register/email-verification`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

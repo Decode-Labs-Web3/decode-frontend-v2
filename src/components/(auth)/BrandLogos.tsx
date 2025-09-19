@@ -54,14 +54,27 @@ export default function BrandLogos() {
       {/* Terms */}
       <p className="text-xs text-gray-400 text-center">
         By continuing, you agree to our{" "}
-        <Link href="/terms" className="text-blue-500 hover:underline">
+        <Link
+          href="/terms-and-privacy/terms"
+          className="text-blue-500 hover:underline"
+        >
           Terms
         </Link>{" "}
         and acknowledge our{" "}
-        <Link href="/privacy" className="text-blue-500 hover:underline">
+        <Link
+          href="/terms-and-privacy/privacy"
+          className="text-blue-500 hover:underline"
+        >
           Privacy Policy
         </Link>
       </p>
+      
+      {/* Footer */}
+      <div className="text-center mt-12">
+        <p className="text-gray-400 text-sm">
+          © {new Date().getFullYear()} Decode Network. All rights reserved.
+        </p>
+      </div>
     </div>
   );
 }

@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     };
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_URL}/auth/info/exist-by-email-or-username`,
+      `${process.env.BACKEND_BASE_URL}/auth/info/exist-by-email-or-username`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -54,13 +54,16 @@ export async function POST(req: Request) {
     }
 
     const requestBody = { code };
-    const backendRes = await fetch(`${process.env.BACKEND_URL}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody),
-      cache: "no-store",
-      signal: AbortSignal.timeout(5000),
-    });
+    const backendRes = await fetch(
+      `${process.env.BACKEND_BASE_URL}${endpoint}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
+      }
+    );
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);

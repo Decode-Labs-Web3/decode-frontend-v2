@@ -86,7 +86,7 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
    Create a `.env` file in the root directory:
 
    ```env
-   BACKEND_URL=http://localhost:4000
+   BACKEND_BASE_URL=http://localhost:4000
    NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id
    PINATA_API_Ke=your_pinata_api_key
    PINATA_API_Secret=your_pinata_secret
@@ -239,7 +239,7 @@ Forgot Password → Email Code → Verify Code → Change Password → Login
 
 ```env
 # Backend Configuration
-BACKEND_URL=https://your-backend-api.com
+BACKEND_BASE_URL=https://your-backend-api.com
 
 # Web3 Configuration
 NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id

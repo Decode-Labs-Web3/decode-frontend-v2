@@ -10,30 +10,41 @@ type GateRule = {
 const GATE_RULES: GateRule[] = [
   { prefix: "/login", cookie: "gate-key-for-login", exact: false },
   { prefix: "/register", cookie: "gate-key-for-register", exact: false },
-  { prefix: "/forgot-password", cookie: "gate-key-for-forgot-password", exact: false },
-  { prefix: "/change-password", cookie: "gate-key-for-change-password", exact: false },
+  {
+    prefix: "/forgot-password",
+    cookie: "gate-key-for-forgot-password",
+    exact: false,
+  },
+  {
+    prefix: "/change-password",
+    cookie: "gate-key-for-change-password",
+    exact: false,
+  },
 ];
 
 // Handle gate rules for specific routes, checking for required cookies and clearing them after use
-function handleGate(request: NextRequest, pathname: string): NextResponse | null {
+function handleGate(
+  request: NextRequest,
+  pathname: string
+): NextResponse | null {
   if (pathname.startsWith("/verify/")) {
-    const verifyType = pathname.split('/')[2];
-    let requiredCookie = '';
-    
+    const verifyType = pathname.split("/")[2];
+    let requiredCookie = "";
+
     switch (verifyType) {
-      case 'login':
-        requiredCookie = 'gate-key-for-verify-login';
+      case "login":
+        requiredCookie = "gate-key-for-verify-login";
         break;
-      case 'register':
-        requiredCookie = 'gate-key-for-verify-register';
+      case "register":
+        requiredCookie = "gate-key-for-verify-register";
         break;
-      case 'forgot':
-        requiredCookie = 'gate-key-for-verify-forgot';
+      case "forgot":
+        requiredCookie = "gate-key-for-verify-forgot";
         break;
       default:
         return NextResponse.redirect(new URL("/", request.url));
     }
-    
+
     const ok = request.cookies.get(requiredCookie)?.value === "true";
     if (!ok) {
       return NextResponse.redirect(new URL("/", request.url));
@@ -48,7 +59,7 @@ function handleGate(request: NextRequest, pathname: string): NextResponse | null
     const match = rule.exact
       ? pathname === rule.prefix
       : pathname === rule.prefix || pathname.startsWith(rule.prefix + "/");
-    
+
     if (!match) continue;
 
     const ok = request.cookies.get(rule.cookie)?.value === "true";
@@ -56,14 +67,20 @@ function handleGate(request: NextRequest, pathname: string): NextResponse | null
       return NextResponse.redirect(new URL("/", request.url));
     }
     const res = NextResponse.next();
-    res.cookies.set(rule.cookie, "", { maxAge: 0, path: rule.path ?? rule.prefix });
+    res.cookies.set(rule.cookie, "", {
+      maxAge: 0,
+      path: rule.path ?? rule.prefix,
+    });
     return res;
   }
   return null;
 }
 
 // Check if a JWT token is still valid & return TTL (seconds)
-function getJwtRemainingSeconds(token: string, skewSeconds = 10): number | null {
+function getJwtRemainingSeconds(
+  token: string,
+  skewSeconds = 10
+): number | null {
   try {
     const payload = token.split(".")[1];
     if (!payload) return null;
@@ -84,21 +101,21 @@ function getJwtRemainingSeconds(token: string, skewSeconds = 10): number | null 
   }
 }
 
-
 // Main middleware function for handling authentication, gate rules, and API/dashboard access
 export async function middleware(request: NextRequest) {
   const { pathname, origin } = request.nextUrl;
 
   // Allow static and public files to pass through
   if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/images") ||
-    pathname.startsWith("/public") ||
-    pathname.startsWith("/favicons") ||
-    pathname.startsWith("/fonts") ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
-    pathname.startsWith("/favicon")
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/fonts") ||
+    pathname.startsWith("/public") ||
+    pathname.startsWith("/images") ||
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/favicons") ||
+    pathname.startsWith("/terms-and-privacy")
   ) {
     return NextResponse.next();
   }
@@ -117,7 +134,8 @@ export async function middleware(request: NextRequest) {
     const mode = request.headers.get("sec-fetch-mode") || "";
     const dest = request.headers.get("sec-fetch-dest") || "";
     const userNav = request.headers.get("sec-fetch-user") === "?1";
-    const internal = request.headers.get("frontend-internal-request") === "true";
+    const internal =
+      request.headers.get("frontend-internal-request") === "true";
 
     if (internal) return NextResponse.next();
 
@@ -125,11 +143,14 @@ export async function middleware(request: NextRequest) {
     if (isNavigation) {
       return NextResponse.redirect(new URL("/", request.url));
     }
-    return NextResponse.json({
-      success: false,
-      statusCode: 400,
-      message: "Missing Frontend-Internal-Request header"
-    }, { status: 400 });
+    return NextResponse.json(
+      {
+        success: false,
+        statusCode: 400,
+        message: "Missing Frontend-Internal-Request header",
+      },
+      { status: 400 }
+    );
   }
 
   // Handle dashboard authentication and token refresh
@@ -138,7 +159,7 @@ export async function middleware(request: NextRequest) {
     const refreshToken = request.cookies.get("refreshToken")?.value;
 
     if (!refreshToken) {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
 
     const remaining = accessToken ? getJwtRemainingSeconds(accessToken) : null;
@@ -159,10 +180,15 @@ export async function middleware(request: NextRequest) {
       });
 
       if (!response.ok) {
-        return NextResponse.redirect(new URL('/', request.url));
+        return NextResponse.redirect(new URL("/", request.url));
       }
 
-      const { accessToken: newAccessToken, refreshToken: newRefreshToken, _id: newSessionId, expires_at: newExpiresAt } = await response.json();
+      const {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+        _id: newSessionId,
+        expires_at: newExpiresAt,
+      } = await response.json();
       const res = NextResponse.next();
 
       if (newSessionId) {
@@ -187,7 +213,9 @@ export async function middleware(request: NextRequest) {
         });
       }
 
-      const refreshTokenAge = Math.floor((new Date(newExpiresAt).getTime() - Date.now()) / 1000);
+      const refreshTokenAge = Math.floor(
+        (new Date(newExpiresAt).getTime() - Date.now()) / 1000
+      );
 
       if (newRefreshToken) {
         res.cookies.set("refreshToken", newRefreshToken, {
@@ -195,32 +223,23 @@ export async function middleware(request: NextRequest) {
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",
-          maxAge: refreshTokenAge > 0 ? refreshTokenAge : 0
+          maxAge: refreshTokenAge > 0 ? refreshTokenAge : 0,
         });
       }
 
       return res;
     } catch (error) {
-      console.error('Refresh token error:', error);
-      return NextResponse.redirect(new URL('/', request.url));
+      console.error("Refresh token error:", error);
+      return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
-  // Allow other public routes (auth pages, etc.)
-  if (
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/register") ||
-    pathname.startsWith("/forgot-password") ||
-    pathname.startsWith("/change-password") ||
-    pathname.startsWith("/verify/")
-  ) {
-    return NextResponse.next();
-  }
-
   // Default redirect to home for all other cases
-  return NextResponse.redirect(new URL('/', request.url));
+  return NextResponse.redirect(new URL("/", request.url));
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|images/|favicons/|fonts/).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|images/|favicons/|fonts/).*)",
+  ],
 };
