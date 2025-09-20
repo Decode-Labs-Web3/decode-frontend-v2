@@ -1,4 +1,6 @@
 export interface UserProfile {
+  last_username_change?: string;
+  last_email_change?: string;
   id: string;
   email: string;
   username: string;
@@ -7,6 +9,15 @@ export interface UserProfile {
   bio?: string;
   avatar_ipfs_hash?: string;
   last_login?: string;
+  primary_wallet?: Wallet;
+}
+
+export interface Wallet {
+  id: string;
+  address: string;
+  user_id: string;
+  name_service: string;
+  is_primary: boolean;
 }
 
 export interface UserContextType {

@@ -27,9 +27,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       });
 
       const responseData = await apiResponse.json();
-      
+
       if (responseData.success && responseData.data) {
         const userData: UserProfile = {
+          last_username_change: responseData.data.last_username_change,
+          last_email_change: responseData.data.last_email_change,
           id: responseData.data._id,
           email: responseData.data.email,
           username: responseData.data.username,
@@ -38,6 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           bio: responseData.data.bio,
           avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
           last_login: responseData.data.last_login,
+          primary_wallet: responseData.data.primary_wallet
         };
 
         setUser(userData);
@@ -79,8 +82,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         });
 
         const responseData = await apiResponse.json();
-        
+
         const userData: UserProfile = {
+          last_username_change: responseData.data.last_username_change,
+          last_email_change: responseData.data.last_email_change,
           id: responseData.data._id,
           email: responseData.data.email,
           username: responseData.data.username,
@@ -89,6 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           bio: responseData.data.bio,
           avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
           last_login: responseData.data.last_login,
+          primary_wallet: responseData.data.primary_wallet,
         };
 
         setUser(userData);
@@ -168,5 +174,3 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </UserInfoContext.Provider>
   );
 }
-
-

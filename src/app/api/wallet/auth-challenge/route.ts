@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
             address
         };
 
-        const backendRes = await fetch(`http://localhost:4005/wallets/auth/challenge`, {
+        const backendRes = await fetch(`${process.env.BACKEND_BASE_URL}/wallets/auth/challenge`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -53,6 +53,9 @@ async function makeBackendRequest(
     const fingerprintResult = await fingerprintService(userAgent);
     const { fingerprint_hashed } = fingerprintResult;
 
+    console.log("endpoint from profile-change", endpoint);
+    console.log("data from profile-change", data);
+
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}${endpoint}`,
       {
@@ -68,6 +71,7 @@ async function makeBackendRequest(
       }
     );
 
+
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
       return {
@@ -77,6 +81,7 @@ async function makeBackendRequest(
     }
 
     const response = await backendRes.json().catch(() => ({}));
+    console.log("response from profile-change", response);
     return {
       success: true,
       message: response.message || "Updated successfully",

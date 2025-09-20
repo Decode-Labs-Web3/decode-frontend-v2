@@ -73,7 +73,8 @@ export default function PersonalPage() {
       let apiResponse: {
         success: boolean;
         message?: string;
-        data?: { avatar_url?: string; ipfsHash?: string };
+        avatar_url?:string;
+        ipfsHash?: string
       };
       try {
         const response = await fetch("/api/users/avatar", {
@@ -93,16 +94,20 @@ export default function PersonalPage() {
           showError(apiResponse?.message || "Avatar upload failed");
           return;
         }
+        showSuccess("Avatar uploaded successfully");
       } catch (error) {
         console.error("Avatar upload request error:", error);
         showError("Avatar upload failed. Please try again.");
         return;
       }
 
-      setForm((prev) => ({
-        ...prev,
-        avatar_ipfs_hash: apiResponse.data?.ipfsHash || "",
+      setForm((prevForm) => ({
+        ...prevForm,
+        avatar_ipfs_hash: apiResponse?.ipfsHash|| "",
       }));
+
+      console.log("form.avatar_ipfs_hash from handleUploadAvatar after apiResponse", form.avatar_ipfs_hash);
+
     };
 
     await withLoading(uploadAvatar);
@@ -143,6 +148,7 @@ export default function PersonalPage() {
         showError(response?.message || "Update failed");
         return;
       }
+      console.log("response from handleSubmitProfile", response.data?.results);
 
       if (response.data?.results) {
         let hasErrors = false;

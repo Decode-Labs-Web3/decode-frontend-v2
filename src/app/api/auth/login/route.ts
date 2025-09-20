@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/fingerprint.service";
-import { sanitizeText, validateEmail } from "@/utils/sanitization.utils";
+import { sanitizeText } from "@/utils/sanitization.utils";
 import {
   createSecurityErrorResponse,
   SecurityErrorMessages,
@@ -42,7 +42,6 @@ export async function POST(req: Request) {
     }
 
     // Sanitize and validate inputs
-    const emailValidation = validateEmail(email_or_username);
     const passwordValidation = sanitizeText(password, {
       maxLength: 128,
       minLength: 1,
@@ -52,7 +51,7 @@ export async function POST(req: Request) {
       required: true,
     });
 
-    if (!emailValidation.isValid) {
+    if (!email_or_username) {
       logSecurityEvent(
         "INVALID_EMAIL_FORMAT",
         { requestId, email: email_or_username },
@@ -61,7 +60,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         createSecurityErrorResponse(
           400,
-          "Invalid email format",
+          "Invalid email or username",
           process.env.NODE_ENV === "production",
           requestId
         ),
@@ -83,7 +82,7 @@ export async function POST(req: Request) {
     }
 
     // Use sanitized values
-    const sanitizedEmail = emailValidation.sanitizedValue;
+    const sanitizedEmail = email_or_username;
     const sanitizedPassword = passwordValidation.sanitizedValue;
 
     const userAgent = req.headers.get("user-agent") || "";
