@@ -79,6 +79,7 @@ function WalletContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submitted with data:", formData);
     setLoading(true);
 
     try {
@@ -102,11 +103,17 @@ function WalletContent() {
       const data = await response.json();
       console.log("Login/Register response:", data);
 
-      if (data.success) {
-        showSuccess("Welcome to Decode!");
-        router.push("/dashboard");
+      if (data.success && data.message === "User found") {
+        console.log("User found, redirecting to login...");
+        showSuccess("User found! Redirecting to login...");
+        router.push("/login");
+      } else if (!data.success && data.message === "User not found") {
+        console.log("User not found, redirecting to register...");
+        showInfo("User not found. Redirecting to register...");
+        router.push("/register");
       } else {
-        showError(data.message || "Login failed");
+        console.log("Unexpected response:", data.message);
+        showError(data.message || "Something went wrong");
       }
     } catch (err: unknown) {
       console.error("Login/Register error:", err);

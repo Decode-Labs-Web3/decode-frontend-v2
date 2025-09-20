@@ -1,8 +1,3 @@
-/**
- * Security-focused error handling utilities
- * Prevents information disclosure and provides consistent error responses
- */
-
 export interface SecurityErrorResponse {
   success: false;
   statusCode: number;

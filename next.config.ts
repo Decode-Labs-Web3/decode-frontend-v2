@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.pinata.cloud https://gateway.pinata.cloud https://fonts.reown.com https://api.web3modal.org https://registry.npmjs.org https://pulse.walletconnect.org https://verify.walletconnect.org https://api.reown.com https://explorer-api.walletconnect.com wss://relay.walletconnect.org wss://*.walletconnect.org; frame-src 'self' https://verify.walletconnect.org; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; child-src 'self' blob:;",
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.pinata.cloud https://gateway.pinata.cloud https://fonts.reown.com https://api.web3modal.org https://registry.npmjs.org https://pulse.walletconnect.org https://verify.walletconnect.org https://api.reown.com https://explorer-api.walletconnect.com https://rpc.walletconnect.org wss://relay.walletconnect.org wss://*.walletconnect.org; frame-src 'self' https://verify.walletconnect.org; object-src 'none'; base-uri 'self'; form-action 'self'; worker-src 'self' blob:; child-src 'self' blob:;",
           },
         ],
       },

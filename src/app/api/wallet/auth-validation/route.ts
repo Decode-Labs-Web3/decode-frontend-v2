@@ -68,17 +68,50 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await backendRes.json();
-    console.log("Auth challenge response:", response);
 
-    return NextResponse.json(
-      {
+    if (
+      response.success &&
+      response.statusCode === 200 &&
+      response.message === "Challenge validated successfully"
+    ) {
+      const res = NextResponse.json({
         success: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Auth challenge generated",
+        message: response.message || "Challenge validated successfully",
         data: response.data,
-      },
-      { status: response.statusCode || 200 }
-    );
+      });
+
+      res.cookies.set("sessionId", response.data._id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 15,
+      });
+
+      res.cookies.set("accessToken", response.data.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 15,
+      });
+
+      const refreshTokenAge = Math.floor(
+        (new Date(response.data.expires_at).getTime() - Date.now()) / 1000
+      );
+
+      res.cookies.set("refreshToken", response.data.session_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: refreshTokenAge > 0 ? refreshTokenAge : 0,
+      });
+
+      return res;
+    }
+
   } catch (error) {
     console.error("Auth challenge error:", error);
     return NextResponse.json(

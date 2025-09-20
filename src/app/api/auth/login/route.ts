@@ -10,6 +10,7 @@ import {
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
+  console.log("requestId from login api:", requestId);
 
   try {
     const internalRequest = req.headers.get("frontend-internal-request");
