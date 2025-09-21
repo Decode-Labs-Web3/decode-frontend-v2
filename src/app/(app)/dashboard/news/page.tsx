@@ -39,7 +39,7 @@ export default function NewsPage() {
         const response = await fetch("/api/blogs/blog", {
           method: "GET",
           headers: {
-            "Frontend-Internal-Request": "true",
+            "X-Frontend-Internal-Request": "true",
           },
           cache: "no-store",
         });

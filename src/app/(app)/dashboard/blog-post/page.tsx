@@ -88,7 +88,7 @@ export default function BlogPostPage() {
       const response = await fetch("/api/users/avatar", {
         method: "POST",
         headers: {
-          "Frontend-Internal-Request": "true",
+          "X-Frontend-Internal-Request": "true",
         },
         body: formData,
       });
@@ -157,7 +157,7 @@ export default function BlogPostPage() {
       const response = await fetch("/api/blogs/post", {
         method: "POST",
         headers: {
-          "Frontend-Internal-Request": "true",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify(body),
         cache: "no-store",

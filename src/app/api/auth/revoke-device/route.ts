@@ -5,13 +5,13 @@ import { Session } from "@/interfaces";
 
 export async function POST(req: Request) {
   try {
-    const internalRequest = req.headers.get("frontend-internal-request");
+    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {
       return NextResponse.json(
         {
           success: false,
           statusCode: 400,
-          message: "Missing Frontend-Internal-Request header",
+          message: "Missing X-Frontend-Internal-Request header",
         },
         { status: 400 }
       );

@@ -136,7 +136,7 @@ export async function middleware(request: NextRequest) {
     const dest = request.headers.get("sec-fetch-dest") || "";
     const userNav = request.headers.get("sec-fetch-user") === "?1";
     const internal =
-      request.headers.get("frontend-internal-request") === "true";
+      request.headers.get("X-Frontend-Internal-Request") === "true";
 
     if (internal) return NextResponse.next();
 
@@ -148,7 +148,7 @@ export async function middleware(request: NextRequest) {
       {
         success: false,
         statusCode: 400,
-        message: "Missing Frontend-Internal-Request header",
+        message: "Missing X-Frontend-Internal-Request header",
       },
       { status: 400 }
     );
@@ -174,7 +174,7 @@ export async function middleware(request: NextRequest) {
       const response = await fetch(`${origin}/api/auth/refresh`, {
         method: "GET",
         headers: {
-          "frontend-internal-request": "true",
+          "X-Frontend-Internal-Request": "true",
         },
         cache: "no-store",
         signal: AbortSignal.timeout(5000),

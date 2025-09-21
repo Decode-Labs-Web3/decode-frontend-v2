@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization, frontend-internal-request",
+            value: "Content-Type, Authorization, X-Frontend-Internal-Request",
           },
           {
             key: "Access-Control-Allow-Credentials",

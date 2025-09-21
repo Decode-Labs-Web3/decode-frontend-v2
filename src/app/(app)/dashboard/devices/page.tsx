@@ -63,7 +63,7 @@ export default function DevicesPage() {
         const apiResponse = await apiCallWithTimeout("/api/auth/fingerprints", {
           method: "GET",
           headers: {
-            "frontend-internal-request": "true",
+            "X-Frontend-Internal-Request": "true",
           },
         });
 

@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
   try {
     // Security header validation
-    const internalRequest = req.headers.get("frontend-internal-request");
+    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {
       logSecurityEvent("MISSING_INTERNAL_HEADER", { requestId }, "high");
       return NextResponse.json(

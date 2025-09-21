@@ -1,28 +1,32 @@
-'use client';
+"use client";
 
-import App from '@/components/(app)';
-import Auth from '@/components/(auth)';
-import { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { UserInfoContext } from '@/contexts/UserInfoContext';
-import { UserProfile } from '@/interfaces';
+import App from "@/components/(app)";
+import Auth from "@/components/(auth)";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { UserInfoContext } from "@/contexts/UserInfoContext";
+import { UserProfile } from "@/interfaces";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
-  const [active, setActive] = useState<string>('overview');
+  const [active, setActive] = useState<string>("overview");
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const refetchUserData = async () => {
     try {
-      const apiResponse = await fetch('/api/users/overview', {
-        method: 'GET',
-        credentials: 'include',
+      const apiResponse = await fetch("/api/users/overview", {
+        method: "GET",
+        credentials: "include",
         headers: {
-          'Frontend-Internal-Request': 'true',
+          "X-Frontend-Internal-Request": "true",
         },
-        cache: 'no-store',
+        cache: "no-store",
         signal: AbortSignal.timeout(5000),
       });
 
@@ -40,24 +44,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           bio: responseData.data.bio,
           avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
           last_login: responseData.data.last_login,
-          primary_wallet: responseData.data.primary_wallet
+          primary_wallet: responseData.data.primary_wallet,
         };
 
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
       }
     } catch (error) {
-      console.error('Error refetching user data:', error);
+      console.error("Error refetching user data:", error);
     } finally {
-      console.log('User data refetch operation completed');
+      console.log("User data refetch operation completed");
     }
   };
 
   useEffect(() => {
     if (!pathname) return;
-    const parts = pathname.split('/').filter(Boolean);
-    if (parts[0] === 'dashboard') {
-      const section = parts[1] || 'overview';
+    const parts = pathname.split("/").filter(Boolean);
+    if (parts[0] === "dashboard") {
+      const section = parts[1] || "overview";
       setActive(section);
     }
   }, [pathname]);
@@ -71,13 +75,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     const fetchUser = async () => {
       try {
-        const apiResponse = await fetch('/api/users/overview', {
-          method: 'GET',
-          credentials: 'include',
+        const apiResponse = await fetch("/api/users/overview", {
+          method: "GET",
+          credentials: "include",
           headers: {
-            'Frontend-Internal-Request': 'true',
+            "X-Frontend-Internal-Request": "true",
           },
-          cache: 'no-store',
+          cache: "no-store",
           signal: AbortSignal.timeout(5000),
         });
 
@@ -100,10 +104,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
       } catch (error) {
-        console.error('User data fetch error:', error);
+        console.error("User data fetch error:", error);
       } finally {
         setLoading(false);
-        console.log('User data fetch operation completed');
+        console.log("User data fetch operation completed");
       }
     };
 
@@ -112,8 +116,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleChange = (key: string) => {
     setActive(key);
-    if (key === 'overview') {
-      router.push('/dashboard');
+    if (key === "overview") {
+      router.push("/dashboard");
     } else {
       router.push(`/dashboard/${key}`);
     }
@@ -121,31 +125,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Frontend-Internal-Request': 'true'
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
-        credentials: 'include',
-        cache: 'no-store',
+        credentials: "include",
+        cache: "no-store",
         signal: AbortSignal.timeout(5000),
       });
       const data = await response.json();
-      console.log('Logout response:', data);
+      console.log("Logout response:", data);
       if (data.success && data.statusCode === 200) {
-        router.push('/');
+        router.push("/");
       } else {
-        console.log('Logout failed:', data.message);
+        console.log("Logout failed:", data.message);
       }
     } catch (error: unknown) {
-      if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
+      if (
+        error instanceof Error &&
+        (error.name === "AbortError" || error.name === "TimeoutError")
+      ) {
         console.error("Request timeout/aborted");
       } else {
         console.error(error);
       }
     } finally {
-      console.log('Logout operation completed');
+      console.log("Logout operation completed");
     }
   };
 
@@ -165,7 +172,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
         <Auth.BackgroundAccents />
         <App.Navbar
-          user={{ username: user?.username || '', email: user?.email || '' }}
+          user={{ username: user?.username || "", email: user?.email || "" }}
           onLogout={handleLogout}
         />
         <App.Sidebar active={active} onChange={handleChange} />

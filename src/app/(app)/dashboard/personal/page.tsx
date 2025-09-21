@@ -73,14 +73,14 @@ export default function PersonalPage() {
       let apiResponse: {
         success: boolean;
         message?: string;
-        avatar_url?:string;
-        ipfsHash?: string
+        avatar_url?: string;
+        ipfsHash?: string;
       };
       try {
         const response = await fetch("/api/users/avatar", {
           method: "POST",
           headers: {
-            "frontend-internal-request": "true",
+            "X-Frontend-Internal-Request": "true",
           },
           body: formData,
           cache: "no-store",
@@ -103,11 +103,13 @@ export default function PersonalPage() {
 
       setForm((prevForm) => ({
         ...prevForm,
-        avatar_ipfs_hash: apiResponse?.ipfsHash|| "",
+        avatar_ipfs_hash: apiResponse?.ipfsHash || "",
       }));
 
-      console.log("form.avatar_ipfs_hash from handleUploadAvatar after apiResponse", form.avatar_ipfs_hash);
-
+      console.log(
+        "form.avatar_ipfs_hash from handleUploadAvatar after apiResponse",
+        form.avatar_ipfs_hash
+      );
     };
 
     await withLoading(uploadAvatar);

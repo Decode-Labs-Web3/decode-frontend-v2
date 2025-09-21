@@ -3,13 +3,13 @@ import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   try {
-    const internalRequest = request.headers.get("frontend-internal-request");
+    const internalRequest = request.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {
       return NextResponse.json(
         {
           success: false,
           statusCode: 400,
-          message: "Missing Frontend-Internal-Request header",
+          message: "Missing X-Frontend-Internal-Request header",
         },
         { status: 400 }
       );

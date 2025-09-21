@@ -1,30 +1,34 @@
-import { useState } from 'react';
-import { toast } from 'react-toastify';
-import { UseVerificationProps } from '@/interfaces';
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { UseVerificationProps } from "@/interfaces";
 
-export function useVerification({ type, onSuccess, onError }: UseVerificationProps) {
-  const [error, setError] = useState<string>('');
+export function useVerification({
+  type,
+  onSuccess,
+  onError,
+}: UseVerificationProps) {
+  const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [digits, setDigits] = useState<string[]>(Array(6).fill(''));
+  const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    const code = digits.join('');
+    const code = digits.join("");
 
     if (code.length !== 6) {
-      setError('Please enter the complete 6-digit code.');
+      setError("Please enter the complete 6-digit code.");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'frontend-internal-request': 'true' 
+      const response = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({ code, type }),
         cache: "no-store",
@@ -32,20 +36,22 @@ export function useVerification({ type, onSuccess, onError }: UseVerificationPro
       });
 
       const responseData = await response.json();
-      console.log('Response data:', responseData);
+      console.log("Response data:", responseData);
 
       if (responseData.success) {
-        setError('');
+        setError("");
         onSuccess(responseData);
       } else {
-        const errorMessage = responseData.message || 'Invalid verification code. Please check your email and try again.';
+        const errorMessage =
+          responseData.message ||
+          "Invalid verification code. Please check your email and try again.";
         setError(errorMessage);
-        setDigits(Array(6).fill(''));
+        setDigits(Array(6).fill(""));
         onError?.(errorMessage);
       }
     } catch (error) {
-      console.error('Verification error:', error);
-      const errorMessage = 'Verification failed. Please try again.';
+      console.error("Verification error:", error);
+      const errorMessage = "Verification failed. Please try again.";
       setError(errorMessage);
       onError?.(errorMessage);
     } finally {
@@ -55,21 +61,21 @@ export function useVerification({ type, onSuccess, onError }: UseVerificationPro
 
   const handleResend = async (resendEndpoint?: string) => {
     if (!resendEndpoint) return;
-    
+
     try {
       const response = await fetch(resendEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
       });
 
       const responseData = await response.json();
-      console.log('Resend response:', responseData);
+      console.log("Resend response:", responseData);
     } catch (error) {
-      console.error('Resend error:', error);
-      setError('Failed to resend code. Please try again.');
+      console.error("Resend error:", error);
+      setError("Failed to resend code. Please try again.");
     } finally {
-      console.log('Verification code resend operation completed');
+      console.log("Verification code resend operation completed");
     }
   };
 
@@ -80,6 +86,6 @@ export function useVerification({ type, onSuccess, onError }: UseVerificationPro
     setDigits,
     setError: toast.error,
     handleVerify,
-    handleResend
+    handleResend,
   };
 }

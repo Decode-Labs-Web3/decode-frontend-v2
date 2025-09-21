@@ -88,7 +88,7 @@ function WalletContent() {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "frontend-internal-request": "true",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify(formData),
         cache: "no-store",
@@ -140,7 +140,7 @@ function WalletContent() {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "frontend-internal-request": "true",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({ address }),
         cache: "no-store",
@@ -165,7 +165,7 @@ function WalletContent() {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "frontend-internal-request": "true",
+          "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify({ address, signature }),
         cache: "no-store",

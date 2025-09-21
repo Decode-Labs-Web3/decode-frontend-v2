@@ -58,7 +58,7 @@ export default function Login() {
       const responseData = await apiCallWithTimeout("/api/auth/login", {
         method: "POST",
         headers: {
-          "frontend-internal-request": "true",
+          "X-Frontend-Internal-Request": "true",
         },
         body: formData,
       });
