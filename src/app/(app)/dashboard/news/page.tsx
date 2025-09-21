@@ -19,7 +19,7 @@ interface BlogPost {
   title: string;
   content: string;
   category: string;
-  keywords: string;
+  keywords: string[];
   post_ipfs_hash: string;
   upvote: number;
   downvote: number;
@@ -49,10 +49,15 @@ export default function NewsPage() {
         }
 
         const data = await response.json();
-        setPosts(data.posts || []);
+
+        if (data.success) {
+          setPosts(data.posts || []);
+        } else {
+          throw new Error(data.message || "Failed to fetch posts");
+        }
       } catch (err) {
         console.error("Error fetching posts:", err);
-        setError("Failed to load posts");
+        setError(err instanceof Error ? err.message : "Failed to load posts");
       } finally {
         setLoading(false);
       }
@@ -161,19 +166,16 @@ export default function NewsPage() {
                 <p className="text-sm text-gray-300 line-clamp-3">
                   {post.content}
                 </p>
-                {post.keywords && (
+                {post.keywords && post.keywords.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {post.keywords
-                      .split(",")
-                      .slice(0, 3)
-                      .map((keyword, index) => (
-                        <span
-                          key={index}
-                          className="text-xs px-2 py-1 bg-gray-700/50 text-gray-300 rounded"
-                        >
-                          {keyword.trim()}
-                        </span>
-                      ))}
+                    {post.keywords.slice(0, 3).map((keyword, index) => (
+                      <span
+                        key={index}
+                        className="text-xs px-2 py-1 bg-gray-700/50 text-gray-300 rounded"
+                      >
+                        {keyword}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
