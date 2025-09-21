@@ -1,19 +1,30 @@
-'use client';
+"use client";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGaugeHigh, faUserShield, faWallet, faLink, faNewspaper, faBell, faLaptop, faUser } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faGaugeHigh,
+  faUserShield,
+  faWallet,
+  faLink,
+  faNewspaper,
+  faBell,
+  faLaptop,
+  faUser,
+  faPenToSquare,
+} from "@fortawesome/free-solid-svg-icons";
 
-import { SidebarProps } from '@/interfaces';
+import { SidebarProps } from "@/interfaces";
 
 const items = [
-  { key: 'overview', label: 'Overview', icon: faGaugeHigh },
-  { key: 'personal', label: 'Personal', icon: faUser },
-  { key: 'security', label: 'Security', icon: faUserShield },
-  { key: 'wallets', label: 'Wallets', icon: faWallet },
-  { key: 'connections', label: 'Connections', icon: faLink },
-  { key: 'news', label: 'News', icon: faNewspaper },
-  { key: 'notifications', label: 'Notifications', icon: faBell },
-  { key: 'devices', label: 'Devices', icon: faLaptop },
+  { key: "overview", label: "Overview", icon: faGaugeHigh },
+  { key: "personal", label: "Personal", icon: faUser },
+  { key: "security", label: "Security", icon: faUserShield },
+  { key: "wallets", label: "Wallets", icon: faWallet },
+  { key: "connections", label: "Connections", icon: faLink },
+  { key: "news", label: "News", icon: faNewspaper },
+  { key: "notifications", label: "Notifications", icon: faBell },
+  { key: "devices", label: "Devices", icon: faLaptop },
+  { key: "blog-post", label: "Create Post", icon: faPenToSquare },
 ];
 
 export default function Sidebar({ active, onChange }: SidebarProps) {
@@ -25,7 +36,9 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
             key={item.key}
             onClick={() => onChange(item.key)}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-              active === item.key ? 'bg-white/10 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white'
+              active === item.key
+                ? "bg-white/10 text-white"
+                : "text-gray-300 hover:bg-white/5 hover:text-white"
             }`}
           >
             <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
@@ -36,5 +49,3 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
     </aside>
   );
 }
-
-

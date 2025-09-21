@@ -1,74 +1,204 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import App from '@/components/(app)';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faNewspaper, faClock, faThumbsUp, faComment, faShare } from '@fortawesome/free-solid-svg-icons';
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import App from "@/components/(app)";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faNewspaper,
+  faClock,
+  faThumbsUp,
+  faComment,
+  faShare,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
+
+interface BlogPost {
+  _id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  category: string;
+  keywords: string;
+  post_ipfs_hash: string;
+  upvote: number;
+  downvote: number;
+  updatedAt: string;
+  createdAt: string;
+}
 
 export default function NewsPage() {
-  const posts = [
-    { title: 'Decode Portal v1.2 released', description: 'We shipped device trust improvements, new wallet linking flow and UI polish across the portal.', time: 'Just now', image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop', tag: 'Release', source: 'Decode Team', likes: 128, comments: 24 },
-    { title: 'Maintenance window – Saturday 9PM UTC', description: 'Short downtime expected while we migrate our auth database for improved resilience.', time: '6 hours ago', image: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1200&auto=format&fit=crop', tag: 'Status', source: 'Decode Ops', likes: 52, comments: 9 },
-    { title: 'New: dApp connections page', description: 'Review and revoke third‑party app access from a single, easy place.', time: 'Yesterday', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop', tag: 'Feature', source: 'Product', likes: 203, comments: 31 },
-    { title: 'API rate limits increased for all plans', description: 'Higher burst limits and more consistent throughput for production workloads.', time: '2 days ago', image: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=1200&auto=format&fit=crop', tag: 'Update', source: 'Engineering', likes: 77, comments: 12 },
-  ];
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const number = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`);
+  // Fetch blog posts from API
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch("/api/blogs/blog", {
+          method: "GET",
+          headers: {
+            "Frontend-Internal-Request": "true",
+          },
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch posts");
+        }
+
+        const data = await response.json();
+        setPosts(data.posts || []);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+        setError("Failed to load posts");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  const number = (n: number) =>
+    n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`;
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
+
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays === 1) return "Yesterday";
+    return `${diffInDays} days ago`;
+  };
+
+  const getImageUrl = (post: BlogPost) => {
+    if (post.post_ipfs_hash) {
+      return `https://gateway.pinata.cloud/ipfs/${post.post_ipfs_hash}`;
+    }
+    return "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop";
+  };
 
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader 
-        title="News" 
-        description="Latest updates from the Decode team." 
+      <App.PageHeader
+        title="News"
+        description="Latest blog posts from the community."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        {posts.map((p, i) => (
-          <article key={i} className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl">
-            {p.image && (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <FontAwesomeIcon
+              icon={faSpinner}
+              className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-4"
+            />
+            <p className="text-gray-400">Loading posts...</p>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      ) : posts.length === 0 ? (
+        <div className="text-center py-12">
+          <FontAwesomeIcon
+            icon={faNewspaper}
+            className="w-16 h-16 text-gray-600 mx-auto mb-4"
+          />
+          <h3 className="text-xl font-semibold text-white mb-2">
+            No posts yet
+          </h3>
+          <p className="text-gray-400">
+            Be the first to share something with the community!
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {posts.map((post) => (
+            <article
+              key={post._id}
+              className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl"
+            >
               <div className="relative aspect-video overflow-hidden">
-                <Image src={p.image} alt={p.title} width={400} height={225} className="w-full h-full object-cover" unoptimized />
+                <Image
+                  src={getImageUrl(post)}
+                  alt={post.title}
+                  width={400}
+                  height={225}
+                  className="w-full h-full object-cover"
+                  unoptimized
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0" />
-                <span className="absolute left-3 top-3 text-xs px-2 py-1 rounded-md bg-blue-500/80 text-white">{p.tag}</span>
+                <span className="absolute left-3 top-3 text-xs px-2 py-1 rounded-md bg-blue-500/80 text-white capitalize">
+                  {post.category}
+                </span>
               </div>
-            )}
 
-            <div className="p-4">
-              <div className="flex items-center gap-2 text-[11px] text-gray-400 mb-1">
-                <FontAwesomeIcon icon={faNewspaper} />
-                <span className="uppercase tracking-wide">{p.source}</span>
-                <span>•</span>
-                <FontAwesomeIcon icon={faClock} />
-                <span>{p.time}</span>
+              <div className="p-4">
+                <div className="flex items-center gap-2 text-[11px] text-gray-400 mb-1">
+                  <FontAwesomeIcon icon={faNewspaper} />
+                  <span className="uppercase tracking-wide">Community</span>
+                  <span>•</span>
+                  <FontAwesomeIcon icon={faClock} />
+                  <span>{formatTime(post.createdAt)}</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-semibold leading-snug mb-1">
+                  {post.title}
+                </h3>
+                <p className="text-sm text-gray-300 line-clamp-3">
+                  {post.content}
+                </p>
+                {post.keywords && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {post.keywords
+                      .split(",")
+                      .slice(0, 3)
+                      .map((keyword, index) => (
+                        <span
+                          key={index}
+                          className="text-xs px-2 py-1 bg-gray-700/50 text-gray-300 rounded"
+                        >
+                          {keyword.trim()}
+                        </span>
+                      ))}
+                  </div>
+                )}
               </div>
-              <h3 className="text-base sm:text-lg font-semibold leading-snug mb-1">{p.title}</h3>
-              <p className="text-sm text-gray-300 line-clamp-3">{p.description}</p>
-            </div>
 
-            <div className="px-4 pb-4">
-              <div className="flex items-center justify-between border-t border-white/10 pt-3">
-                <div className="flex items-center gap-4 text-gray-300">
-                  <button className="flex items-center gap-1.5 text-xs hover:text-white">
-                    <FontAwesomeIcon icon={faThumbsUp} />
-                    <span>{number(p.likes)}</span>
-                  </button>
-                  <button className="flex items-center gap-1.5 text-xs hover:text-white">
-                    <FontAwesomeIcon icon={faComment} />
-                    <span>{number(p.comments)}</span>
+              <div className="px-4 pb-4">
+                <div className="flex items-center justify-between border-t border-white/10 pt-3">
+                  <div className="flex items-center gap-4 text-gray-300">
+                    <button className="flex items-center gap-1.5 text-xs hover:text-white">
+                      <FontAwesomeIcon icon={faThumbsUp} />
+                      <span>{number(post.upvote)}</span>
+                    </button>
+                    <button className="flex items-center gap-1.5 text-xs hover:text-white">
+                      <FontAwesomeIcon icon={faComment} />
+                      <span>0</span>
+                    </button>
+                  </div>
+                  <button className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                    <FontAwesomeIcon icon={faShare} /> Share
                   </button>
                 </div>
-                <button className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
-                  <FontAwesomeIcon icon={faShare} /> Share
-                </button>
               </div>
-            </div>
-          </article>
-        ))}
-      </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
-
- 
-
-

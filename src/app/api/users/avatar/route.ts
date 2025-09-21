@@ -229,7 +229,7 @@ export async function POST(req: Request) {
       },
       body,
       cache: "no-store",
-      signal: AbortSignal.timeout(10000), // Increased timeout for file upload
+      signal: AbortSignal.timeout(20000),
     });
 
     if (!res.ok) {

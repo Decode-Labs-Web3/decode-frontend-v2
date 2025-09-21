@@ -88,8 +88,8 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
    ```env
    BACKEND_BASE_URL=http://localhost:4000
    NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id
-   PINATA_API_Ke=your_pinata_api_key
-   PINATA_API_Secret=your_pinata_secret
+   PINATA_API_KEY=your_pinata_api_key
+   PINATA_API_SECRET=your_pinata_secret
    PINATA_JWT=your_pinata_jwt_token
    NODE_ENV=development
    ```
@@ -245,8 +245,8 @@ BACKEND_BASE_URL=https://your-backend-api.com
 NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id
 
 # IPFS Configuration (Pinata)
-PINATA_API_Ke=your_pinata_api_key
-PINATA_API_Secret=your_pinata_secret
+PINATA_API_KEY=your_pinata_api_key
+PINATA_API_SECRET=your_pinata_secret
 PINATA_JWT=your_pinata_jwt_token
 
 # Environment
