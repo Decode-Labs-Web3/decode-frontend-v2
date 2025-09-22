@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/fingerprint.service";
 import { sanitizeText } from "@/utils/sanitization.utils";
+import { fingerprintService } from "@/services/fingerprint.service";
 import {
   createSecurityErrorResponse,
   SecurityErrorMessages,
@@ -10,7 +10,6 @@ import {
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
-  console.log("requestId from login api:", requestId);
 
   try {
     const internalRequest = req.headers.get("X-Frontend-Internal-Request");
@@ -102,10 +101,13 @@ export async function POST(req: Request) {
       `${process.env.BACKEND_BASE_URL}/auth/login`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-ID": requestId,
+        },
         body: JSON.stringify(requestBody),
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       }
     );
 

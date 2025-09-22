@@ -1,8 +1,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/fingerprint.service";
+import { generateRequestId } from "@/utils/security-error-handling.utils";
 
 export async function POST(req: Request) {
+  const requestId = generateRequestId();
+
   try {
     const internalRequest = req.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {
@@ -62,6 +65,7 @@ export async function POST(req: Request) {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
           fingerprint: fingerprint_hashed,
+          "X-Request-ID": requestId
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",

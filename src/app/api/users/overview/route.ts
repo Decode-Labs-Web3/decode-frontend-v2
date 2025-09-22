@@ -1,8 +1,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/fingerprint.service";
+import { generateRequestId } from "@/utils/security-error-handling.utils";
 
 export async function GET(req: Request) {
+  const requestId = generateRequestId();
+
   try {
     const internalRequest = req.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {
@@ -40,6 +43,7 @@ export async function GET(req: Request) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           fingerprint: fingerprint_hashed,
+          "X-Request-ID": requestId
         },
         cache: "no-store",
         signal: AbortSignal.timeout(5000),

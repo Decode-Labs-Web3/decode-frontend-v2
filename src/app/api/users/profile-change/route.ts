@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/fingerprint.service";
 import { ProfileData, RequestBody } from "@/interfaces";
+import { fingerprintService } from "@/services/fingerprint.service";
+import { generateRequestId } from "@/utils/security-error-handling.utils";
 
 // Helper function to detect changed fields
 function getChangedFields(current: ProfileData, original: ProfileData) {
@@ -36,7 +37,8 @@ function getChangedFields(current: ProfileData, original: ProfileData) {
 async function makeBackendRequest(
   endpoint: string,
   data: ProfileData,
-  req: Request
+  req: Request,
+  requestId: string
 ) {
   try {
     const cookieStore = await cookies();
@@ -64,6 +66,7 @@ async function makeBackendRequest(
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
           fingerprint: fingerprint_hashed,
+          "X-Request-ID": requestId
         },
         body: JSON.stringify(data),
         cache: "no-store",
@@ -94,6 +97,8 @@ async function makeBackendRequest(
 }
 
 export async function PUT(req: Request) {
+  const requestId = generateRequestId();
+
   try {
     const internalRequest = req.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {
@@ -144,7 +149,8 @@ export async function PUT(req: Request) {
         const result = await makeBackendRequest(
           config.endpoint,
           config.data,
-          req
+          req,
+          requestId
         );
         results[field] = result;
       }

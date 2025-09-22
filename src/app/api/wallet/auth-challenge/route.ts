@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { generateRequestId } from "@/utils/security-error-handling.utils";
 
 export async function POST(request: NextRequest) {
+  const requestId = generateRequestId();
+
   try {
     const internalRequest = request.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {
@@ -38,6 +41,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Request-ID": requestId
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",

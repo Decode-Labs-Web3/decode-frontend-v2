@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { VerifyRequest } from "@/interfaces";
+import { generateRequestId } from "@/utils/security-error-handling.utils";
 
 const VERIFY_ENDPOINTS = {
   register: "/auth/register/verify-email",
@@ -14,6 +15,8 @@ const SUCCESS_MESSAGES = {
 };
 
 export async function POST(req: Request) {
+  const requestId = generateRequestId();
+
   try {
     const internalRequest = req.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {
@@ -58,7 +61,10 @@ export async function POST(req: Request) {
       `${process.env.BACKEND_BASE_URL}${endpoint}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-ID": requestId
+        },
         body: JSON.stringify(requestBody),
         cache: "no-store",
         signal: AbortSignal.timeout(5000),
