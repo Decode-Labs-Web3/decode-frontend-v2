@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
             key: "Access-Control-Allow-Origin",
             value:
               process.env.NODE_ENV === "production"
-                ? "https://decode.com"
+                ? "http://128.199.91.181:3000"
                 : "http://localhost:3000",
           },
           {
