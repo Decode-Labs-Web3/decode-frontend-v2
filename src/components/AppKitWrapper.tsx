@@ -92,7 +92,7 @@ function WalletContent() {
         },
         body: JSON.stringify(formData),
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!response.ok) {
@@ -144,7 +144,7 @@ function WalletContent() {
         },
         body: JSON.stringify({ address }),
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!challengeRes.ok) throw new Error(`HTTP ${challengeRes.status}`);
@@ -169,7 +169,7 @@ function WalletContent() {
         },
         body: JSON.stringify({ address, signature }),
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!verifyRes.ok) {

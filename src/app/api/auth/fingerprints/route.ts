@@ -45,10 +45,10 @@ export async function GET(req: Request) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId
+          "X-Request-ID": requestId,
         },
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       }
     );
 

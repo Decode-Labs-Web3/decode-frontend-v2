@@ -30,11 +30,11 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-ID": requestId
+          "X-Request-ID": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       }
     );
 

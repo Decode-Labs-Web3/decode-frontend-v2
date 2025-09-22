@@ -84,7 +84,7 @@ export default function PersonalPage() {
           },
           body: formData,
           cache: "no-store",
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(10000),
         });
 
         apiResponse = await response.json();

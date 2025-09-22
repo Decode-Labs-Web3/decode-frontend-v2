@@ -177,7 +177,7 @@ export async function middleware(request: NextRequest) {
           "X-Frontend-Internal-Request": "true",
         },
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!response.ok) {

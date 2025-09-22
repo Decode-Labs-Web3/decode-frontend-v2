@@ -32,7 +32,7 @@ export function useVerification({
         },
         body: JSON.stringify({ code, type }),
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       });
 
       const responseData = await response.json();

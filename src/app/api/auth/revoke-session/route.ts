@@ -65,11 +65,11 @@ export async function POST(req: Request) {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
           fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId
+          "X-Request-ID": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       }
     );
 

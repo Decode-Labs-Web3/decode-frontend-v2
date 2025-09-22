@@ -27,7 +27,7 @@ export default function DashboardLayout({
           "X-Frontend-Internal-Request": "true",
         },
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       });
 
       const responseData = await apiResponse.json();
@@ -82,7 +82,7 @@ export default function DashboardLayout({
             "X-Frontend-Internal-Request": "true",
           },
           cache: "no-store",
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(10000),
         });
 
         const responseData = await apiResponse.json();
@@ -133,7 +133,7 @@ export default function DashboardLayout({
         },
         credentials: "include",
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(10000),
       });
       const data = await response.json();
       console.log("Logout response:", data);
