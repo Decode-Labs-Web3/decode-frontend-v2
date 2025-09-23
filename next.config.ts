@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 // ---- Guard ENV
 const PROD = process.env.NODE_ENV === "production";
-const PROD_ORIGIN = process.env.PUBLIC_FRONTEND_URL || "";
+const PROD_ORIGIN = process.env.PUBLIC_FRONTEND_URL || "https://app.decodenetwork.app";
 if (PROD && !PROD_ORIGIN) {
   throw new Error("PUBLIC_FRONTEND_URL is required in production builds");
 }

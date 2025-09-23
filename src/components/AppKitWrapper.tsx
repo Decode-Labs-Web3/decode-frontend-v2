@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppKitProvider } from "@reown/appkit/react";
-import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 import { mainnet, arbitrum } from "@reown/appkit/networks";
+import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 
 // Global type declarations for wallet detection
 declare global {
@@ -45,29 +45,12 @@ function WalletContent() {
     email_or_username: "",
   });
 
-  const { open } = useAppKit();
-  const { address, caipAddress, isConnected } = useAppKitAccount();
+  const { open, close } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155"); // EVM provider
   const { chainId } = useAppKitNetwork();
 
   console.log("AppKit state:", { address, isConnected, chainId });
-
-  const [balanceEth, setBalanceEth] = useState<string>("");
-
-  useEffect(() => {
-    (async () => {
-      try {
-        if (!isConnected || !walletProvider || !address) return;
-        const provider = new ethers.BrowserProvider(
-          walletProvider as ethers.Eip1193Provider
-        );
-        const bal = await provider.getBalance(address);
-        setBalanceEth(ethers.formatEther(bal));
-      } catch (e) {
-        console.debug("Get balance failed:", e);
-      }
-    })();
-  }, [isConnected, walletProvider, address]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -77,8 +60,8 @@ function WalletContent() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     console.log("Form submitted with data:", formData);
     setLoading(true);
 
@@ -97,7 +80,7 @@ function WalletContent() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        throw Error(errorData.message || `HTTP ${response.status}`);
       }
 
       const data = await response.json();
@@ -199,23 +182,27 @@ function WalletContent() {
       }
 
       showSuccess("Signed in with wallet");
+      try {
+        // Ensure the AppKit modal is closed before navigating
+        close?.();
+      } catch (error) {
+        console.error("Close modal error:", error);
+      }
       router.push("/dashboard");
-    } catch (err: unknown) {
+    } catch (error: unknown) {
       // Handle user rejection (code 4001) or ACTION_REJECTED
       if (
-        (err as { code?: number })?.code === 4001 ||
-        (err as { reason?: string })?.reason === "rejected" ||
-        (err as { action?: string })?.action === "signMessage"
+        (error as { code?: number })?.code === 4001 ||
+        (error as { reason?: string })?.reason === "rejected" ||
+        (error as { action?: string })?.action === "signMessage"
       ) {
         console.log("User rejected signature request");
         showInfo("Signature request was cancelled.");
         return;
       }
 
-      // Log full error details for debugging
-      console.error("Wallet auth error:", err);
+      console.error("Wallet auth error:", error);
 
-      // Show user-friendly error message
       showError("Wallet authentication failed. Please try again.");
     }
   };
@@ -227,7 +214,6 @@ function WalletContent() {
 
       {/* Main Card */}
       <Auth.AuthCard title="Get Started">
-        {/* Connect Wallet Button */}
         <button
           onClick={openConnectModal}
           className="group w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg mb-6 flex items-center justify-center gap-2 transition-all shadow-lg"
@@ -239,14 +225,6 @@ function WalletContent() {
             className="opacity-0 -translate-x-2 group-hover:opacity-90 group-hover:translate-x-0 transition-all"
           />
         </button>
-
-        {isConnected && address && (
-          <div className="-mt-4 mb-6 text-xs text-gray-300 truncate max-w-full">
-            Connected: {address} • Chain ID: {chainId ?? "-"} • Bal:{" "}
-            {balanceEth || "-"} ETH
-            <div className="opacity-70">CAIP: {caipAddress ?? "-"}</div>
-          </div>
-        )}
 
         {/* Divider */}
         <div className="flex items-center mb-6">
