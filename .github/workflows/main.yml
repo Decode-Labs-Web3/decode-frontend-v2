@@ -1,0 +1,73 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (for lint/type-check only)
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (dry run on CI)
+        run: npm run build
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: lint_build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH (build on Droplet)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+
+            if ! command -v nvm >/dev/null 2>&1; then
+              curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+            fi
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            nvm install 20
+            nvm use 20
+
+            cd /root/decode-frontend-v2
+
+            git fetch --all
+            git reset --hard origin/main
+
+            npm ci
+            npm run build
+
+            if pm2 list | grep -q "decode-frontend"; then
+              pm2 reload decode-frontend --update-env
+            else
+              pm2 start "npm run start" --name decode-frontend --cwd /root/decode-frontend-v2
+            fi
+            pm2 save
+
+            if systemctl list-unit-files | grep -q cloudflared.service; then
+              systemctl is-active --quiet cloudflared || sudo systemctl restart cloudflared
+            fi
