@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 const SITE_NAME = "Decode Protocol";
 const SITE_DESCRIPTION =
-  "Decode Protocol - Secure Authentication and Identity Management";
+  "Decode Protocol - Web3 Authentication & Identity Management System. Secure dual authentication with traditional credentials and Web3 wallet integration. Manage your digital identity, devices, wallets, and security settings in one unified platform.";
 
 const SITE_URL =
   process.env.PUBLIC_FRONTEND_URL || "https://app.decodenetwork.app";
@@ -29,15 +29,9 @@ export const defaultMetadata: Metadata = {
     "WalletConnect",
   ],
   icons: {
-    icon: [
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: SITE_ICON, type: "image/png" },
-    ],
+    icon: [{ url: SITE_ICON, type: "image/png" }],
     shortcut: SITE_ICON,
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
+    apple: [{ url: SITE_ICON, type: "image/png" }],
   },
   // Open Graph
   openGraph: {
@@ -79,14 +73,7 @@ export const defaultMetadata: Metadata = {
   alternates: {
     canonical: SITE_URL,
   },
-  other: {
-    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
-      ? {
-          "google-site-verification":
-            process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-        }
-      : {}),
-  },
+  other: {},
 };
 
 /**

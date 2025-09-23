@@ -1,14 +1,22 @@
-import { FingerprintResult, NavigatorWithUserAgentData } from '@/interfaces';
+import { FingerprintResult, NavigatorWithUserAgentData } from "@/interfaces";
 
-
-export async function fingerprintService(userAgent?: string): Promise<FingerprintResult> {
+export async function fingerprintService(
+  userAgent?: string
+): Promise<FingerprintResult> {
   const device = detectOS(userAgent);
   const browser = detectBrowser(userAgent);
   const timezone = getTimeZone();
   const language = getLanguage();
   const audioFingerprint = await getAudioFingerprint(userAgent);
 
-  const payload = JSON.stringify({ device, browser, timezone, language, audioFingerprint, userAgent });
+  const payload = JSON.stringify({
+    device,
+    browser,
+    timezone,
+    language,
+    audioFingerprint,
+    userAgent,
+  });
 
   const fingerprint_hashed = await sha256Hex(payload);
 
@@ -19,7 +27,7 @@ async function sha256Hex(str: string): Promise<string> {
   const enc = new TextEncoder();
   const buf = await crypto.subtle.digest("SHA-256", enc.encode(str));
   const bytes = new Uint8Array(buf);
-  return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function getTimeZone(): string {
@@ -32,93 +40,89 @@ function getTimeZone(): string {
 
 function getLanguage(): string {
   const nav = typeof navigator !== "undefined" ? navigator : ({} as Navigator);
-  return (nav.language || (nav.languages && nav.languages[0]) || "en") as string;
+  return (nav.language ||
+    (nav.languages && nav.languages[0]) ||
+    "en") as string;
 }
 
 function detectBrowser(userAgent?: string): string {
   // Use provided user agent or try to get from navigator
   let ua = userAgent;
-  
+
   if (!ua && typeof navigator !== "undefined") {
     ua = navigator.userAgent || "";
   }
-  
+
   if (!ua) {
-    console.log("Browser detection: No user agent available");
     return "Unknown";
   }
 
-  console.log("Browser detection: User Agent =", ua);
-  
   // Check for Edge first (newer versions)
   if (/edg\//i.test(ua)) {
-    console.log("Browser detection: Detected Edge");
     return "Edge";
   }
-  
+
   // Check for Opera
   if (/opr\//i.test(ua) || /opera/i.test(ua)) {
-    console.log("Browser detection: Detected Opera");
     return "Opera";
   }
-  
+
   // Check for Chrome (but not Edge or Opera)
   if (/chrome\//i.test(ua) && !/edg\//i.test(ua) && !/opr\//i.test(ua)) {
-    console.log("Browser detection: Detected Chrome");
     return "Chrome";
   }
-  
+
   // Check for Firefox
   if (/firefox/i.test(ua)) {
-    console.log("Browser detection: Detected Firefox");
     return "Firefox";
   }
-  
+
   // Check for Safari (but not Chrome, Edge, or Opera)
   if (/safari/i.test(ua) && !/chrome|opr|edg/i.test(ua)) {
-    console.log("Browser detection: Detected Safari");
     return "Safari";
   }
-  
+
   // Check for Internet Explorer
   if (/msie/i.test(ua) || /trident/i.test(ua)) {
-    console.log("Browser detection: Detected Internet Explorer");
+    console.warn(
+      "Internet Explorer detected - this browser is deprecated and may not be fully supported"
+    );
     return "Internet Explorer";
   }
-  
+
   // Try using userAgentData if available (for newer browsers)
   const nav = navigator as NavigatorWithUserAgentData;
   const uaData = nav.userAgentData;
-  console.log("Browser detection: userAgentData =", uaData);
   if (uaData && uaData.brands && Array.isArray(uaData.brands)) {
     const brand = uaData.brands.map((b) => b.brand).join(" ");
-    console.log("Browser detection: brands =", brand);
-    if (brand.includes("Chromium") || brand.includes("Google Chrome")) return "Chrome";
+    if (brand.includes("Chromium") || brand.includes("Google Chrome"))
+      return "Chrome";
     if (brand.includes("Microsoft Edge")) return "Edge";
     if (brand.includes("Opera")) return "Opera";
     if (brand.includes("Safari")) return "Safari";
   }
-  
-  console.log("Browser detection: No browser detected, returning Unknown");
+
   return "Unknown";
 }
-
 
 function detectOS(userAgent?: string): string {
   let ua = userAgent;
   let p = "";
-  
+
   if (!ua && typeof navigator !== "undefined") {
     const nav = navigator as Navigator;
     ua = nav.userAgent || "";
     p = nav.platform || "";
   }
-  
+
   if (!ua) {
     return "Unknown";
   }
 
-  const isTouchMac = /Mac/.test(p) && typeof document !== "undefined" && "ontouchend" in document;
+  const isTouchMac =
+    /Mac/.test(p) &&
+    typeof document !== "undefined" &&
+    "ontouchend" in document;
   if (/iPad/.test(ua) || isTouchMac) return "iPadOS";
   if (/iPhone|iPod/.test(ua)) return "iOS";
 
@@ -135,9 +139,18 @@ function detectOS(userAgent?: string): string {
 
 async function getAudioFingerprint(userAgent?: string): Promise<string> {
   async function deterministicFallback(): Promise<string> {
-    const nav = typeof navigator !== "undefined" 
-      ? (navigator as Navigator & { hardwareConcurrency?: number; deviceMemory?: number }) 
-      : (undefined as unknown as (Navigator & { hardwareConcurrency?: number; deviceMemory?: number }) | undefined);
+    const nav =
+      typeof navigator !== "undefined"
+        ? (navigator as Navigator & {
+            hardwareConcurrency?: number;
+            deviceMemory?: number;
+          })
+        : (undefined as unknown as
+            | (Navigator & {
+                hardwareConcurrency?: number;
+                deviceMemory?: number;
+              })
+            | undefined);
     const lang = nav?.language || (nav?.languages && nav.languages[0]) || "en";
     const tz = (() => {
       try {
@@ -146,12 +159,19 @@ async function getAudioFingerprint(userAgent?: string): Promise<string> {
         return "UTC";
       }
     })();
-    const hc = (nav && typeof nav.hardwareConcurrency === 'number') ? nav.hardwareConcurrency : 0;
-    const dm = (nav && typeof nav.deviceMemory === 'number') ? nav.deviceMemory : 0;
+    const hc =
+      nav && typeof nav.hardwareConcurrency === "number"
+        ? nav.hardwareConcurrency
+        : 0;
+    const dm =
+      nav && typeof nav.deviceMemory === "number" ? nav.deviceMemory : 0;
     const colorDepth = typeof screen !== "undefined" ? screen.colorDepth : 24;
-    const pixelRatio = typeof window !== "undefined" ? (window.devicePixelRatio || 1) : 1;
+    const pixelRatio =
+      typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
     const seed = JSON.stringify({
-      ua: userAgent || (typeof navigator !== "undefined" ? navigator.userAgent : ""),
+      ua:
+        userAgent ||
+        (typeof navigator !== "undefined" ? navigator.userAgent : ""),
       lang,
       tz,
       hc,
@@ -172,11 +192,13 @@ async function getAudioFingerprint(userAgent?: string): Promise<string> {
 
     const sampleRate = 44100;
     const frameCount = 4096;
-    const windowWithAudio = window as Window & { 
-      OfflineAudioContext?: typeof OfflineAudioContext; 
-      webkitOfflineAudioContext?: typeof OfflineAudioContext 
+    const windowWithAudio = window as Window & {
+      OfflineAudioContext?: typeof OfflineAudioContext;
+      webkitOfflineAudioContext?: typeof OfflineAudioContext;
     };
-    const OfflineCtx = windowWithAudio.OfflineAudioContext || windowWithAudio.webkitOfflineAudioContext;
+    const OfflineCtx =
+      windowWithAudio.OfflineAudioContext ||
+      windowWithAudio.webkitOfflineAudioContext;
     if (!OfflineCtx) return await deterministicFallback();
 
     const offline = new OfflineCtx(1, frameCount, sampleRate);

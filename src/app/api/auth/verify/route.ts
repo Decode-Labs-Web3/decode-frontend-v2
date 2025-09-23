@@ -130,6 +130,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   } catch (error) {
+    console.error("/api/auth/verify handler error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -139,6 +140,8 @@ export async function POST(req: Request) {
       },
       { status: 500 }
     );
+  } finally {
+    console.info("/api/auth/verify", requestId);
   }
 }
 

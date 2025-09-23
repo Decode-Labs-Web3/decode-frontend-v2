@@ -55,9 +55,6 @@ async function makeBackendRequest(
     const fingerprintResult = await fingerprintService(userAgent);
     const { fingerprint_hashed } = fingerprintResult;
 
-    console.log("endpoint from profile-change", endpoint);
-    console.log("data from profile-change", data);
-
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}${endpoint}`,
       {
@@ -83,14 +80,15 @@ async function makeBackendRequest(
     }
 
     const response = await backendRes.json().catch(() => ({}));
-    console.log("response from profile-change", response);
     return {
       success: true,
       message: response.message || "Updated successfully",
     };
   } catch (error) {
+    console.error("makeBackendRequest error:", error);
     return {
       success: false,
+      statusCode: 500,
       message: error instanceof Error ? error.message : "Network error",
     };
   }
@@ -175,6 +173,7 @@ export async function PUT(req: Request) {
       { status: allSuccessful ? 200 : 207 }
     );
   } catch (error) {
+    console.error("/api/users/profile-change handler error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -184,5 +183,7 @@ export async function PUT(req: Request) {
       },
       { status: 500 }
     );
+  } finally {
+    console.info("/api/users/profile-change", requestId);
   }
 }

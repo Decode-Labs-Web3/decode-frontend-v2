@@ -133,6 +133,7 @@ export async function POST(req: Request) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
+    console.error("/api/auth/revoke-session handler error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -144,6 +145,8 @@ export async function POST(req: Request) {
       },
       { status: 500 }
     );
+  } finally {
+    console.info("/api/auth/revoke-session", requestId);
   }
 }
 

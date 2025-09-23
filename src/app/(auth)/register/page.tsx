@@ -115,6 +115,8 @@ export default function Register() {
     } catch (error) {
       console.error("Registration request error:", error);
       showError("Registration failed. Please try again.");
+    } finally {
+      console.info("/app/(auth)/register handleRegister completed");
     }
   };
 

@@ -84,7 +84,7 @@ export default function PersonalPage() {
           },
           body: formData,
           cache: "no-store",
-          signal: AbortSignal.timeout(10000),
+          signal: AbortSignal.timeout(20000),
         });
 
         apiResponse = await response.json();
@@ -150,7 +150,6 @@ export default function PersonalPage() {
         showError(response?.message || "Update failed");
         return;
       }
-      console.log("response from handleSubmitProfile", response.data?.results);
 
       if (response.data?.results) {
         let hasErrors = false;
@@ -198,11 +197,16 @@ export default function PersonalPage() {
   };
 
   const handleChange = () => {
-    console.log("Username/email change not implemented yet");
+    console.warn(
+      "Username/email change functionality is deprecated and not implemented"
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.warn(
+      "Attempted to use deprecated username/email change functionality"
+    );
     showError("Username and email changes are not implemented yet");
   };
 

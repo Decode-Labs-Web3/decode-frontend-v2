@@ -84,6 +84,8 @@ export default function Login() {
     } catch (error) {
       console.error("Login request error:", error);
       showError("Login failed. Please try again.");
+    } finally {
+      console.info("/app/(auth)/login handleLogin completed");
     }
   };
 

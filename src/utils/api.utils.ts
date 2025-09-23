@@ -73,7 +73,12 @@ export const apiCallWithTimeout = async (
   timeoutMs: number = 5000
 ): Promise<ApiResponse> => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutId = setTimeout(() => {
+    console.warn(`API request timeout: ${url} exceeded ${timeoutMs}ms`);
+    controller.abort();
+  }, timeoutMs);
+
+  const startTime = Date.now();
 
   try {
     const result = await apiCall(url, {
@@ -81,6 +86,13 @@ export const apiCallWithTimeout = async (
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
+
+    const duration = Date.now() - startTime;
+    // Warn for slow responses (>3 seconds)
+    if (duration > 3000) {
+      console.warn(`Slow API response: ${url} took ${duration}ms`);
+    }
+
     return result;
   } catch (error) {
     clearTimeout(timeoutId);

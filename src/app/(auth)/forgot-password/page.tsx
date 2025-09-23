@@ -53,6 +53,10 @@ export default function ForgotPassword() {
     } catch (error) {
       console.error("Forgot password request error:", error);
       showError("Failed to send reset link. Please try again.");
+    } finally {
+      console.info(
+        "/app/(auth)/forgot-password handleForgotPassword completed"
+      );
     }
   };
 

@@ -98,6 +98,10 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
+    console.error(
+      "/api/auth/resend-verification-register handler error:",
+      error
+    );
     return NextResponse.json(
       {
         success: false,
@@ -106,6 +110,8 @@ export async function POST(req: Request) {
       },
       { status: 500 }
     );
+  } finally {
+    console.info("/api/auth/resend-verification-register", requestId);
   }
 }
 

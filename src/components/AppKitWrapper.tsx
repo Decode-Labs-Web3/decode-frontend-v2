@@ -29,11 +29,17 @@ import {
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID!;
 if (!projectId) console.error("REOWN_PROJECT_ID is missing");
 
+const appUrl =
+  process.env.PUBLIC_FRONTEND_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://app.decodenetwork.app"
+    : "http://localhost:3000");
+
 const metadata = {
   name: "Decode Protocol",
   description:
     "Decode Protocol - Secure Authentication and Identity Management",
-  url: "http://localhost:3000",
+  url: appUrl,
   icons: ["/images/tokens/3d_token_nobg.png"],
 };
 
@@ -48,9 +54,6 @@ function WalletContent() {
   const { open, close } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155"); // EVM provider
-  const { chainId } = useAppKitNetwork();
-
-  console.log("AppKit state:", { address, isConnected, chainId });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -62,7 +65,6 @@ function WalletContent() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Form submitted with data:", formData);
     setLoading(true);
 
     try {
@@ -132,7 +134,6 @@ function WalletContent() {
 
       if (!challengeRes.ok) throw new Error(`HTTP ${challengeRes.status}`);
       const challengeJson = await challengeRes.json();
-      console.log("Challenge data:", challengeJson);
       const messageToSign = challengeJson?.data?.nonceMessage as string;
       if (!messageToSign) throw new Error("Missing nonce message");
 
@@ -141,7 +142,6 @@ function WalletContent() {
       );
       const signer = await provider.getSigner();
       const signature = await signer.signMessage(messageToSign);
-      console.log("Signature:", signature);
 
       const verifyRes = await fetch("/api/wallet/auth-validation", {
         method: "POST",
@@ -166,7 +166,6 @@ function WalletContent() {
       }
 
       const verifyJson = await verifyRes.json();
-      console.log("Wallet auth response data:", verifyJson);
 
       if (!verifyJson.success) {
         console.error("Wallet auth validation failed:", {

@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { getCookie } from "@/utils/cookie.utils";
 import { Fingerprint, Session } from "@/interfaces";
 import { apiCallWithTimeout } from "@/utils/api.utils";
+import { showError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faLaptop,
@@ -22,40 +23,40 @@ export default function DevicesPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string>("");
 
-  useEffect(() => {
-    // Debug: Show all cookies
-    console.log("All cookies:", document.cookie);
+  const getAppLogoSrc = (app: string) => {
+    const key = (app || "")
+      .toLowerCase()
+      .replace(/\s+/g, "")
+      .replace(/[^a-z0-9]/g, "");
+    const map: Record<string, string> = {
+      decode: "decode.png",
+      decodebywallet: "decode.png",
+      deblog: "deblog.png",
+      decareer: "decareer.png",
+      decourse: "decourse.png",
+      dedao: "dedao.png",
+      defuel: "defuel.png",
+      dehive: "dehive.png",
+      deid: "deid.png",
+    };
+    const filename = map[key] || "decode.png";
+    return `/images/logos/${filename}`;
+  };
 
+  useEffect(() => {
     // Try both possible cookie names
     let sessionId = getCookie("sessionId");
     if (!sessionId) {
       sessionId = getCookie("sessionid");
     }
-    console.log("Session ID from cookie (sessionId):", getCookie("sessionId"));
-    console.log("Session ID from cookie (sessionid):", getCookie("sessionid"));
-    console.log("Final sessionId:", sessionId);
     if (sessionId) {
       setCurrentSessionId(sessionId);
     }
   }, []);
 
   useEffect(() => {
-    console.log(
-      "Fetch effect - isLoggingOut:",
-      isLoggingOut,
-      "currentSessionId:",
-      currentSessionId
-    );
     if (isLoggingOut) {
-      console.log("Skipping fetch - isLoggingOut");
       return;
-    }
-
-    // Temporarily try to fetch even without sessionId to see what happens
-    if (!currentSessionId) {
-      console.log(
-        "No sessionId found, but trying to fetch anyway for debugging"
-      );
     }
 
     const fetchFingerprints = async () => {
@@ -66,8 +67,6 @@ export default function DevicesPage() {
             "X-Frontend-Internal-Request": "true",
           },
         });
-
-        console.log("API response:", apiResponse);
 
         if (
           apiResponse.success ||
@@ -89,8 +88,11 @@ export default function DevicesPage() {
         } else {
           toast.error("Failed to load devices");
         }
-      } catch {
-        toast.error("Network error for fetching devices. Please try again.");
+      } catch (error) {
+        console.error("Fetch devices error:", error);
+        showError("Network error for fetching devices. Please try again.");
+      } finally {
+        console.info("Fetch devices completed");
       }
     };
     fetchFingerprints();
@@ -141,8 +143,9 @@ export default function DevicesPage() {
       } else {
         toast.error(responseData.message || "Failed to revoke device");
       }
-    } catch {
-      toast.error("Network error. Please try again.");
+    } catch (error) {
+      console.error("Revoke device error:", error);
+      showError("Network error. Please try again.");
     } finally {
       console.log("Device revocation operation completed");
     }
@@ -188,8 +191,9 @@ export default function DevicesPage() {
       } else {
         toast.error(responseData.message || "Failed to revoke session");
       }
-    } catch {
-      toast.error("Network error. Please try again.");
+    } catch (error) {
+      console.error("Revoke session error:", error);
+      showError("Network error. Please try again.");
     } finally {
       console.log("Session revocation operation completed");
     }
@@ -250,7 +254,7 @@ export default function DevicesPage() {
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                       <Image
-                        src={`/images/logos/${session.app}.png`}
+                        src={getAppLogoSrc(session.app)}
                         alt={`${session.app} logo`}
                         width={32}
                         height={32}

@@ -142,6 +142,7 @@ export async function POST(req: Request) {
 
     return res;
   } catch (error) {
+    console.error("/api/auth/revoke-device handler error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -154,7 +155,7 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.log("Device revocation API operation completed");
+    console.info("/api/auth/revoke-device", requestId);
   }
 }
 

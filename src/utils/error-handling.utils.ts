@@ -1,4 +1,4 @@
-import { showError, ERROR_MESSAGES } from "./toast.utils";
+import { ERROR_MESSAGES, showError } from "./toast.utils";
 
 export interface ApiError {
   message?: string;

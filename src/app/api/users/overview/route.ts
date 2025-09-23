@@ -90,5 +90,7 @@ export async function GET(req: Request) {
       },
       { status: 500 }
     );
+  } finally {
+    console.info("/api/users/overview", requestId);
   }
 }

@@ -92,6 +92,8 @@ export default function BlogPostPage() {
           "X-Frontend-Internal-Request": "true",
         },
         body: formData,
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
       });
 
       if (response.ok) {
@@ -158,6 +160,7 @@ export default function BlogPostPage() {
       const response = await fetch("/api/blogs/post", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
         body: JSON.stringify(body),
@@ -195,7 +198,7 @@ export default function BlogPostPage() {
         description="Share your thoughts with the community."
       />
 
-      <div className="max-w-4xl">
+      <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Image Upload */}
           <div className="space-y-2">

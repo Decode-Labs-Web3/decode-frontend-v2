@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import App from "@/components/(app)";
+import { showError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faNewspaper,
@@ -42,6 +43,7 @@ export default function NewsPage() {
             "X-Frontend-Internal-Request": "true",
           },
           cache: "no-store",
+          signal: AbortSignal.timeout(10000),
         });
 
         if (!response.ok) {
@@ -57,7 +59,10 @@ export default function NewsPage() {
         }
       } catch (err) {
         console.error("Error fetching posts:", err);
-        setError(err instanceof Error ? err.message : "Failed to load posts");
+        const message =
+          err instanceof Error ? err.message : "Failed to load posts";
+        setError(message);
+        showError(message);
       } finally {
         setLoading(false);
       }

@@ -77,9 +77,9 @@ const nextConfig: NextConfig = {
 
   webpack: (config, { isServer }) => {
     if (Array.isArray(config.externals)) {
-      config.externals.push("pino-pretty", "lokijs", "encoding");
+      config.externals.push("lokijs", "encoding");
     } else {
-      config.externals = ["pino-pretty", "lokijs", "encoding"];
+      config.externals = ["lokijs", "encoding"];
     }
     if (!isServer) {
       config.resolve.fallback = {
