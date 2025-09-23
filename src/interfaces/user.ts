@@ -10,6 +10,8 @@ export interface UserProfile {
   avatar_ipfs_hash?: string;
   last_login?: string;
   primary_wallet?: Wallet;
+  following_number: number;
+  followers_number: number;
 }
 
 export interface Wallet {

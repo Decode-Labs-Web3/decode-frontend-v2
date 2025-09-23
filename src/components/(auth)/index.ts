@@ -7,6 +7,7 @@ import PasswordField from './PasswordField';
 import PasswordValidation from './PasswordValidation';
 import SubmitButton from './SubmitButton';
 import TextField from './TextField';
+import VerificationCodeInput from './VerificationCodeInput';
 
 const Auth = {
   AuthCard,
@@ -18,6 +19,7 @@ const Auth = {
   PasswordValidation,
   SubmitButton,
   TextField,
+  VerificationCodeInput,
 };
 
 export default Auth;

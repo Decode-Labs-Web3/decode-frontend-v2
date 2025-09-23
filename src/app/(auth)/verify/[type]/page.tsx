@@ -4,8 +4,7 @@ import Auth from '@/components/(auth)';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useVerification } from '@/hooks/useVerification';
-import VerificationCodeInput from '@/components/VerificationCodeInput';
-import { toast } from 'react-toastify';
+import { showSuccess, showError } from '@/utils/toast.utils';
 
 type VerificationType = 'register' | 'login' | 'forgot';
 
@@ -50,21 +49,21 @@ export default function VerifyPage() {
     onSuccess: (data) => {
       switch (type) {
         case 'register':
-          toast.success('Account verified successfully! You can now log in.');
+          showSuccess('Account verified successfully! You can now log in.');
           router.push('/login');
           break;
         case 'login':
           if (data.requiresRelogin) {
-            toast.success('Device verified! Please log in again.');
+            showSuccess('Device verified! Please log in again.');
             router.push('/login');
           } else {
-            toast.success('Device verified successfully!');
+            showSuccess('Device verified successfully!');
             router.push('/login');
             router.refresh();
           }
           break;
         case 'forgot':
-          toast.success('Code verified! You can now reset your password.');
+          showSuccess('Code verified! You can now reset your password.');
           router.push('/change-password');
           break;
         default:
@@ -72,19 +71,19 @@ export default function VerifyPage() {
       }
     },
     onError: (errorMessage) => {
-      toast.error(errorMessage);
+      showError(errorMessage);
     }
   });
 
   const handleResendCode = async () => {
     if (!config.resendEndpoint) return;
-    
+
     setResendLoading(true);
     try {
       await handleResend(config.resendEndpoint);
-      toast.success('Verification code sent! Please check your email.');
+      showSuccess('Verification code sent! Please check your email.');
     } catch {
-      toast.error('Failed to resend code. Please try again.');
+      showError('Failed to resend code. Please try again.');
     } finally {
       setResendLoading(false);
     }
@@ -118,10 +117,10 @@ export default function VerifyPage() {
         )}
 
         <form noValidate onSubmit={handleVerify}>
-          <VerificationCodeInput
+          <Auth.VerificationCodeInput
             digits={digits}
             setDigits={setDigits}
-            onError={(errorMessage) => toast.error(errorMessage)}
+            onError={(errorMessage) => showError(errorMessage)}
             loading={loading}
             error=""
           />

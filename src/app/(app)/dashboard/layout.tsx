@@ -2,10 +2,10 @@
 
 import App from "@/components/(app)";
 import Auth from "@/components/(auth)";
+import { UserProfile } from "@/interfaces";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { UserInfoContext } from "@/contexts/UserInfoContext";
-import { UserProfile } from "@/interfaces";
 
 export default function DashboardLayout({
   children,
@@ -45,6 +45,8 @@ export default function DashboardLayout({
           avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
           last_login: responseData.data.last_login,
           primary_wallet: responseData.data.primary_wallet,
+          following_number: responseData.data.following_number,
+          followers_number: responseData.data.followers_number,
         };
 
         setUser(userData);
@@ -99,6 +101,8 @@ export default function DashboardLayout({
           avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
           last_login: responseData.data.last_login,
           primary_wallet: responseData.data.primary_wallet,
+          following_number: responseData.data.following_number,
+          followers_number: responseData.data.followers_number,
         };
 
         setUser(userData);

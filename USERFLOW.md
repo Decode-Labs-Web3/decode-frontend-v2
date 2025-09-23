@@ -474,6 +474,6 @@ The system ensures security while maintaining usability through features like sm
 ---
 
 **Developed by Vũ Trần Quang Minh for University of Greenwich Final Project**
-_Integrating traditional authentication with Web3 technology for a secure, modern user experience._
+> _Integrating traditional authentication with Web3 technology for a secure, modern user experience._
 
 ---
