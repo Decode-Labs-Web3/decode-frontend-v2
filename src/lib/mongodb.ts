@@ -1,6 +1,6 @@
 import { MongoClient, Db } from "mongodb";
-const uri = process.env.MONGODB_URI!;
-if (!uri) throw new Error("Missing MONGODB_URI");
+const uri = process.env.MONGODB_URI || `mongodb://localhost:27017`;
+if (!uri) console.error("Missing MONGODB_URI");
 declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
