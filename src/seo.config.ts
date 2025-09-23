@@ -18,6 +18,12 @@ export const defaultMetadata: Metadata = {
     template: "%s | Decode Protocol",
   },
   description: SITE_DESCRIPTION,
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    viewportFit: "cover",
+  },
   applicationName: SITE_NAME,
   keywords: [
     "Decode",
@@ -35,7 +41,9 @@ export const defaultMetadata: Metadata = {
       { url: SITE_ICON, type: "image/png" },
     ],
     shortcut: SITE_ICON,
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   // Open Graph
   openGraph: {
@@ -98,7 +106,9 @@ export function buildPageMetadata(
 ): Metadata {
   // Ensure path always has leading slash when passed to URL()
   const normalizedPath = path ? (path.startsWith("/") ? path : `/${path}`) : "";
-  const url = normalizedPath ? new URL(normalizedPath, SITE_URL).toString() : SITE_URL;
+  const url = normalizedPath
+    ? new URL(normalizedPath, SITE_URL).toString()
+    : SITE_URL;
 
   return {
     ...defaultMetadata,
