@@ -18,12 +18,6 @@ export const defaultMetadata: Metadata = {
     template: "%s | Decode Protocol",
   },
   description: SITE_DESCRIPTION,
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    viewportFit: "cover",
-  },
   applicationName: SITE_NAME,
   keywords: [
     "Decode",

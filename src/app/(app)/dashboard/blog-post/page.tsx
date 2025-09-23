@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import App from "@/components/(app)";
 import Auth from "@/components/(auth)";
 import { useLoading } from "@/hooks/useLoading";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -188,17 +189,13 @@ export default function BlogPostPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Create Blog Post
-          </h1>
-          <p className="text-gray-400">
-            Share your thoughts with the community
-          </p>
-        </div>
+    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
+      <App.PageHeader
+        title="Create Blog Post"
+        description="Share your thoughts with the community."
+      />
 
+      <div className="max-w-4xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Image Upload */}
           <div className="space-y-2">

@@ -196,7 +196,7 @@ export default function DevicesPage() {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:pl-72 lg:pr-8 pt-20 sm:pt-24 pb-8 sm:pb-10">
+    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
       <App.PageHeader
         title="Devices"
         description="Trusted devices that have signed in to your account."

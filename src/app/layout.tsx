@@ -1,9 +1,16 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { defaultMetadata } from "@/seo.config";
 import ToastProvider from "@/components/ToastProvider";
 
 export const metadata: Metadata = defaultMetadata;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+};
 
 export default function RootLayout({
   children,
