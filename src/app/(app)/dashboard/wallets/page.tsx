@@ -1,103 +1,297 @@
-'use client';
+"use client";
 
-import React from 'react';
-import App from '@/components/(app)';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWallet, faCircleCheck, faPlus, faTrash, faGripVertical } from '@fortawesome/free-solid-svg-icons';
+import {
+  useAppKit,
+  useAppKitAccount,
+  useAppKitProvider,
+} from "@reown/appkit/react";
+import { ethers } from "ethers";
+import App from "@/components/(app)";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { UserInfoContext } from "@/contexts/UserInfoContext";
+import { useContext, useEffect, useState } from "react";
+import { showError, showSuccess, showInfo } from "@/utils/toast.utils";
+
+interface AllWallets {
+  id: string;
+  address: string;
+  user_id: string;
+  name_service: string;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function WalletsPage() {
-  const initialWallets = [
-    { name: 'MetaMask', address: '0xA2c4...9F1d', network: 'Ethereum', status: 'Connected' },
-    { name: 'Ledger Nano X', address: 'bc1q7...k9z3', network: 'Bitcoin', status: 'Connected' },
-  ];
+  const userContext = useContext(UserInfoContext);
+  const user = userContext?.user;
+  const refetchUserData = userContext?.refetchUserData;
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
+  const { walletProvider } = useAppKitProvider("eip155");
+  const [allWallets, setAllWallets] = useState<AllWallets[]>([]);
 
-  const [wallets, setWallets] = React.useState(initialWallets);
-  const [dragIndex, setDragIndex] = React.useState<number | null>(null);
-  const [overIndex, setOverIndex] = React.useState<number | null>(null);
+  useEffect(() => {
+    const handleGetAllWallets = async () => {
+      try {
+        const apiResponse = await fetch("/api/wallet/all-wallet", {
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Frontend-Internal-Request": "true",
+          },
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!apiResponse.ok) {
+          const error = await apiResponse.json();
+          console.error("Get all wallets error:", error);
+          showError(error.message || `HTTP ${apiResponse.status}`);
+          return;
+        }
+        const response = await apiResponse.json();
+        console.log("all wallets data:", response);
+        setAllWallets(response.data);
+        if (response.data.length === 0) {
+          setAllWallets([
+            {
+              id: "",
+              address: "",
+              user_id: "",
+              name_service: "",
+              is_primary: false,
+              created_at: "",
+              updated_at: "",
+            },
+          ]);
+          showInfo("No wallets found. Please add a wallet.");
+        } else {
+          setAllWallets(response.data);
+          showSuccess("Wallets fetched successfully");
+        }
+      } catch (error) {
+        console.error("Get all wallets error:", error);
+        showError(
+          error instanceof Error ? error.message : "Get all wallets failed"
+        );
+      }
+    };
+    handleGetAllWallets();
+  }, []);
 
-  const handleDragStart = (index: number) => () => {
-    setDragIndex(index);
+  const handleAddWallet = async () => {
+    try {
+      await open();
+
+      await new Promise((r) => setTimeout(r, 100));
+
+      if (!isConnected || !walletProvider || !address) {
+        showInfo("Connect cancelled.");
+        return;
+      }
+
+      const challengeRes = await fetch("/api/wallet/link-challenge", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ address }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!challengeRes.ok) throw new Error(`HTTP ${challengeRes.status}`);
+      const challengeJson = await challengeRes.json();
+      const messageToSign =
+        challengeJson?.data?.nonceMessage || challengeJson?.data?.message;
+      if (!messageToSign) throw new Error("Missing link nonce message");
+
+      const provider = new ethers.BrowserProvider(
+        walletProvider as ethers.Eip1193Provider
+      );
+      const signer = await provider.getSigner();
+      const signature = await signer.signMessage(messageToSign);
+
+      const verifyRes = await fetch("/api/wallet/link-validation", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ address, signature }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!verifyRes.ok) throw new Error(`HTTP ${verifyRes.status}`);
+      const verifyJson = await verifyRes.json();
+      if (!verifyJson.success)
+        throw new Error(verifyJson.message || "Link failed");
+
+      try {
+        // Ensure the AppKit modal is closed before navigating
+        close?.();
+      } catch (error) {
+        console.error("Close modal error:", error);
+      }
+      if (refetchUserData) {
+        await refetchUserData();
+      }
+      showSuccess("Wallet linked successfully");
+    } catch (error: unknown) {
+      // Handle user rejection (code 4001) or ACTION_REJECTED
+      if (
+        (error as { code?: number })?.code === 4001 ||
+        (error as { reason?: string })?.reason === "rejected" ||
+        (error as { action?: string })?.action === "signMessage"
+      ) {
+        showInfo("Signature request was cancelled.");
+        return;
+      }
+      console.error("Add wallet error:", error);
+      showError(error instanceof Error ? error.message : "Add wallet failed");
+    }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
+  const handleAddPrimaryWallet = async () => {
+    try {
+      await open();
 
-  const handleDrop = (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (dragIndex === null || dragIndex === index) return;
-    setWallets(prev => {
-      const next = [...prev];
-      const [moved] = next.splice(dragIndex, 1);
-      next.splice(index, 0, moved);
-      return next;
-    });
-    setDragIndex(null);
-    setOverIndex(null);
-  };
+      await new Promise((r) => setTimeout(r, 100));
 
-  const handleRemove = (index: number) => () => {
-    setWallets(prev => prev.filter((_, i) => i !== index));
+      if (!isConnected || !walletProvider || !address) {
+        showInfo("Connect cancelled.");
+        return;
+      }
+
+      const challengeRes = await fetch("/api/wallet/primary-challenge", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ address }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!challengeRes.ok) throw new Error(`HTTP ${challengeRes.status}`);
+      const challengeJson = await challengeRes.json();
+      const messageToSign =
+        challengeJson?.data?.nonceMessage || challengeJson?.data?.message;
+      if (!messageToSign) throw new Error("Missing link nonce message");
+
+      const provider = new ethers.BrowserProvider(
+        walletProvider as ethers.Eip1193Provider
+      );
+      const signer = await provider.getSigner();
+      const signature = await signer.signMessage(messageToSign);
+
+      const verifyRes = await fetch("/api/wallet/primary-validation", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ address, signature }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!verifyRes.ok) throw new Error(`HTTP ${verifyRes.status}`);
+      const verifyJson = await verifyRes.json();
+      if (!verifyJson.success)
+        throw new Error(verifyJson.message || "Link failed");
+
+      try {
+        // Ensure the AppKit modal is closed before navigating
+        close?.();
+      } catch (error) {
+        console.error("Close modal error:", error);
+      }
+      if (refetchUserData) {
+        await refetchUserData();
+      }
+      showSuccess("Wallet linked successfully");
+    } catch (error: unknown) {
+      // Handle user rejection (code 4001) or ACTION_REJECTED
+      if (
+        (error as { code?: number })?.code === 4001 ||
+        (error as { reason?: string })?.reason === "rejected" ||
+        (error as { action?: string })?.action === "signMessage"
+      ) {
+        showInfo("Signature request was cancelled.");
+        return;
+      }
+      console.error("Add wallet error:", error);
+      showError(error instanceof Error ? error.message : "Add wallet failed");
+    }
   };
 
   return (
     <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader
-        title="Wallets"
-        description="Drag to reorder. Top wallet is treated as primary."
-      />
-      <button className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors">
-        <FontAwesomeIcon icon={faPlus} />
-        Add wallet
-      </button>
-      <div className="space-y-3">
-        {wallets.map((w, i) => (
-          <div
-            key={i}
-            className={`rounded-xl p-4 flex items-center justify-between cursor-move transition shadow-sm border ${overIndex === i ? 'bg-white/[0.08] border-blue-400/30 ring-2 ring-blue-400/30' : 'bg-white/5 border-white/10 hover:bg-white/[0.07]'
-              }`}
-            draggable
-            onDragStart={handleDragStart(i)}
-            onDragOver={handleDragOver}
-            onDragEnter={() => setOverIndex(i)}
-            onDragLeave={() => setOverIndex(null)}
-            onDrop={handleDrop(i)}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="text-gray-400/70 hover:text-gray-200 transition cursor-grab active:cursor-grabbing"
-                aria-label="Drag to reorder"
-                title="Drag to reorder"
-              >
-                <FontAwesomeIcon icon={faGripVertical} />
-              </div>
-              <div className="w-9 h-9 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center ring-1 ring-white/10">
-                <FontAwesomeIcon icon={faWallet} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium tracking-tight">{w.name}</p>
-                  {i === 0 && (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-300 border border-emerald-400/20">Primary</span>
-                  )}
-                </div>
-                <p className="text-xs text-gray-400">{w.address} • {w.network}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-green-400 text-sm flex items-center gap-1"><FontAwesomeIcon icon={faCircleCheck} /> {w.status}</span>
-              <button onClick={handleRemove(i)} className="inline-flex items-center gap-1 text-sm text-red-300 hover:text-red-200">
-                <FontAwesomeIcon icon={faTrash} />
-                Remove
-              </button>
-            </div>
+      <App.PageHeader title="Wallets" description="Manage your wallets." />
+      <div className="flex items-start flex-col gap-2">
+        {allWallets.length > 0 && !user?.primary_wallet?.address && (
+          <div className="flex items-start flex-col gap-2">
+            <button
+              onClick={handleAddPrimaryWallet}
+              className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              Add primary wallet
+            </button>
+            <p className="text-sm text-gray-400">
+              Please add your primary wallet to your account to activate more
+              features.
+            </p>
           </div>
-        ))}
+        )}
+        {user?.primary_wallet?.address && (
+          <div className="flex items-start flex-col gap-2">
+            <h1 className="text-sm text-gray-400">
+              Primary wallet: {user?.primary_wallet?.address}
+            </h1>
+          </div>
+        )}
+        <button
+          onClick={handleAddWallet}
+          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
+        >
+          <FontAwesomeIcon icon={faPlus} />
+          Add wallets
+        </button>
+        {allWallets.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold text-white mb-2">
+              All Wallets
+            </h3>
+            <ul className="space-y-2">
+              {allWallets.map((wallet) => {
+                if (wallet.address !== user?.primary_wallet?.address ) {
+                  return (
+                    <div
+                      key={wallet.id || wallet.address}
+                      className="flex items-center gap-2"
+                    >
+                      <h1>{wallet.address || "-"}</h1>
+                      <button className="text-sm text-gray-400 hover:text-red-500 transition-colors">
+                        Remove
+                      </button>
+                    </div>
+                  );
+                }
+              })}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-
-
-

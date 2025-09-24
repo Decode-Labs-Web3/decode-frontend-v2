@@ -85,11 +85,11 @@ function WalletContent() {
       const data = await response.json();
       console.log("Login/Register response:", data);
 
-      if (data.success && data.message === "User found") {
+      if (data.success && data.message === "User found" ) {
         console.log("User found, redirecting to login...");
         showSuccess("User found! Redirecting to login...");
         router.push("/login");
-      } else if (!data.success && data.message === "User not found") {
+      } else if (!data.success && data.message === "User not found" && data.statusCode === 404) {
         console.log("User not found, redirecting to register...");
         showInfo("User not found. Redirecting to register...");
         router.push("/register");

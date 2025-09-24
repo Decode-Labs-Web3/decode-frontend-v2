@@ -28,6 +28,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.info("this is api/wallet/primary-challenge response", address);
+
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
     if (!accessToken) {
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendRes = await fetch(
-      `${process.env.BACKEND_BASE_URL}/wallets/link/challenge`,
+      `${process.env.BACKEND_BASE_URL}/wallets/primary/challenge`,
       {
         method: "POST",
         headers: {

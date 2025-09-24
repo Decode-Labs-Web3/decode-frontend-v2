@@ -8,8 +8,16 @@ type GateRule = {
 };
 
 const GATE_RULES: GateRule[] = [
-  { prefix: "/login", cookie: "gate-key-for-login", exact: false },
-  { prefix: "/register", cookie: "gate-key-for-register", exact: false },
+  {
+    prefix: "/login",
+    cookie: "gate-key-for-login",
+    exact: false,
+  },
+  {
+    prefix: "/register",
+    cookie: "gate-key-for-register",
+    exact: false,
+  },
   {
     prefix: "/forgot-password",
     cookie: "gate-key-for-forgot-password",

@@ -51,14 +51,20 @@ export async function POST(req: Request) {
       }
     );
 
-    if (!backendResponse.ok && backendResponse.status !== 400) {
+    if (!backendResponse.ok && backendResponse.status != 400) {
+      const error = await backendResponse.json().catch(() => null);
       console.error(
         "/api/auth/login-or-register backend error status:",
         backendResponse.status
       );
-      throw Object.assign(new Error(`HTTP ${backendResponse.status}`), {
-        status: backendResponse.status,
-      });
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: backendResponse.status,
+          message: error?.message || `HTTP ${backendResponse.status}`,
+        },
+        { status: backendResponse.status }
+      );
     }
 
     const response = await backendResponse.json();
@@ -94,7 +100,7 @@ export async function POST(req: Request) {
     if (
       !response.success &&
       response.message === "User not found" &&
-      response.statusCode === 400
+      response.statusCode === 404
     ) {
       const res = NextResponse.json({
         success: false,
