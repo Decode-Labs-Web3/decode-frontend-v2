@@ -1,32 +1,33 @@
-'use client';
+"use client";
 
-import Auth from '@/components/(auth)';
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { useVerification } from '@/hooks/useVerification';
-import { showSuccess, showError } from '@/utils/toast.utils';
+import Auth from "@/components/(auth)";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useVerification } from "@/hooks/useVerification";
+import { showSuccess, showError } from "@/utils/toast.utils";
 
-type VerificationType = 'register' | 'login' | 'forgot';
+type VerificationType = "register" | "login" | "forgot";
 
 const VERIFICATION_CONFIG = {
   register: {
-    title: 'Verify Code',
-    description: 'Enter the 6-digit code we sent to your email.',
+    title: "Verify Code",
+    description: "Enter the 6-digit code we sent to your email.",
     showResend: true,
-    resendEndpoint: '/api/auth/resend-verification-register'
+    resendEndpoint: "/api/auth/resend-verification-register",
   },
   login: {
-    title: 'Verify Device',
-    description: 'Enter the 6-digit code we sent to your email to verify this device.',
+    title: "Verify Device",
+    description:
+      "Enter the 6-digit code we sent to your email to verify this device.",
     showResend: false,
-    resendEndpoint: null
+    resendEndpoint: null,
   },
   forgot: {
-    title: 'Verify Code',
-    description: 'Enter the 6-digit code we sent to your email.',
+    title: "Verify Code",
+    description: "Enter the 6-digit code we sent to your email.",
     showResend: true,
-    resendEndpoint: '/api/auth/resend-verification-register'
-  }
+    resendEndpoint: "/api/auth/resend-verification-register",
+  },
 };
 
 export default function VerifyPage() {
@@ -37,43 +38,44 @@ export default function VerifyPage() {
 
   // Validate verification type
   useEffect(() => {
-    if (!type || !['register', 'login', 'forgot'].includes(type)) {
-      router.push('/');
+    if (!type || !["register", "login", "forgot"].includes(type)) {
+      router.push("/");
     }
   }, [type, router]);
 
   const config = VERIFICATION_CONFIG[type];
 
-  const { loading, digits, setDigits, handleVerify, handleResend } = useVerification({
-    type,
-    onSuccess: (data) => {
-      switch (type) {
-        case 'register':
-          showSuccess('Account verified successfully! You can now log in.');
-          router.push('/login');
-          break;
-        case 'login':
-          if (data.requiresRelogin) {
-            showSuccess('Device verified! Please log in again.');
-            router.push('/login');
-          } else {
-            showSuccess('Device verified successfully!');
-            router.push('/login');
-            router.refresh();
-          }
-          break;
-        case 'forgot':
-          showSuccess('Code verified! You can now reset your password.');
-          router.push('/change-password');
-          break;
-        default:
-          router.push('/');
-      }
-    },
-    onError: (errorMessage) => {
-      showError(errorMessage);
-    }
-  });
+  const { loading, digits, setDigits, handleVerify, handleResend } =
+    useVerification({
+      type,
+      onSuccess: (data) => {
+        switch (type) {
+          case "register":
+            showSuccess("Account verified successfully! You can now log in.");
+            router.push("/login");
+            break;
+          case "login":
+            if (data.requiresRelogin) {
+              showSuccess("Device verified! Please log in again.");
+              router.push("/login");
+            } else {
+              showSuccess("Device verified successfully!");
+              router.push("/login");
+              router.refresh();
+            }
+            break;
+          case "forgot":
+            showSuccess("Code verified! You can now reset your password.");
+            router.push("/change-password");
+            break;
+          default:
+            router.push("/");
+        }
+      },
+      onError: (errorMessage) => {
+        showError(errorMessage);
+      },
+    });
 
   const handleResendCode = async () => {
     if (!config.resendEndpoint) return;
@@ -81,15 +83,15 @@ export default function VerifyPage() {
     setResendLoading(true);
     try {
       await handleResend(config.resendEndpoint);
-      showSuccess('Verification code sent! Please check your email.');
+      showSuccess("Verification code sent! Please check your email.");
     } catch {
-      showError('Failed to resend code. Please try again.');
+      showError("Failed to resend code. Please try again.");
     } finally {
       setResendLoading(false);
     }
   };
 
-  if (!type || !['register', 'login', 'forgot'].includes(type)) {
+  if (!type || !["register", "login", "forgot"].includes(type)) {
     return null; // Will redirect in useEffect
   }
 
@@ -104,11 +106,11 @@ export default function VerifyPage() {
         </p>
 
         {/* Back to Home button for login verification */}
-        {type === 'login' && (
+        {type === "login" && (
           <div className="mb-4 text-center">
             <button
               type="button"
-              onClick={() => router.push('/')}
+              onClick={() => router.push("/")}
               className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
             >
               ← Back to Home
@@ -125,25 +127,21 @@ export default function VerifyPage() {
             error=""
           />
 
-          <Auth.SubmitButton
-            loading={loading}
-            disabled={digits.join('').length !== 6}
-            loadingText="Verifying..."
-          >
+          <Auth.SubmitButton disabled={digits.join("").length !== 6}>
             Verify
           </Auth.SubmitButton>
         </form>
 
         {config.showResend && (
           <p className="text-center text-gray-400">
-            Didn&apos;t get the code?{' '}
+            Didn&apos;t get the code?{" "}
             <button
               type="button"
               className="text-blue-500 hover:text-blue-400 hover:underline font-medium transition-colors disabled:text-blue-600 disabled:cursor-not-allowed"
               onClick={handleResendCode}
               disabled={resendLoading}
             >
-              {resendLoading ? 'Sending...' : 'Resend'}
+              {resendLoading ? "Sending..." : "Resend"}
             </button>
           </p>
         )}

@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import App from "@/components/(app)";
 import Auth from "@/components/(auth)";
-import { useLoading } from "@/hooks/useLoading";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -13,6 +12,7 @@ import {
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
 } from "@/utils/toast.utils";
+import { IPFSUploadSkeleton } from "@/components/(loading)";
 
 const categories = [
   { value: "decode", label: "Decode" },
@@ -25,7 +25,6 @@ const categories = [
 ];
 
 export default function BlogPostPage() {
-  const { loading, setLoading } = useLoading();
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -143,8 +142,6 @@ export default function BlogPostPage() {
       return;
     }
 
-    setLoading(true);
-
     try {
       const body = {
         user_id: formData.user_id,
@@ -186,8 +183,6 @@ export default function BlogPostPage() {
     } catch (err) {
       console.error("Error creating blog post:", err);
       showError(ERROR_MESSAGES.GENERIC_ERROR);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -215,14 +210,7 @@ export default function BlogPostPage() {
                     height={256}
                     className="max-h-64 mx-auto rounded-lg object-contain"
                   />
-                  {uploadingImage && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                      <div className="text-white text-center">
-                        <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-2"></div>
-                        <p className="text-sm">Uploading to IPFS...</p>
-                      </div>
-                    </div>
-                  )}
+                  {uploadingImage && <IPFSUploadSkeleton />}
                   {formData.post_ipfs_hash && !uploadingImage && (
                     <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
                       IPFS ✓
@@ -335,8 +323,8 @@ export default function BlogPostPage() {
 
           {/* Submit Button */}
           <div className="flex justify-end">
-            <Auth.SubmitButton loading={loading} className="px-8 py-3">
-              {loading ? "Creating Post..." : "Create Post"}
+            <Auth.SubmitButton className="px-8 py-3">
+              Create Post
             </Auth.SubmitButton>
           </div>
         </form>

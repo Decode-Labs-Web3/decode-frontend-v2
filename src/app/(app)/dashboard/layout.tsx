@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { UserInfoContext } from "@/contexts/UserInfoContext";
 import { showError } from "@/utils/toast.utils";
+import { DashboardSkeleton } from "@/components/(loading)";
 
 export default function DashboardLayout({
   children,
@@ -167,10 +168,12 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Loading dashboard...</p>
+      <div className="min-h-screen bg-black text-white overflow-hidden">
+        <Auth.BackgroundAccents />
+        <App.Navbar user={{ username: "", email: "" }} onLogout={() => {}} />
+        <App.Sidebar active="overview" onChange={() => {}} />
+        <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
+          <DashboardSkeleton />
         </div>
       </div>
     );

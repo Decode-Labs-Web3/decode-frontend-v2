@@ -1,6 +1,6 @@
 // Component-related interfaces
 
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 export interface PageHeaderProps {
   title: string;
@@ -14,8 +14,8 @@ export interface SidebarProps {
 }
 
 export interface NavbarProps {
-  user: { 
-    username: string; 
+  user: {
+    username: string;
     email: string;
   };
   onLogout?: () => void;
@@ -34,12 +34,10 @@ export interface BackButtonProps {
 }
 
 export interface SubmitButtonProps {
-  loading: boolean;
   disabled?: boolean;
-  loadingText?: string;
   children: ReactNode;
   className?: string;
-  variant?: 'primary' | 'secondary';
+  variant?: "primary" | "secondary";
 }
 
 export interface VerificationCodeInputProps {

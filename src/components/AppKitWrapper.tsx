@@ -15,14 +15,13 @@ declare global {
 import { ethers } from "ethers";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
-import { showError, showInfo, showSuccess } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { showError, showInfo, showSuccess } from "@/utils/toast.utils";
 import { faWallet, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import {
   useAppKit,
   useAppKitAccount,
   useAppKitProvider,
-  useAppKitNetwork,
 } from "@reown/appkit/react";
 
 // AppKit configuration
@@ -46,7 +45,6 @@ const metadata = {
 // Inner component that uses AppKit hooks
 function WalletContent() {
   const router = useRouter();
-  const [loading, setLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<{ email_or_username: string }>({
     email_or_username: "",
   });
@@ -65,7 +63,6 @@ function WalletContent() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setLoading(true);
 
     try {
       const response = await fetch("/api/auth/login-or-register", {
@@ -103,8 +100,6 @@ function WalletContent() {
     } catch (err: unknown) {
       console.error("Login/Register error:", err);
       showError(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -240,9 +235,7 @@ function WalletContent() {
             value={formData.email_or_username}
             onChange={handleChange}
           />
-          <Auth.SubmitButton loading={loading} loadingText="Exploring...">
-            Explore Decode
-          </Auth.SubmitButton>
+          <Auth.SubmitButton>Explore Decode</Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
 

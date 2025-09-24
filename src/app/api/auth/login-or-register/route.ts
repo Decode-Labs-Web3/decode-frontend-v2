@@ -4,6 +4,8 @@ import { generateRequestId } from "@/utils/security-error-handling.utils";
 export async function POST(req: Request) {
   const requestId = generateRequestId();
 
+  console.error("requestId", requestId);
+
   try {
     const internalRequest = req.headers.get("X-Frontend-Internal-Request");
     if (internalRequest !== "true") {

@@ -4,14 +4,12 @@ import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PasswordValidationService } from "@/services/password-validation.service";
-import { useLoading } from "@/hooks/useLoading";
 import { showSuccess, showError } from "@/utils/toast.utils";
 import { apiCallWithTimeout } from "@/utils/api.utils";
 import { getCookie, setCookie, deleteCookie } from "@/utils/cookie.utils";
 
 export default function Register() {
   const router = useRouter();
-  const { loading, withLoading } = useLoading();
   const [formData, setFormData] = useState<{
     username: string;
     email: string;
@@ -122,8 +120,7 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
-    await withLoading(handleRegister);
+    await handleRegister();
   };
 
   return (
@@ -168,11 +165,7 @@ export default function Register() {
             placeholder="Confirm password"
           />
 
-          <Auth.SubmitButton
-            loading={loading}
-            disabled={!isPasswordValid}
-            loadingText="Creating account..."
-          >
+          <Auth.SubmitButton disabled={!isPasswordValid}>
             Register
           </Auth.SubmitButton>
         </form>

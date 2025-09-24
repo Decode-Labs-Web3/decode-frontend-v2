@@ -3,14 +3,12 @@ import Link from "next/link";
 import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLoading } from "@/hooks/useLoading";
 import { apiCallWithTimeout } from "@/utils/api.utils";
 import { showSuccess, showError } from "@/utils/toast.utils";
 import { getCookie, setCookie, deleteCookie } from "@/utils/cookie.utils";
 
 export default function Login() {
   const router = useRouter();
-  const { loading, withLoading } = useLoading();
   const [formData, setFormData] = useState<{
     email_or_username: string;
     password: string;
@@ -91,8 +89,7 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
-    await withLoading(handleLogin);
+    await handleLogin();
   };
 
   return (
@@ -128,9 +125,7 @@ export default function Login() {
             </a>
           </div>
 
-          <Auth.SubmitButton loading={loading} loadingText="Logging in...">
-            Log in
-          </Auth.SubmitButton>
+          <Auth.SubmitButton>Log in</Auth.SubmitButton>
         </form>
 
         {/* Register Link */}

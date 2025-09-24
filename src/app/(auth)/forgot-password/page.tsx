@@ -2,14 +2,12 @@
 import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
-import { useLoading } from "@/hooks/useLoading";
 import { showSuccess, showError } from "@/utils/toast.utils";
 import { apiCallWithTimeout } from "@/utils/api.utils";
 import { setCookie } from "@/utils/cookie.utils";
 
 export default function ForgotPassword() {
   const router = useRouter();
-  const { loading, withLoading } = useLoading();
   const [formData, setFormData] = useState<{ email_or_username: string }>({
     email_or_username: "",
   });
@@ -62,8 +60,7 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
-    await withLoading(handleForgotPassword);
+    await handleForgotPassword();
   };
 
   return (
@@ -94,11 +91,7 @@ export default function ForgotPassword() {
             onChange={handleChange}
           />
 
-          <Auth.SubmitButton
-            loading={loading}
-            disabled={!formData.email_or_username}
-            loadingText="Sending..."
-          >
+          <Auth.SubmitButton disabled={!formData.email_or_username}>
             Send Reset Link
           </Auth.SubmitButton>
         </form>

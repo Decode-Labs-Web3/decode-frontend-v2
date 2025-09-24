@@ -1,6 +1,6 @@
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
-import PageHeader from './PageHeader';
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
+import PageHeader from "./PageHeader";
 
 const App = {
   Navbar,
@@ -9,3 +9,4 @@ const App = {
 } as const;
 
 export default App;
+export * from "../(loading)";

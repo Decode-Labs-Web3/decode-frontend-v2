@@ -4,13 +4,11 @@ import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
 import { PasswordValidationService } from "@/services/password-validation.service";
-import { useLoading } from "@/hooks/useLoading";
 import { showSuccess, showError } from "@/utils/toast.utils";
 import { apiCallWithTimeout } from "@/utils/api.utils";
 
 export default function ChangePassword() {
   const router = useRouter();
-  const { loading, withLoading } = useLoading();
   const [formData, setFormData] = useState<{
     new_password: string;
     confirm_new_password: string;
@@ -69,8 +67,7 @@ export default function ChangePassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
-    await withLoading(handleChangePassword);
+    await handleChangePassword();
   };
 
   return (
@@ -104,11 +101,7 @@ export default function ChangePassword() {
             placeholder="Confirm new password"
           />
 
-          <Auth.SubmitButton
-            loading={loading}
-            disabled={!isPasswordValid}
-            loadingText="Saving..."
-          >
+          <Auth.SubmitButton disabled={!isPasswordValid}>
             Save and log in
           </Auth.SubmitButton>
         </form>

@@ -54,7 +54,6 @@ export async function GET(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
-      console.log("Backend response Fingerprints API:", error);
       return NextResponse.json(
         {
           success: false,
@@ -64,7 +63,6 @@ export async function GET(req: Request) {
         { status: backendRes.status }
       );
     }
-    console.log("Backend response Fingerprints API:", backendRes);
 
     const responseData = await backendRes.json();
     console.log("Response Fingerprints API:", responseData);

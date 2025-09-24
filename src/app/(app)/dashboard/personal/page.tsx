@@ -12,9 +12,9 @@ import {
   faXmark,
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
-import { useLoading } from "@/hooks/useLoading";
 import { showSuccess, showError } from "@/utils/toast.utils";
 import { apiCallWithTimeout } from "@/utils/api.utils";
+import { IPFSUploadSkeleton } from "@/components/(loading)";
 
 export default function PersonalPage() {
   const userContext = useContext(UserInfoContext);
@@ -34,10 +34,10 @@ export default function PersonalPage() {
 
   const [username] = useState(user?.username || "");
   const [email] = useState(user?.email || "");
-  const { loading: saving, withLoading } = useLoading();
   const [editSection, setEditSection] = useState<
     "profile" | "username" | "email" | "none"
   >("none");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Update form when user context changes
@@ -65,6 +65,8 @@ export default function PersonalPage() {
       e.target.value = "";
       return;
     }
+
+    setUploadingAvatar(true);
 
     const uploadAvatar = async () => {
       const formData = new FormData();
@@ -112,7 +114,11 @@ export default function PersonalPage() {
       );
     };
 
-    await withLoading(uploadAvatar);
+    try {
+      await uploadAvatar();
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const handleChangeProfile = (
@@ -193,7 +199,7 @@ export default function PersonalPage() {
       }
     };
 
-    await withLoading(updateProfile);
+    await updateProfile();
   };
 
   const handleChange = () => {
@@ -242,7 +248,7 @@ export default function PersonalPage() {
               <button
                 type="button"
                 onClick={() => setEditSection("none")}
-                disabled={saving}
+                disabled={false}
                 className="bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200"
               >
                 Cancel
@@ -250,11 +256,11 @@ export default function PersonalPage() {
               <button
                 type="button"
                 onClick={handleSubmitProfile}
-                disabled={saving}
+                disabled={false}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <FontAwesomeIcon icon={faCheck} />
-                {saving ? "Saving..." : "Save Changes"}
+                Save Changes
               </button>
             </div>
           )}
@@ -277,6 +283,7 @@ export default function PersonalPage() {
                   className="w-full h-full object-cover"
                   unoptimized
                 />
+                {uploadingAvatar && <IPFSUploadSkeleton />}
               </div>
               {editSection === "profile" && (
                 <button
@@ -419,11 +426,11 @@ export default function PersonalPage() {
                 <div className="flex items-center gap-3">
                   <button
                     type="submit"
-                    disabled={saving}
+                    disabled={false}
                     className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
                   >
                     <FontAwesomeIcon icon={faCheck} />
-                    {saving ? "Saving..." : "Save"}
+                    Save
                   </button>
                 </div>
               </form>
@@ -477,11 +484,11 @@ export default function PersonalPage() {
                 <div className="flex items-center gap-3">
                   <button
                     type="submit"
-                    disabled={saving}
+                    disabled={false}
                     className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
                   >
                     <FontAwesomeIcon icon={faCheck} />
-                    {saving ? "Saving..." : "Save"}
+                    Save
                   </button>
                 </div>
               </form>
