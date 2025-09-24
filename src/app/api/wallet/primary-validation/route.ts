@@ -20,10 +20,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { address } = body || {};
-    if (!address) {
+    const { address, signature } = body || {};
+    if (!address || !signature) {
       return NextResponse.json(
-        { success: false, statusCode: 400, message: "Missing address" },
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing address or signature",
+        },
         { status: 400 }
       );
     }
@@ -38,10 +42,15 @@ export async function POST(request: NextRequest) {
     }
 
     const userAgent = request.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    const { fingerprint_hashed } = await fingerprintService(
+      userAgent
+    );
+
+    console.info("this is api/wallet/primary-validation request", { address, signature });
+    console.info("this is api/wallet/primary-validation request", fingerprint_hashed);
 
     const backendRes = await fetch(
-      `${process.env.BACKEND_BASE_URL}/wallets/link/challenge`,
+      `${process.env.BACKEND_BASE_URL}/wallets/primary/validation`,
       {
         method: "POST",
         headers: {
@@ -50,19 +59,20 @@ export async function POST(request: NextRequest) {
           fingerprint: fingerprint_hashed,
           "X-Request-ID": requestId,
         },
-        body: JSON.stringify({ address }),
+        body: JSON.stringify({ address, signature }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
     );
 
     const response = await backendRes.json().catch(() => ({}));
+    console.info("this is api/wallet/primary-validation response", response);
     if (!backendRes.ok) {
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 400,
-          message: response?.message || "Link challenge failed",
+          message: response?.message || "Wallet link failed",
         },
         { status: backendRes.status || 400 }
       );
@@ -72,13 +82,13 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Link challenge generated",
+        message: response.message || "Wallet linked successfully",
         data: response.data,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Link challenge error:", error);
+    console.error("Link validation error:", error);
     return NextResponse.json(
       {
         success: false,

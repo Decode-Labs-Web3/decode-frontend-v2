@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { defaultMetadata } from "@/seo.config";
 import ToastProvider from "@/components/ToastProvider";
+import AppKitRootProvider from "@/components/AppKitRootProvider";
 
 export const metadata: Metadata = defaultMetadata;
 
@@ -20,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <AppKitRootProvider>{children}</AppKitRootProvider>
         <ToastProvider />
       </body>
     </html>
