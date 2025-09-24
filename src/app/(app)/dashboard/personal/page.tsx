@@ -20,20 +20,21 @@ export default function PersonalPage() {
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
   const refetchUserData = userContext?.refetchUserData;
-  const [form, setForm] = useState({
+  const [loading, setLoading] = useState(false);
+
+  const [profileForm, setProfileForm] = useState({
     avatar_ipfs_hash: "",
     display_name: "",
     bio: "",
   });
 
-  const [originalForm, setOriginalForm] = useState({
-    avatar_ipfs_hash: "",
-    display_name: "",
-    bio: "",
+  const [accountForm, setAccountForm] = useState({
+    username: "",
+    username_code: "",
+    email: "",
+    email_code: "",
   });
 
-  const [username] = useState(user?.username || "");
-  const [email] = useState(user?.email || "");
   const [editSection, setEditSection] = useState<
     "profile" | "username" | "email" | "none"
   >("none");
@@ -44,12 +45,24 @@ export default function PersonalPage() {
   useEffect(() => {
     if (user) {
       const userForm = {
+        username: user.username || "",
+        email: user.email || "",
         avatar_ipfs_hash: user.avatar_ipfs_hash || "",
         display_name: user.display_name || "",
         bio: user.bio || "",
       };
-      setForm(userForm);
-      setOriginalForm(userForm);
+
+      setProfileForm({
+        avatar_ipfs_hash: userForm.avatar_ipfs_hash,
+        display_name: userForm.display_name,
+        bio: userForm.bio,
+      });
+
+      setAccountForm((prevAccountForm) => ({
+        ...prevAccountForm,
+        username: userForm.username,
+        email: userForm.email,
+      }));
     }
   }, [user]);
 
@@ -103,14 +116,14 @@ export default function PersonalPage() {
         return;
       }
 
-      setForm((prevForm) => ({
-        ...prevForm,
+      setProfileForm((prevProfileForm) => ({
+        ...prevProfileForm,
         avatar_ipfs_hash: apiResponse?.ipfsHash || "",
       }));
 
       console.log(
         "form.avatar_ipfs_hash from handleUploadAvatar after apiResponse",
-        form.avatar_ipfs_hash
+        profileForm.avatar_ipfs_hash
       );
     };
 
@@ -122,14 +135,15 @@ export default function PersonalPage() {
   };
 
   const handleChangeProfile = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { id, value } = e.target;
-    setForm((prev) => ({ ...prev, [id]: value }));
+    setProfileForm((prevProfileForm) => ({
+      ...prevProfileForm,
+      [event.target.id]: event.target.value }));
   };
 
-  const handleSubmitProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitProfile = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     const updateProfile = async () => {
       let response: {
@@ -141,8 +155,12 @@ export default function PersonalPage() {
         response = await apiCallWithTimeout("/api/users/profile-change", {
           method: "PUT",
           body: {
-            current: form,
-            original: originalForm,
+            current: profileForm,
+            original: {
+              avatar_ipfs_hash: user?.avatar_ipfs_hash || "",
+              display_name: user?.display_name || "",
+              bio: user?.bio || "",
+            },
           },
         });
       } catch (error) {
@@ -202,18 +220,66 @@ export default function PersonalPage() {
     await updateProfile();
   };
 
-  const handleChange = () => {
-    console.warn(
-      "Username/email change functionality is deprecated and not implemented"
-    );
+  const handleChangeProfileFrom = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    e.preventDefault();
+    setAccountForm((prevAccountForm) => ({
+      ...prevAccountForm,
+      [e.target.id]: e.target.value,
+    }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitUsername = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.warn(
-      "Attempted to use deprecated username/email change functionality"
-    );
-    showError("Username and email changes are not implemented yet");
+    setLoading(false);
+    const updateUsername = async () => {
+      const response = await apiCallWithTimeout("/api/users/username-change", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+      });
+
+      if (response.success && response.message === "Email verification sent") {
+        setLoading(true);
+      } else {
+        setLoading(false);
+        showError(response.message || "Username update failed");
+      }
+    };
+    await updateUsername();
+    console.log(accountForm);
+  };
+
+  const handleSubmitEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(accountForm);
+  };
+
+  const handleSendUsernameCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try{
+      const response = await apiCallWithTimeout("/api/users/username-change", {
+        method: "POST",
+        body: accountForm,
+      });
+      if (response.success && response.message === "Username changed successfully") {
+        if (refetchUserData) {
+          await refetchUserData();
+        }
+        showSuccess(response.message || "Username code sent successfully");
+      } else {
+        showError(response.message || "Username code send failed");
+      }
+    } catch (error) {
+      console.error("Username code send request error:", error);
+      showError("Username code send failed. Please try again.");
+    }
+    finally {
+      setLoading(false);
+      setEditSection("none");
+    }
   };
 
   return (
@@ -273,8 +339,8 @@ export default function PersonalPage() {
               <div className="w-48 h-48 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-white/20 overflow-hidden shadow-xl">
                 <Image
                   src={
-                    form.avatar_ipfs_hash
-                      ? `https://gateway.pinata.cloud/ipfs/${form.avatar_ipfs_hash}`
+                    profileForm.avatar_ipfs_hash
+                      ? `https://gateway.pinata.cloud/ipfs/${profileForm.avatar_ipfs_hash}`
                       : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt={"Avatar"}
@@ -323,7 +389,7 @@ export default function PersonalPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
                     <h2 className="text-3xl font-bold text-white">
-                      {form.display_name || "Your name"}
+                      {profileForm.display_name || "Your name"}
                     </h2>
                     {user?.role && (
                       <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-300 text-sm font-medium border border-blue-500/30">
@@ -342,7 +408,7 @@ export default function PersonalPage() {
                   </label>
                   <input
                     id="display_name"
-                    value={form.display_name}
+                    value={profileForm.display_name}
                     onChange={handleChangeProfile}
                     className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200"
                     placeholder="Enter your display name"
@@ -358,7 +424,7 @@ export default function PersonalPage() {
                   <h4 className="text-lg font-semibold text-white">About me</h4>
                   <div className="bg-white/5 rounded-xl p-4 border border-white/10">
                     <p className="text-gray-200 leading-relaxed">
-                      {form.bio ||
+                      {profileForm.bio ||
                         "No bio added yet. Click edit to add a short description about yourself."}
                     </p>
                   </div>
@@ -370,7 +436,7 @@ export default function PersonalPage() {
                   </label>
                   <textarea
                     id="bio"
-                    value={form.bio}
+                    value={profileForm.bio}
                     onChange={handleChangeProfile}
                     rows={4}
                     className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 resize-none"
@@ -408,17 +474,23 @@ export default function PersonalPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Username</p>
-                  <p className="text-white font-medium">{username || "-"}</p>
+                  <p className="text-white font-medium">
+                    {accountForm.username || "-"}
+                  </p>
                 </div>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+            ) : !loading ? (
+              <form onSubmit={handleSubmitUsername} className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-400">Username</label>
+                  <label className="text-sm text-gray-400">
+                    {" "}
+                    Enter username
+                  </label>
                   <input
-                    name="username"
-                    value={username}
-                    onChange={handleChange}
+                    id="username"
+                    type="text"
+                    value={accountForm.username}
+                    onChange={handleChangeProfileFrom}
                     className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
                     placeholder="Your username"
                   />
@@ -433,6 +505,33 @@ export default function PersonalPage() {
                     Save
                   </button>
                 </div>
+              </form>
+            ) : (
+              <form onSubmit={handleSendUsernameCode} className="space-y-4">
+                <label className="text-sm text-gray-400">
+                  Enter username code
+                </label>
+                <input
+                  id="username"
+                  type="hidden"
+                  value={accountForm.username}
+                />
+                <input
+                  id="username_code"
+                  type="text"
+                  value={accountForm.username_code}
+                  onChange={handleChangeProfileFrom}
+                  className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
+                  placeholder="Your username code"
+                />
+                <button
+                  type="submit"
+                  disabled={false}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
+                >
+                  <FontAwesomeIcon icon={faCheck} />
+                  Save
+                </button>
               </form>
             )}
           </div>
@@ -465,18 +564,20 @@ export default function PersonalPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Email</p>
-                  <p className="text-white font-medium">{email || "-"}</p>
+                  <p className="text-white font-medium">
+                    {accountForm.email || "-"}
+                  </p>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmitEmail} className="space-y-4">
                 <div>
                   <label className="text-sm text-gray-400">Email</label>
                   <input
+                    id="email"
                     type="email"
-                    name="email"
-                    value={email}
-                    onChange={handleChange}
+                    value={accountForm.email}
+                    onChange={handleChangeProfileFrom}
                     className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
                     placeholder="you@example.com"
                   />

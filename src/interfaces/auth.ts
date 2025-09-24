@@ -1,5 +1,3 @@
-// Authentication-related interfaces
-
 export interface Fingerprint {
   "_id": string;
   "user_id": string;

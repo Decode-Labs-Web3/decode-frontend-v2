@@ -1,64 +1,72 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
+import { useRef } from "react";
 
-import { VerificationCodeInputProps } from '@/interfaces';
+import { VerificationCodeInputProps } from "@/interfaces";
 
 export default function VerificationCodeInput({
   digits,
   setDigits,
   onError,
   loading,
-  error
+  error,
 }: VerificationCodeInputProps) {
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
   const handleChange = (index: number, value: string) => {
-    if (!/^[a-z0-9]?$/.test(value)) return;
+    if (!/^[a-zA-Z0-9]?$/.test(value)) return;
 
     const next = [...digits];
-    next[index] = value;
+    next[index] = value.toLowerCase();
     setDigits(next);
 
-    if (error) onError('');
+    if (error) onError("");
 
     if (value && index < 5) {
       inputsRef.current[index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !digits[index] && index > 0) {
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace" && !digits[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
-    if (e.key === 'ArrowLeft' && index > 0) {
+    if (e.key === "ArrowLeft" && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
-    if (e.key === 'ArrowRight' && index < 5) {
+    if (e.key === "ArrowRight" && index < 5) {
       inputsRef.current[index + 1]?.focus();
     }
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    const pastedText = e.clipboardData.getData('text');
+    const pastedText = e.clipboardData.getData("text");
 
-    const match = pastedText.match(/fingerprint-email-verification:([a-f0-9]{6})/i);
-    let text = '';
+    const match = pastedText.match(
+      /fingerprint-email-verification:([a-zA-Z0-9]{6})/i
+    );
+    let text = "";
 
     if (match) {
-      text = match[1];
+      text = match[1].toLowerCase();
     } else {
-      text = pastedText.replace(/[^a-f0-9]/gi, '').slice(0, 6);
+      text = pastedText
+        .replace(/[^a-zA-Z0-9]/gi, "")
+        .toLowerCase()
+        .slice(0, 6);
     }
 
     if (!text) return;
 
-    const next = Array(6).fill('');
+    const next = Array(6).fill("");
     for (let i = 0; i < text.length; i++) next[i] = text[i];
     setDigits(next);
 
     // Clear error when pasting
-    if (error) onError('');
+    if (error) onError("");
 
     inputsRef.current[Math.min(text.length, 5)]?.focus();
     e.preventDefault();
@@ -69,8 +77,15 @@ export default function VerificationCodeInput({
       {digits.map((digit, i) => (
         <input
           key={i}
-          ref={(el) => { inputsRef.current[i] = el; }}
-          inputMode="numeric"
+          ref={(el) => {
+            inputsRef.current[i] = el;
+          }}
+          type="text"
+          inputMode="text"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          pattern="[a-zA-Z0-9]*"
           maxLength={1}
           value={digit}
           onChange={(e) => handleChange(i, e.target.value)}

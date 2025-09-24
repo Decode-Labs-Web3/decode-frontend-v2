@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     // Sanitize and validate inputs
     const passwordValidation = sanitizeText(password, {
-      maxLength: 128,
+      maxLength: 20,
       minLength: 1,
       allowSpecialChars: true,
       allowNumbers: true,

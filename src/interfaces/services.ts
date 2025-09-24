@@ -1,5 +1,3 @@
-// Service-related interfaces
-
 export interface PasswordValidationResult {
   hasMinLength: boolean;
   hasUppercase: boolean;
