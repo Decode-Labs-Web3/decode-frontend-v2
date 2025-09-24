@@ -1,0 +1,17 @@
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  return NextResponse.json({
+    success: false,
+    statusCode: 404,
+    message: "Not Found"
+  }, { status: 404 });
+}
+
+export async function POST() {
+  return NextResponse.json({
+    success: false,
+    statusCode: 404,
+    message: "Not Found"
+  }, { status: 404 });
+}
