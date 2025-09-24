@@ -1,5 +1,3 @@
-// Component-related interfaces
-
 import { ReactNode } from "react";
 
 export interface PageHeaderProps {

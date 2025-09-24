@@ -1,5 +1,3 @@
-// Centralized interface exports
-
 // User interfaces
 export * from './user';
 

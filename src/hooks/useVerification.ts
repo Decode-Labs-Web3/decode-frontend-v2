@@ -16,7 +16,7 @@ export function useVerification({
     const code = digits.join("");
 
     if (code.length !== 6) {
-      setError("Please enter the complete 6-digit code.");
+      setError("Please enter the complete 6-character code.");
       return;
     }
 

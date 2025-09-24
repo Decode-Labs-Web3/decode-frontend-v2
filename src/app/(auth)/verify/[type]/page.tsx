@@ -11,20 +11,20 @@ type VerificationType = "register" | "login" | "forgot";
 const VERIFICATION_CONFIG = {
   register: {
     title: "Verify Code",
-    description: "Enter the 6-digit code we sent to your email.",
+    description: "Enter the 6-character code we sent to your email.",
     showResend: true,
     resendEndpoint: "/api/auth/resend-verification-register",
   },
   login: {
     title: "Verify Device",
     description:
-      "Enter the 6-digit code we sent to your email to verify this device.",
+      "Enter the 6-character code we sent to your email to verify this device.",
     showResend: false,
     resendEndpoint: null,
   },
   forgot: {
     title: "Verify Code",
-    description: "Enter the 6-digit code we sent to your email.",
+    description: "Enter the 6-character code we sent to your email.",
     showResend: true,
     resendEndpoint: "/api/auth/resend-verification-register",
   },
