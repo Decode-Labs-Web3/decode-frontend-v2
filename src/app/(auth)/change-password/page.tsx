@@ -4,26 +4,22 @@ import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/index.utils";
-import { PasswordValidationService } from "@/services/password-validation.services";
 import { ChangePasswordData } from "@/interfaces/index.interfaces";
 
 export default function ChangePassword() {
   const router = useRouter();
-  const [changePasswordData, setChangePasswordData] = useState<ChangePasswordData>({
-    new_password: "",
-    confirm_new_password: "",
-  });
-  const { isPasswordValid } = PasswordValidationService.validate(
-    changePasswordData.new_password,
-    changePasswordData.confirm_new_password
-  );
+  const [changePasswordData, setChangePasswordData] =
+    useState<ChangePasswordData>({
+      new_password: "",
+      confirm_new_password: "",
+    });
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChangePasswordData(prevChangePasswordData => ({
+    setChangePasswordData((prevChangePasswordData) => ({
       ...prevChangePasswordData,
       [event.target.id]: event.target.value,
-    })
-  )};
+    }));
+  };
 
   const handleChangePassword = async () => {
     if (
@@ -34,24 +30,17 @@ export default function ChangePassword() {
       return;
     }
 
-    if (!isPasswordValid) {
-      toastError("Please meet all password requirements.");
-      return;
-    }
-
     try {
-      const apiResponse = await fetch("/api/auth/change-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
-          body: JSON.stringify(changePasswordData),
-          cache: "no-store",
-          signal: AbortSignal.timeout(20000),
-        }
-      );
+      const apiResponse = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(changePasswordData),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
+      });
 
       const response = await apiResponse.json();
 
@@ -92,11 +81,6 @@ export default function ChangePassword() {
             placeholder="New password"
           />
 
-          <Auth.PasswordValidation
-            password={changePasswordData.new_password}
-            confirmPassword={changePasswordData.confirm_new_password}
-          />
-
           <Auth.PasswordField
             id="confirm_new_password"
             value={changePasswordData.confirm_new_password}
@@ -104,9 +88,7 @@ export default function ChangePassword() {
             placeholder="Confirm new password"
           />
 
-          <Auth.SubmitButton disabled={!isPasswordValid}>
-            Save and log in
-          </Auth.SubmitButton>
+          <Auth.SubmitButton>Save and log in</Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
     </main>

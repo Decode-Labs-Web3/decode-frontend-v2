@@ -1,24 +1,14 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
-import { generateRequestId } from "@/utils/index.utils";
+import { guardInternal, apiPathName, generateRequestId } from "@/utils/index.utils";
 
 export async function POST(req: Request) {
-  const requestId = generateRequestId();
-
+  const requestId = generateRequestId()
+  const pathname = apiPathName(req)
+  const denied = guardInternal(req)
+  if (denied) return denied
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const body = await req.json();
     const { sessionId } = body;
     console.log("Request body Revoke API:", body);
@@ -65,7 +55,7 @@ export async function POST(req: Request) {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
           fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -146,7 +136,7 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info("/api/auth/revoke-session", requestId);
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 

@@ -1,97 +1,31 @@
 import { NextResponse } from "next/server";
-import { sanitizeText } from "@/utils/index.utils";
 import { fingerprintService } from "@/services/index.services";
-import {
-  createSecurityErrorResponse,
-  SecurityErrorMessages,
-  logSecurityEvent,
-  generateRequestId,
-} from "@/utils/index.utils";
+import { generateRequestId, guardInternal, apiPathName } from '@/utils/index.utils'
 
 export async function POST(req: Request) {
-  const requestId = generateRequestId();
+  const requestId = generateRequestId()
+  const pathname = apiPathName(req)
+  const denied = guardInternal(req)
+  if(denied) return denied
 
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      logSecurityEvent("MISSING_INTERNAL_HEADER", { requestId }, "high");
-      return NextResponse.json(
-        createSecurityErrorResponse(
-          400,
-          SecurityErrorMessages.MISSING_HEADER,
-          process.env.NODE_ENV === "production",
-          requestId
-        ),
-        { status: 400 }
-      );
-    }
-
     const body = await req.json();
     const { email_or_username, password } = body;
 
     if (!email_or_username || !password) {
       return NextResponse.json(
-        createSecurityErrorResponse(
-          400,
-          SecurityErrorMessages.VALIDATION_ERROR,
-          process.env.NODE_ENV === "production",
-          requestId
-        ),
+        { success: false, message: "Email/username and password are required" },
         { status: 400 }
       );
     }
-
-    // Sanitize and validate inputs
-    const passwordValidation = sanitizeText(password, {
-      maxLength: 20,
-      minLength: 1,
-      allowSpecialChars: true,
-      allowNumbers: true,
-      allowLetters: true,
-      required: true,
-    });
-
-    if (!email_or_username) {
-      logSecurityEvent(
-        "INVALID_EMAIL_FORMAT",
-        { requestId, email: email_or_username },
-        "medium"
-      );
-      return NextResponse.json(
-        createSecurityErrorResponse(
-          400,
-          "Invalid email or username",
-          process.env.NODE_ENV === "production",
-          requestId
-        ),
-        { status: 400 }
-      );
-    }
-
-    if (!passwordValidation.isValid) {
-      logSecurityEvent("INVALID_PASSWORD_FORMAT", { requestId }, "medium");
-      return NextResponse.json(
-        createSecurityErrorResponse(
-          400,
-          "Invalid password format",
-          process.env.NODE_ENV === "production",
-          requestId
-        ),
-        { status: 400 }
-      );
-    }
-
-    // Use sanitized values
-    const sanitizedEmail = email_or_username;
-    const sanitizedPassword = passwordValidation.sanitizedValue;
 
     const userAgent = req.headers.get("user-agent") || "";
     const fingerprintResult = await fingerprintService(userAgent);
     const { fingerprint_hashed, device, browser } = fingerprintResult;
 
     const requestBody = {
-      email_or_username: sanitizedEmail,
-      password: sanitizedPassword,
+      email_or_username,
+      password,
       fingerprint_hashed,
       browser,
       device,
@@ -103,7 +37,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -217,6 +151,8 @@ export async function POST(req: Request) {
       },
       { status: 500 }
     );
+  } finally {
+    console.info(`${pathname}: ${requestId}`)
   }
 }
 

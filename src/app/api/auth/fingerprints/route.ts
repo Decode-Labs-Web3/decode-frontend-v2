@@ -1,24 +1,15 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
-import { generateRequestId } from "@/utils/index.utils";
+import { generateRequestId, guardInternal, apiPathName } from "@/utils/index.utils";
 
 export async function GET(req: Request) {
   const requestId = generateRequestId();
+  const pathname = apiPathName(req)
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -45,7 +36,7 @@ export async function GET(req: Request) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -105,6 +96,6 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info("/api/auth/fingerprints", requestId);
+    console.info(`${pathname}: ${requestId}`);
   }
 }

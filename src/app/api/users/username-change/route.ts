@@ -1,28 +1,20 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
-import { generateRequestId } from "@/utils/index.utils";
+import { generateRequestId, apiPathName, guardInternal } from "@/utils/index.utils"
 
 export async function GET(req: Request) {
   const userAgent = req.headers.get("user-agent") || "";
   const fingerprintResult = await fingerprintService(userAgent);
   const { fingerprint_hashed } = fingerprintResult;
 
-  const requestId = generateRequestId();
+  const requestId = generateRequestId()
+  const pathname = apiPathName(req)
+  const denied = guardInternal(req)
+  if(denied) return denied
+
 
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -49,7 +41,7 @@ export async function GET(req: Request) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -88,7 +80,7 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info("/api/users/username-change", requestId);
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 
@@ -111,21 +103,11 @@ export async function POST(req: Request) {
   const fingerprintResult = await fingerprintService(userAgent);
   const { fingerprint_hashed } = fingerprintResult;
 
-  const requestId = generateRequestId();
-
+  const requestId = generateRequestId()
+  const pathname = apiPathName(req)
+  const denied = guardInternal(req)
+  if(denied) return denied
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const body = await req.json();
     const { username, username_code } = body;
     console.log(
@@ -158,7 +140,7 @@ export async function POST(req: Request) {
           Authorization: `Bearer ${accessToken}`,
           fingerprint: fingerprint_hashed,
           "Content-Type": "application/json",
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -202,6 +184,6 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info("/api/users/username-change", requestId);
+    console.info(`${pathname}: ${requestId}`);
   }
 }

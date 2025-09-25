@@ -5,8 +5,8 @@ import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/index.utils";
-import { toastSuccess, toastError } from "@/utils/index.utils";
 import { LoginData } from "@/interfaces/index.interfaces";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 
 export default function Login() {
   const router = useRouter();

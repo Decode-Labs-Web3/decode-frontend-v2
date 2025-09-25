@@ -1,16 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
 import App from "@/components/(app)";
 import Auth from "@/components/(auth)";
+import { useState, useEffect } from "react";
+import { IPFSUploadSkeleton } from "@/components/(loading)";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
-import {
-  toastSuccess,
-  toastError,
-} from "@/utils/index.utils";
-import { IPFSUploadSkeleton } from "@/components/(loading)";
 
 const categories = [
   { value: "decode", label: "Decode" },
@@ -50,15 +47,10 @@ export default function BlogPostPage() {
     }
   }, []);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
+  const handleChange = (event: React.ChangeEvent< HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [event.target.name]: event.target.value,
     }));
   };
 
@@ -165,7 +157,7 @@ export default function BlogPostPage() {
       });
 
       if (response.ok) {
-        toastSuccess('Blog post created successfully');
+        toastSuccess("Blog post created successfully");
         setFormData((prev) => ({
           ...prev,
           title: "",
@@ -181,7 +173,7 @@ export default function BlogPostPage() {
       }
     } catch (err) {
       console.error("Error creating blog post:", err);
-      toastError('Failed to create blog post');
+      toastError("Failed to create blog post");
     }
   };
 
@@ -257,7 +249,7 @@ export default function BlogPostPage() {
             <select
               name="category"
               value={formData.category}
-              onChange={handleInputChange}
+              onChange={handleChange}
               required
               className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
@@ -279,7 +271,7 @@ export default function BlogPostPage() {
               type="text"
               name="keywords"
               value={formData.keywords}
-              onChange={handleInputChange}
+              onChange={handleChange}
               placeholder="Enter keywords separated by commas (e.g., blockchain, web3, crypto)"
               className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
@@ -297,7 +289,7 @@ export default function BlogPostPage() {
               type="text"
               name="title"
               value={formData.title}
-              onChange={handleInputChange}
+              onChange={handleChange}
               required
               placeholder="Enter your blog post title"
               className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -312,7 +304,7 @@ export default function BlogPostPage() {
             <textarea
               name="content"
               value={formData.content}
-              onChange={handleInputChange}
+              onChange={handleChange}
               required
               rows={12}
               placeholder="Write your blog post content here..."

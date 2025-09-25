@@ -3,10 +3,9 @@ import Link from "next/link";
 import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PasswordValidationService } from "@/services/password-validation.services";
-import { toastSuccess, toastError } from "@/utils/index.utils";
 import { getCookie } from "@/utils/index.utils";
 import { RegisterData } from "@/interfaces/index.interfaces";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 
 export default function Register() {
   const router = useRouter();
@@ -16,11 +15,6 @@ export default function Register() {
     password: "",
     confirmPassword: "",
   });
-
-  const { isPasswordValid } = PasswordValidationService.validate(
-    registerData.password,
-    registerData.confirmPassword
-  );
 
   useEffect(() => {
     const value = getCookie("email_or_username");
@@ -145,11 +139,6 @@ export default function Register() {
             placeholder="Enter password"
           />
 
-          <Auth.PasswordValidation
-            password={registerData.password}
-            confirmPassword={registerData.confirmPassword}
-          />
-
           <Auth.PasswordField
             id="confirmPassword"
             value={registerData.confirmPassword}
@@ -157,9 +146,7 @@ export default function Register() {
             placeholder="Confirm password"
           />
 
-          <Auth.SubmitButton disabled={!isPasswordValid}>
-            Register
-          </Auth.SubmitButton>
+          <Auth.SubmitButton>Register</Auth.SubmitButton>
         </form>
 
         {/* Login Link */}

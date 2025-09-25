@@ -1,23 +1,13 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { generateRequestId } from "@/utils/index.utils";
+import { generateRequestId, guardInternal, apiPathName } from "@/utils/index.utils"
 
-export async function POST(request: NextRequest) {
-  const requestId = generateRequestId();
-
+export async function POST(req: NextRequest) {
+  const requestId = generateRequestId()
+  const pathname = apiPathName(req)
+  const denied = guardInternal(req)
+  if (denied) return denied
   try {
-    const internalRequest = request.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refreshToken")?.value;
     if (!refreshToken) {
@@ -32,7 +22,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId
         },
         body: JSON.stringify({ refreshToken }),
         cache: "no-store",
@@ -74,7 +64,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    console.info("/api/auth/refresh", requestId);
+    console.info(`${pathname}: $requestId}`);
   }
 }
 
