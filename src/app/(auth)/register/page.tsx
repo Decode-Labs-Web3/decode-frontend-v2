@@ -6,15 +6,11 @@ import { useRouter } from "next/navigation";
 import { PasswordValidationService } from "@/services/password-validation.services";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { getCookie } from "@/utils/index.utils";
+import { RegisterData } from "@/interfaces/index.interfaces";
 
 export default function Register() {
   const router = useRouter();
-  const [formData, setFormData] = useState<{
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }>({
+  const [registerData, setRegisterData] = useState<RegisterData>({
     username: "",
     email: "",
     password: "",
@@ -22,40 +18,41 @@ export default function Register() {
   });
 
   const { isPasswordValid } = PasswordValidationService.validate(
-    formData.password,
-    formData.confirmPassword
+    registerData.password,
+    registerData.confirmPassword
   );
 
   useEffect(() => {
     const value = getCookie("email_or_username");
     if (value) {
       if (value.includes("@")) {
-        setFormData((prev) => ({ ...prev, email: value }));
+        setRegisterData((prev) => ({ ...prev, email: value }));
       } else {
-        setFormData((prev) => ({ ...prev, username: value }));
+        setRegisterData((prev) => ({ ...prev, username: value }));
       }
       document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
     }
   }, []);
 
   const handleCookie = () => {
-    document.cookie = "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=lax";
+    document.cookie =
+      "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=lax";
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData({
-      ...formData,
-      [id]: value,
-    });
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRegisterData((prevRegisterData) => ({
+      ...prevRegisterData,
+      [event.target.id]: event.target.value,
+    }));
   };
 
-  const handleRegister = async () => {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (
-      !formData.email.trim() ||
-      !formData.username.trim() ||
-      !formData.password.trim() ||
-      !formData.confirmPassword.trim()
+      !registerData.email.trim() ||
+      !registerData.username.trim() ||
+      !registerData.password.trim() ||
+      !registerData.confirmPassword.trim()
     ) {
       toastError("Please fill in all fields");
       return;
@@ -67,7 +64,7 @@ export default function Register() {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(registerData),
         cache: "no-store",
         signal: AbortSignal.timeout(20000),
       });
@@ -81,7 +78,9 @@ export default function Register() {
             "This email is already registered. Please use a different email or try logging in."
           );
         } else {
-          toastError(response.message || "Registration failed. Please try again.");
+          toastError(
+            response.message || "Registration failed. Please try again."
+          );
         }
         return;
       }
@@ -89,12 +88,16 @@ export default function Register() {
       // Check if email verification is required
       if (response.requiresVerification) {
         // Store registration data in cookies for API access
-        document.cookie = "registration_data=" + JSON.stringify({
-          email: formData.email,
-          username: formData.username,
-        }) + "; Max-Age=600; Path=/; SameSite=lax";
+        document.cookie =
+          "registration_data=" +
+          JSON.stringify({
+            email: registerData.email,
+            username: registerData.username,
+          }) +
+          "; Max-Age=600; Path=/; SameSite=lax";
 
-        document.cookie = "verification_required=true; Max-Age=600; Path=/; SameSite=lax";
+        document.cookie =
+          "verification_required=true; Max-Age=600; Path=/; SameSite=lax";
 
         // Redirect to verify email page
         router.push("/verify/register");
@@ -112,11 +115,6 @@ export default function Register() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleRegister();
-  };
-
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
       <Auth.BackgroundAccents />
@@ -128,7 +126,7 @@ export default function Register() {
             id="username"
             type="text"
             placeholder="Enter username"
-            value={formData.username}
+            value={registerData.username}
             onChange={handleChange}
           />
 
@@ -136,25 +134,25 @@ export default function Register() {
             id="email"
             type="email"
             placeholder="Enter email"
-            value={formData.email}
+            value={registerData.email}
             onChange={handleChange}
           />
 
           <Auth.PasswordField
             id="password"
-            value={formData.password}
+            value={registerData.password}
             onChange={handleChange}
             placeholder="Enter password"
           />
 
           <Auth.PasswordValidation
-            password={formData.password}
-            confirmPassword={formData.confirmPassword}
+            password={registerData.password}
+            confirmPassword={registerData.confirmPassword}
           />
 
           <Auth.PasswordField
             id="confirmPassword"
-            value={formData.confirmPassword}
+            value={registerData.confirmPassword}
             onChange={handleChange}
             placeholder="Confirm password"
           />

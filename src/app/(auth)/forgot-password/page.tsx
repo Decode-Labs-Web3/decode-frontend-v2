@@ -3,43 +3,46 @@ import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import { ForgotPasswordData } from "@/interfaces/index.interfaces";
 
 export default function ForgotPassword() {
   const router = useRouter();
-  const [formData, setFormData] = useState<{ email_or_username: string }>({
+  const [forgotData, setForgotData] = useState<ForgotPasswordData>({
     email_or_username: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [id]: value,
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setForgotData((prevForgotData) => ({
+      ...prevForgotData,
+      [event.target.id]: event.target.value,
     }));
   };
 
-  const handleCookie = () => {
-    document.cookie = "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=strict";
+  const handleSetCookie = () => {
+    document.cookie =
+      "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=strict";
     router.push("/login");
   };
 
-  const handleForgotPassword = async () => {
-    if (!formData.email_or_username.trim()) {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!forgotData.email_or_username.trim()) {
       toastError("Please enter your email or username");
       return;
     }
+
     try {
       const apiResponse = await fetch("/api/auth/forgot-password", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
-          body: JSON.stringify(formData),
-          cache: "no-store",
-          signal: AbortSignal.timeout(20000),
-        }
-      );
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(forgotData),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
+      });
 
       const response = await apiResponse.json();
 
@@ -49,8 +52,7 @@ export default function ForgotPassword() {
       } else {
         console.error("Forgot password failed:", response);
         toastError(
-          response?.message ||
-            "Failed to send reset link. Please try again."
+          response?.message || "Failed to send reset link. Please try again."
         );
       }
     } catch (error) {
@@ -63,11 +65,6 @@ export default function ForgotPassword() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleForgotPassword();
-  };
-
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
       <Auth.BackgroundAccents />
@@ -78,7 +75,7 @@ export default function ForgotPassword() {
         {/* Back to Login Button */}
         <Auth.BackButton
           href="/login"
-          onClick={handleCookie}
+          onClick={handleSetCookie}
           text="Back to Login"
         />
 
@@ -92,13 +89,9 @@ export default function ForgotPassword() {
             id="email_or_username"
             type="email"
             placeholder="Enter username or email"
-            value={formData.email_or_username}
+            value={forgotData.email_or_username}
             onChange={handleChange}
           />
-
-          <Auth.SubmitButton disabled={!formData.email_or_username}>
-            Send Reset Link
-          </Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
 

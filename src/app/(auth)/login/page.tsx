@@ -1,47 +1,54 @@
 "use client";
+
 import Link from "next/link";
 import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toastSuccess, toastError } from "@/utils/index.utils";
 import { getCookie } from "@/utils/index.utils";
+import { toastSuccess, toastError } from "@/utils/index.utils";
+import { LoginData } from "@/interfaces/index.interfaces";
 
 export default function Login() {
   const router = useRouter();
-  const [formData, setFormData] = useState<{
-    email_or_username: string;
-    password: string;
-  }>({
+  const [loginData, setLoginData] = useState<LoginData>({
     email_or_username: "",
     password: "",
   });
 
-  const handleCookieRegister = () => {
-    document.cookie = "gate-key-for-register=true; Max-Age=60; Path=/register; SameSite=lax";
-  };
-
-  const handleCookieForgotPassword = () => {
-    document.cookie = "gate-key-for-forgot-password=true; Max-Age=60; Path=/forgot-password; SameSite=lax";
-  };
-
   useEffect(() => {
     const value = getCookie("email_or_username");
     if (value) {
-      setFormData((prev) => ({ ...prev, email_or_username: value }));
+      setLoginData((prev) => ({
+        ...prev,
+        email_or_username: value,
+      }));
       document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
     }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prevData) => ({
+  const handleCookieRegister = () => {
+    document.cookie =
+      "gate-key-for-register=true; Max-Age=60; Path=/register; SameSite=lax";
+  };
+
+  const handleCookieForgotPassword = () => {
+    document.cookie =
+      "gate-key-for-forgot-password=true; Max-Age=60; Path=/forgot-password; SameSite=lax";
+  };
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginData((prevData) => ({
       ...prevData,
-      [id]: value,
+      [event.target.id]: event.target.value,
     }));
   };
 
-  const handleLogin = async () => {
-    if (!formData.email_or_username.trim() || !formData.password.trim()) {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (
+      !loginData.email_or_username.trim() ||
+      !loginData.password.trim()
+    ) {
       toastError("Please fill in all fields");
       return;
     }
@@ -52,9 +59,9 @@ export default function Login() {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(loginData),
         cache: "no-store",
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(10000),
       });
       const response = await responseData.json();
 
@@ -84,11 +91,6 @@ export default function Login() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleLogin();
-  };
-
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
       <Auth.BackgroundAccents />
@@ -101,13 +103,13 @@ export default function Login() {
             id="email_or_username"
             type="text"
             placeholder="Enter username or email"
-            value={formData.email_or_username}
+            value={loginData.email_or_username}
             onChange={handleChange}
           />
 
           <Auth.PasswordField
             id="password"
-            value={formData.password}
+            value={loginData.password}
             onChange={handleChange}
             placeholder="Enter your password"
           />

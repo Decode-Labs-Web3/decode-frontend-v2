@@ -1,3 +1,24 @@
+export interface ChangePasswordData {
+  new_password: string;
+  confirm_new_password: string;
+}
+
+export interface ForgotPasswordData {
+  email_or_username: string;
+}
+
+export interface LoginData {
+  email_or_username: string;
+  password: string;
+}
+
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface Fingerprint {
   "_id": string;
   "user_id": string;

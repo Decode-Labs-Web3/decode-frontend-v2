@@ -3,35 +3,32 @@
 import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
-import { PasswordValidationService } from "@/services/password-validation.services";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import { PasswordValidationService } from "@/services/password-validation.services";
+import { ChangePasswordData } from "@/interfaces/index.interfaces";
 
 export default function ChangePassword() {
   const router = useRouter();
-  const [formData, setFormData] = useState<{
-    new_password: string;
-    confirm_new_password: string;
-  }>({
+  const [changePasswordData, setChangePasswordData] = useState<ChangePasswordData>({
     new_password: "",
     confirm_new_password: "",
   });
   const { isPasswordValid } = PasswordValidationService.validate(
-    formData.new_password,
-    formData.confirm_new_password
+    changePasswordData.new_password,
+    changePasswordData.confirm_new_password
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData({
-      ...formData,
-      [id]: value,
-    });
-  };
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setChangePasswordData(prevChangePasswordData => ({
+      ...prevChangePasswordData,
+      [event.target.id]: event.target.value,
+    })
+  )};
 
   const handleChangePassword = async () => {
     if (
-      !formData.new_password.trim() ||
-      !formData.confirm_new_password.trim()
+      !changePasswordData.new_password.trim() ||
+      !changePasswordData.confirm_new_password.trim()
     ) {
       toastError("Please fill in all fields");
       return;
@@ -50,7 +47,7 @@ export default function ChangePassword() {
             "Content-Type": "application/json",
             "X-Frontend-Internal-Request": "true",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(changePasswordData),
           cache: "no-store",
           signal: AbortSignal.timeout(20000),
         }
@@ -90,19 +87,19 @@ export default function ChangePassword() {
         <form noValidate onSubmit={handleSubmit}>
           <Auth.PasswordField
             id="new_password"
-            value={formData.new_password}
+            value={changePasswordData.new_password}
             onChange={handleChange}
             placeholder="New password"
           />
 
           <Auth.PasswordValidation
-            password={formData.new_password}
-            confirmPassword={formData.confirm_new_password}
+            password={changePasswordData.new_password}
+            confirmPassword={changePasswordData.confirm_new_password}
           />
 
           <Auth.PasswordField
             id="confirm_new_password"
-            value={formData.confirm_new_password}
+            value={changePasswordData.confirm_new_password}
             onChange={handleChange}
             placeholder="Confirm new password"
           />
