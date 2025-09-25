@@ -2,18 +2,11 @@
 
 import Image from "next/image";
 import App from "@/components/(app)";
-import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 import { useState, useContext, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEnvelope,
-  faCamera,
-  faPen,
-  faXmark,
-  faCheck,
-} from "@fortawesome/free-solid-svg-icons";
-import { toastSuccess, toastError } from "@/utils/index.utils";
-import { IPFSUploadSkeleton } from "@/components/(loading)";
+import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { faEnvelope, faCamera, faPen, faXmark, faCheck } from "@fortawesome/free-solid-svg-icons";
 
 export default function PersonalPage() {
   const userContext = useContext(UserInfoContext);
@@ -167,57 +160,55 @@ export default function PersonalPage() {
 
         const response = await apiResponse.json();
 
-      if (!response.success) {
-        console.error("Profile update failed:", response);
-        toastError(response?.message || "Update failed");
-        return;
-      }
+        if (!response.success) {
+          console.error("Profile update failed:", response);
+          toastError(response?.message || "Update failed");
+          return;
+        }
 
-      if (response.data?.results) {
-        let hasErrors = false;
-        let hasSuccess = false;
+        if (response.data?.results) {
+          let hasErrors = false;
+          let hasSuccess = false;
 
-        Object.entries(response.data.results).forEach(([field, result]) => {
-          const typedResult = result as { success: boolean; message: string };
-          if (typedResult.success) {
-            hasSuccess = true;
-            const fieldName = field
-              .replace("_", " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase());
-            toastSuccess(`${fieldName} updated successfully`);
-          } else {
-            hasErrors = true;
-            const fieldName = field
-              .replace("_", " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase());
-            toastError(
-              `${fieldName} update failed: ${
-                typedResult.message || "Unknown error"
-              }`
-            );
+          Object.entries(response.data.results).forEach(([field, result]) => {
+            const typedResult = result as { success: boolean; message: string };
+            if (typedResult.success) {
+              hasSuccess = true;
+              const fieldName = field
+                .replace("_", " ")
+                .replace(/\b\w/g, (l) => l.toUpperCase());
+              toastSuccess(`${fieldName} updated successfully`);
+            } else {
+              hasErrors = true;
+              const fieldName = field
+                .replace("_", " ")
+                .replace(/\b\w/g, (l) => l.toUpperCase());
+              toastError(
+                `${fieldName} update failed: ${
+                  typedResult.message || "Unknown error"
+                }`
+              );
+            }
+          });
+
+          if (hasSuccess && !hasErrors) {
+            if (refetchUserData) {
+              await refetchUserData();
+            }
+            setEditSection("none");
           }
-        });
-
-        if (hasSuccess && !hasErrors) {
-          // All updates successful, refetch user data
+        } else if (response.success) {
+          toastSuccess("Profile updated successfully");
           if (refetchUserData) {
             await refetchUserData();
           }
           setEditSection("none");
         }
-      } else if (response.success) {
-        // Fallback for single field updates
-        toastSuccess("Profile updated successfully");
-        if (refetchUserData) {
-          await refetchUserData();
-        }
-        setEditSection("none");
+      } catch (error) {
+        console.error("Profile update request error:", error);
+        toastError("Update failed. Please try again.");
+        return;
       }
-    } catch (error) {
-      console.error("Profile update request error:", error);
-      toastError("Update failed. Please try again.");
-      return;
-    }
     };
 
     await updateProfile();
@@ -239,14 +230,14 @@ export default function PersonalPage() {
     const updateUsername = async () => {
       const apiResponse = await fetch("/api/users/username-change", {
         method: "GET",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-          },
-          cache: "no-store",
-          signal: AbortSignal.timeout(20000),
-        });
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
+      });
 
-        const response = await apiResponse.json();
+      const response = await apiResponse.json();
 
       if (response.success && response.message === "Email verification sent") {
         setLoading(true);
@@ -366,7 +357,16 @@ export default function PersonalPage() {
                   className="w-full h-full object-cover"
                   unoptimized
                 />
-                {uploadingAvatar && <IPFSUploadSkeleton />}
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                    <div className="text-white text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        <span>Uploading...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               {editSection === "profile" && (
                 <button

@@ -78,7 +78,6 @@ export async function POST(req: Request) {
         { status: 200 }
       );
 
-      // Set gate key for verification page access
       res.cookies.set("gate-key-for-verify-register", "true", {
         httpOnly: false,
         secure: process.env.NODE_ENV === "production",
@@ -87,11 +86,8 @@ export async function POST(req: Request) {
         maxAge: 60,
       });
 
-      // Set registration data in cookies for resend functionality
-      res.cookies.set(
-        "registration_data",
-        JSON.stringify({
-          email,
+      res.cookies.set( "registration_data", JSON.stringify({
+        email,
           username,
         }),
         {
@@ -99,7 +95,7 @@ export async function POST(req: Request) {
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",
-          maxAge: 60 * 10, // 10 minutes
+          maxAge: 60 * 10,
         }
       );
 
@@ -108,7 +104,7 @@ export async function POST(req: Request) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 10, // 10 minutes
+        maxAge: 60 * 10,
       });
 
       return res;

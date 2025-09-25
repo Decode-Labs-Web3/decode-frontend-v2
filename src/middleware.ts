@@ -31,10 +31,7 @@ const GATE_RULES: GateRule[] = [
 ];
 
 // Handle gate rules for specific routes, checking for required cookies and clearing them after use
-function handleGate(
-  request: NextRequest,
-  pathname: string
-): NextResponse | null {
+function handleGate( request: NextRequest, pathname: string ): NextResponse | null {
   if (pathname.startsWith("/verify/")) {
     const verifyType = pathname.split("/")[2];
     let requiredCookie = "";
@@ -62,7 +59,6 @@ function handleGate(
     return res;
   }
 
-  // Handle other gate rules
   for (const rule of GATE_RULES) {
     const match = rule.exact
       ? pathname === rule.prefix
@@ -113,8 +109,8 @@ function getJwtRemainingSeconds(
 export async function middleware(request: NextRequest) {
   const { pathname, origin } = request.nextUrl;
 
-  // Allow static and public files to pass through
   if (
+    pathname === "/" ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
     pathname.startsWith("/api") ||
@@ -126,11 +122,6 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/favicons") ||
     pathname.startsWith("/terms-and-privacy")
   ) {
-    return NextResponse.next();
-  }
-
-  // Allow root path
-  if (pathname === "/") {
     return NextResponse.next();
   }
 
@@ -202,7 +193,7 @@ export async function middleware(request: NextRequest) {
 
       if (newSessionId) {
         res.cookies.set("sessionId", newSessionId, {
-          httpOnly: true,
+          httpOnly: false,
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",

@@ -5,7 +5,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/index.utils";
 import { RegisterData } from "@/interfaces/index.interfaces";
-import { toastSuccess, toastError } from "@/utils/index.utils";
+import {
+  toastSuccess,
+  toastError,
+  setCookie,
+  deleteCookie,
+} from "@/utils/index.utils";
 
 export default function Register() {
   const router = useRouter();
@@ -24,13 +29,20 @@ export default function Register() {
       } else {
         setRegisterData((prev) => ({ ...prev, username: value }));
       }
-      document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
+      // document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
+      deleteCookie({ name: "email_or_username", path: "/" });
     }
   }, []);
 
   const handleCookie = () => {
-    document.cookie =
-      "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=lax";
+    // document.cookie = "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=lax";
+    setCookie({
+      name: "gate-key-for-login",
+      value: "true",
+      maxAge: 60,
+      path: "/login",
+      sameSite: "Lax",
+    });
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,26 +91,38 @@ export default function Register() {
         return;
       }
 
-      // Check if email verification is required
       if (response.requiresVerification) {
-        // Store registration data in cookies for API access
-        document.cookie =
-          "registration_data=" +
-          JSON.stringify({
+        // document.cookie =
+        //   "registration_data=" +
+        //   JSON.stringify({
+        //     email: registerData.email,
+        //     username: registerData.username,
+        //   }) +
+        //   "; Max-Age=60; Path=/; SameSite=lax";
+        setCookie({
+          name: "registration_data",
+          value: JSON.stringify({
             email: registerData.email,
             username: registerData.username,
-          }) +
-          "; Max-Age=600; Path=/; SameSite=lax";
+          }),
+          maxAge: 60,
+          path: "/",
+          sameSite: "Lax",
+        });
 
-        document.cookie =
-          "verification_required=true; Max-Age=600; Path=/; SameSite=lax";
+        // document.cookie = "verification_required=true; Max-Age=60; Path=/; SameSite=lax";
+        setCookie({
+          name: "verification_required",
+          value: "true",
+          maxAge: 60,
+          path: "/",
+          sameSite: "Lax",
+        });
 
-        // Redirect to verify email page
         router.push("/verify/register");
         return;
       }
 
-      // If no verification needed, redirect to login
       toastSuccess("Account created successfully!");
       router.push("/login?registered=true");
     } catch (error) {
@@ -111,7 +135,6 @@ export default function Register() {
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       <Auth.AuthCard title="Get Started">

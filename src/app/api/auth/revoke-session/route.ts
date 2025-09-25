@@ -91,7 +91,7 @@ export async function POST(req: Request) {
       );
 
       cookieStore.set("sessionId", "", {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",

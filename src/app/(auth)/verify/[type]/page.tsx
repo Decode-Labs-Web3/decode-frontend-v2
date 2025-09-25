@@ -97,7 +97,6 @@ export default function VerifyPage() {
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       <Auth.AuthCard title={config.title}>

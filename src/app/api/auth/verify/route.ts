@@ -85,7 +85,6 @@ export async function POST(req: Request) {
         requiresRelogin: type === "login",
       });
 
-      // Set cookies based on verification type
       if (type === "forgot") {
         res.cookies.set("forgot_code", code, {
           httpOnly: false,
@@ -103,7 +102,6 @@ export async function POST(req: Request) {
           maxAge: 60,
         });
       } else if (type === "register") {
-        // Clear registration data cookies after successful verification
         res.cookies.set("registration_data", "", { maxAge: 0, path: "/" });
         res.cookies.set("verification_required", "", { maxAge: 0, path: "/" });
       }

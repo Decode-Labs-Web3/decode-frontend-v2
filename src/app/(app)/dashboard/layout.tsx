@@ -1,13 +1,11 @@
 "use client";
 
 import App from "@/components/(app)";
-import Auth from "@/components/(auth)";
 import { UserProfile } from "@/interfaces/index.interfaces";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { toastError } from "@/utils/index.utils";
-import { DashboardSkeleton } from "@/components/(loading)";
 
 export default function DashboardLayout({
   children,
@@ -169,11 +167,10 @@ export default function DashboardLayout({
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white overflow-hidden">
-        <Auth.BackgroundAccents />
         <App.Navbar user={{ username: "", email: "" }} onLogout={() => {}} />
         <App.Sidebar active="overview" onChange={() => {}} />
         <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-          <DashboardSkeleton />
+          <div className="text-center text-gray-400">Loading...</div>
         </div>
       </div>
     );
@@ -182,7 +179,6 @@ export default function DashboardLayout({
   return (
     <UserInfoContext.Provider value={{ user, refetchUserData }}>
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        <Auth.BackgroundAccents />
         <App.Navbar
           user={{ username: user?.username || "", email: user?.email || "" }}
           onLogout={handleLogout}

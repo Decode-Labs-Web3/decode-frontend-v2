@@ -1,4 +1,11 @@
+import crypto from 'crypto';
 import { NextResponse } from "next/server";
+
+export function generateRequestId() {
+  const time = new Date().toISOString();
+  const uuid = crypto.randomUUID()
+  return `${time} - ${uuid}`;
+}
 
 export function guardInternal(req: Request) {
   const internal = req.headers.get("X-Frontend-Internal-Request");

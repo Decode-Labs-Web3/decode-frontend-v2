@@ -85,11 +85,15 @@ function WalletContent() {
       const data = await response.json();
       console.log("Login/Register response:", data);
 
-      if (data.success && data.message === "User found" ) {
+      if (data.success && data.message === "User found") {
         console.log("User found, redirecting to login...");
         toastSuccess("User found! Redirecting to login...");
         router.push("/login");
-      } else if (!data.success && data.message === "User not found" && data.statusCode === 404) {
+      } else if (
+        !data.success &&
+        data.message === "User not found" &&
+        data.statusCode === 404
+      ) {
         console.log("User not found, redirecting to register...");
         toastInfo("User not found. Redirecting to register...");
         router.push("/register");
@@ -203,7 +207,6 @@ function WalletContent() {
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       {/* Main Card */}

@@ -6,7 +6,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/index.utils";
 import { LoginData } from "@/interfaces/index.interfaces";
-import { toastSuccess, toastError } from "@/utils/index.utils";
+import {
+  toastSuccess,
+  toastError,
+  setCookie,
+  deleteCookie,
+} from "@/utils/index.utils";
 
 export default function Login() {
   const router = useRouter();
@@ -22,18 +27,31 @@ export default function Login() {
         ...prev,
         email_or_username: value,
       }));
-      document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
+      // document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
+      deleteCookie({ name: "email_or_username", path: "/" });
     }
   }, []);
 
   const handleCookieRegister = () => {
-    document.cookie =
-      "gate-key-for-register=true; Max-Age=60; Path=/register; SameSite=lax";
+    // document.cookie = "gate-key-for-register=true; Max-Age=60; Path=/register; SameSite=lax";
+    setCookie({
+      name: "gate-key-for-register",
+      value: "true",
+      maxAge: 60,
+      path: "/register",
+      sameSite: "Lax",
+    });
   };
 
   const handleCookieForgotPassword = () => {
-    document.cookie =
-      "gate-key-for-forgot-password=true; Max-Age=60; Path=/forgot-password; SameSite=lax";
+    // document.cookie = "gate-key-for-forgot-password=true; Max-Age=60; Path=/forgot-password; SameSite=lax";
+    setCookie({
+      name: "gate-key-for-forgot-password",
+      value: "true",
+      maxAge: 60,
+      path: "/forgot-password",
+      sameSite: "Lax",
+    });
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,10 +63,7 @@ export default function Login() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (
-      !loginData.email_or_username.trim() ||
-      !loginData.password.trim()
-    ) {
+    if (!loginData.email_or_username.trim() || !loginData.password.trim()) {
       toastError("Please fill in all fields");
       return;
     }
@@ -93,7 +108,6 @@ export default function Login() {
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       {/* Main Card */}

@@ -4,7 +4,6 @@ import { fingerprintService } from "@/services/index.services";
 import { ProfileData, RequestBody } from "@/interfaces/index.interfaces";
 import { generateRequestId, apiPathName, guardInternal } from "@/utils/index.utils"
 
-// Helper function to detect changed fields
 function getChangedFields(current: ProfileData, original: ProfileData) {
   const changes: { [key: string]: { data: ProfileData; endpoint: string } } =
     {};

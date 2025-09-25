@@ -4,7 +4,6 @@ import Image from "next/image";
 import App from "@/components/(app)";
 import Auth from "@/components/(auth)";
 import { useState, useEffect } from "react";
-import { IPFSUploadSkeleton } from "@/components/(loading)";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -31,7 +30,6 @@ export default function BlogPostPage() {
     post_ipfs_hash: null as string | null,
   });
 
-  // Get user_id from localStorage after component mounts
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
@@ -47,7 +45,11 @@ export default function BlogPostPage() {
     }
   }, []);
 
-  const handleChange = (event: React.ChangeEvent< HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -64,7 +66,6 @@ export default function BlogPostPage() {
       };
       reader.readAsDataURL(file);
 
-      // Upload to IPFS
       await uploadImageToIPFS(file);
     }
   };
@@ -201,7 +202,16 @@ export default function BlogPostPage() {
                     height={256}
                     className="max-h-64 mx-auto rounded-lg object-contain"
                   />
-                  {uploadingImage && <IPFSUploadSkeleton />}
+                  {uploadingImage && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                      <div className="text-white text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                          <span>Uploading...</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {formData.post_ipfs_hash && !uploadingImage && (
                     <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
                       IPFS ✓

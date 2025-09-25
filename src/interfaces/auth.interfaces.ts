@@ -36,14 +36,13 @@ export interface Session {
   "_id": string;
   "user_id": string;
   "device_fingerprint_id": string;
-  "session_token": string;
+  "session_token"?: string;
   "app": string;
   "expires_at": string;
   "is_active": boolean;
   "last_used_at": string;
   "createdAt": string;
   "updatedAt": string;
-  "__v": number;
 }
 
 export interface VerifyRequest {

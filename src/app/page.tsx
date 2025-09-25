@@ -1,8 +1,9 @@
 "use client";
 
-import 'react-loading-skeleton/dist/skeleton.css';
-import dynamic from 'next/dynamic';
-import AuthCard from '@/components/(loading)/AuthCard';
+import dynamic from "next/dynamic";
+import "react-loading-skeleton/dist/skeleton.css";
+import AuthCard from "@/components/(loading)/AuthCard";
+
 // Dynamically import the AppKit wrapper to prevent SSR issues
 const AppKitWrapper = dynamic(() => import("@/components/AppKitWrapper"), {
   ssr: false,

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
-import { toastSuccess, toastError } from "@/utils/index.utils";
+import { toastSuccess, toastError, setCookie } from "@/utils/index.utils";
 import { ForgotPasswordData } from "@/interfaces/index.interfaces";
 
 export default function ForgotPassword() {
@@ -19,8 +19,15 @@ export default function ForgotPassword() {
   };
 
   const handleSetCookie = () => {
-    document.cookie =
-      "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=strict";
+    // document.cookie =
+    //   "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=strict";
+    setCookie({
+      name: "gate-key-for-login",
+      value: "true",
+      maxAge: 60,
+      path: "/login",
+      sameSite: "Strict",
+    });
     router.push("/login");
   };
 
@@ -67,7 +74,6 @@ export default function ForgotPassword() {
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       {/* Main Card */}

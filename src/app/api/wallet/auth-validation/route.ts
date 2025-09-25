@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       });
 
       res.cookies.set("sessionId", response.data._id, {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
