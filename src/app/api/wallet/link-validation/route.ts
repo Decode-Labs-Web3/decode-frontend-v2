@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { fingerprintService } from "@/services/fingerprint.service";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { fingerprintService } from "@/services/index.services";
+import { generateRequestId } from "@/utils/index.utils";
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
@@ -42,9 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userAgent = request.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(
-      userAgent
-    );
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/wallets/link/validation`,

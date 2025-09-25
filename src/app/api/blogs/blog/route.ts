@@ -1,4 +1,4 @@
-import { getDatabase } from "@/lib/mongodb";
+import { getDatabase } from "@/lib/mongodb.lib";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";

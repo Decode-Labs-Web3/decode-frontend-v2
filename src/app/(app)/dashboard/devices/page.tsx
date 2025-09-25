@@ -3,13 +3,12 @@
 import Image from "next/image";
 import App from "@/components/(app)";
 import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getCookie } from "@/utils/cookie.utils";
-import { Fingerprint, Session } from "@/interfaces";
-import { apiCallWithTimeout } from "@/utils/api.utils";
-import { showError } from "@/utils/toast.utils";
+import { useRouter } from "next/navigation";
+import { getCookie } from "@/utils/index.utils";
+import { toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Fingerprint, Session } from "@/interfaces/index.interfaces";
 import {
   faLaptop,
   faMobileScreen,
@@ -61,27 +60,31 @@ export default function DevicesPage() {
 
     const fetchFingerprints = async () => {
       try {
-        const apiResponse = await apiCallWithTimeout("/api/auth/fingerprints", {
+        const apiResponse = await fetch("/api/auth/fingerprints", {
           method: "GET",
           headers: {
             "X-Frontend-Internal-Request": "true",
           },
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
         });
 
+        const response = await apiResponse.json();
+
         if (
-          apiResponse.success ||
-          apiResponse.statusCode === 200 ||
-          apiResponse.message === "Device fingerprint fetched"
+          response.success ||
+          response.statusCode === 200 ||
+          response.message === "Device fingerprint fetched"
         ) {
           setFingerprintsData(
-            (apiResponse.data as unknown as Fingerprint[]) || []
+            (response.data as unknown as Fingerprint[]) || []
           );
-        } else if (apiResponse.statusCode === 401) {
+        } else if (response.statusCode === 401) {
           setFingerprintsData([]);
           router.push("/");
         } else if (
-          apiResponse.statusCode === 400 &&
-          apiResponse.message === "Missing fingerprint"
+          response.statusCode === 400 &&
+          response.message === "Missing fingerprint"
         ) {
           setFingerprintsData([]);
           router.push("/login");
@@ -90,7 +93,7 @@ export default function DevicesPage() {
         }
       } catch (error) {
         console.error("Fetch devices error:", error);
-        showError("Network error for fetching devices. Please try again.");
+        toastError("Network error for fetching devices. Please try again.");
       } finally {
         console.info("Fetch devices completed");
       }
@@ -113,20 +116,28 @@ export default function DevicesPage() {
         : false;
       console.log("Is current device:", isCurrentDevice);
 
-      const responseData = await apiCallWithTimeout(`/api/auth/revoke-device`, {
+      const apiResponse = await fetch(`/api/auth/revoke-device`, {
         method: "POST",
-        body: {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({
           deviceFingerprintId: fingerprintId,
           sessions,
           currentSessionId: currentSessionId,
-        },
+        }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
       });
+
+      const response = await apiResponse.json();
       if (
-        responseData.success ||
-        responseData.statusCode === 200 ||
-        responseData.message === "Device fingerprint revoked"
+        response.success ||
+        response.statusCode === 200 ||
+        response.message === "Device fingerprint revoked"
       ) {
-        if (isCurrentDevice || responseData.reload) {
+        if (isCurrentDevice || response.reload) {
           setIsLoggingOut(true);
           toast.success("Device revoked successfully. You will be logged out.");
           // Clear the session ID from state
@@ -137,15 +148,15 @@ export default function DevicesPage() {
           toast.success("Device revoked successfully");
           setVersion(version + 1);
         }
-      } else if (responseData.statusCode === 401) {
+      } else if (response.statusCode === 401) {
         toast.error("Session expired. Please log in again.");
         router.push("/");
       } else {
-        toast.error(responseData.message || "Failed to revoke device");
+        toast.error(response.message || "Failed to revoke device");
       }
     } catch (error) {
       console.error("Revoke device error:", error);
-      showError("Network error. Please try again.");
+      toastError("Network error. Please try again.");
     } finally {
       console.log("Device revocation operation completed");
     }
@@ -160,19 +171,26 @@ export default function DevicesPage() {
         : false;
       console.log("Is current session:", isCurrentSession);
 
-      const responseData = await apiCallWithTimeout(
-        `/api/auth/revoke-session`,
-        {
-          method: "POST",
-          body: { sessionId },
+      const apiResponse = await fetch(`/api/auth/revoke-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ sessionId }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
         }
       );
+
+      const response = await apiResponse.json();
+
       if (
-        responseData.success ||
-        responseData.statusCode === 200 ||
-        responseData.message === "Session revoked"
+        response.success ||
+        response.statusCode === 200 ||
+        response.message === "Session revoked"
       ) {
-        if (isCurrentSession || responseData.reload) {
+        if (isCurrentSession || response.reload) {
           setIsLoggingOut(true);
           toast.success(
             "Session revoked successfully. You will be logged out."
@@ -185,15 +203,15 @@ export default function DevicesPage() {
           toast.success("Session revoked successfully");
           setVersion(version + 1);
         }
-      } else if (responseData.statusCode === 401) {
+      } else if (response.statusCode === 401) {
         toast.error("Session expired. Please log in again.");
         router.push("/");
       } else {
-        toast.error(responseData.message || "Failed to revoke session");
+        toast.error(response.message || "Failed to revoke session");
       }
     } catch (error) {
       console.error("Revoke session error:", error);
-      showError("Network error. Please try again.");
+      toastError("Network error. Please try again.");
     } finally {
       console.log("Session revocation operation completed");
     }

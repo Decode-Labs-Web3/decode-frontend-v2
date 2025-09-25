@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import App from "@/components/(app)";
-import { showError } from "@/utils/toast.utils";
+import { toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faNewspaper,
@@ -62,7 +62,7 @@ export default function NewsPage() {
         const message =
           err instanceof Error ? err.message : "Failed to load posts";
         setError(message);
-        showError(message);
+        toastError(message);
       } finally {
         setLoading(false);
       }

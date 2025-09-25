@@ -1,4 +1,7 @@
-import { FingerprintResult, NavigatorWithUserAgentData } from "@/interfaces";
+import {
+  FingerprintResult,
+  NavigatorWithUserAgentData,
+} from "@/interfaces/index.interfaces";
 
 export async function fingerprintService(
   userAgent?: string

@@ -2,11 +2,11 @@
 
 import App from "@/components/(app)";
 import Auth from "@/components/(auth)";
-import { UserProfile } from "@/interfaces";
+import { UserProfile } from "@/interfaces/index.interfaces";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { UserInfoContext } from "@/contexts/UserInfoContext";
-import { showError } from "@/utils/toast.utils";
+import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { toastError } from "@/utils/index.utils";
 import { DashboardSkeleton } from "@/components/(loading)";
 
 export default function DashboardLayout({
@@ -56,7 +56,7 @@ export default function DashboardLayout({
       }
     } catch (error) {
       console.error("Error refetching user data:", error);
-      showError("Failed to refresh user data");
+      toastError("Failed to refresh user data");
     } finally {
       console.log("User data refetch operation completed");
     }
@@ -112,7 +112,7 @@ export default function DashboardLayout({
         localStorage.setItem("user", JSON.stringify(userData));
       } catch (error) {
         console.error("User data fetch error:", error);
-        showError("Failed to load user data");
+        toastError("Failed to load user data");
       } finally {
         setLoading(false);
         console.log("User data fetch operation completed");
@@ -149,7 +149,7 @@ export default function DashboardLayout({
         router.push("/");
       } else {
         console.log("Logout failed:", data.message);
-        showError(data.message || "Logout failed");
+        toastError(data.message || "Logout failed");
       }
     } catch (error: unknown) {
       if (
@@ -160,7 +160,7 @@ export default function DashboardLayout({
       } else {
         console.error(error);
       }
-      showError("Logout failed. Please try again.");
+      toastError("Logout failed. Please try again.");
     } finally {
       console.log("Logout operation completed");
     }

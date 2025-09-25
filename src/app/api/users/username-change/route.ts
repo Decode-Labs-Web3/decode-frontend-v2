@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/fingerprint.service";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { fingerprintService } from "@/services/index.services";
+import { generateRequestId } from "@/utils/index.utils";
 
-export async function GET(req: Request){
+export async function GET(req: Request) {
   const userAgent = req.headers.get("user-agent") || "";
   const fingerprintResult = await fingerprintService(userAgent);
   const { fingerprint_hashed } = fingerprintResult;
@@ -38,7 +38,10 @@ export async function GET(req: Request){
     }
 
     console.log("this is api/users/username-change response", accessToken);
-    console.log("this is api/users/username-change response", fingerprint_hashed);
+    console.log(
+      "this is api/users/username-change response",
+      fingerprint_hashed
+    );
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/users/username/change/initiate`,
       {
@@ -84,14 +87,12 @@ export async function GET(req: Request){
       },
       { status: 500 }
     );
-  }
-  finally {
+  } finally {
     console.info("/api/users/username-change", requestId);
   }
 }
 
-
-export async function POST(req: Request){
+export async function POST(req: Request) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -127,7 +128,11 @@ export async function POST(req: Request){
 
     const body = await req.json();
     const { username, username_code } = body;
-    console.log("this is api/users/username-change response method post", username, username_code);
+    console.log(
+      "this is api/users/username-change response method post",
+      username,
+      username_code
+    );
 
     if (!username || !username_code) {
       return NextResponse.json(
@@ -174,7 +179,10 @@ export async function POST(req: Request){
     }
 
     const response = await backendRes.json().catch(() => ({}));
-    console.log("this is api/users/username-change response method post", response);
+    console.log(
+      "this is api/users/username-change response method post",
+      response
+    );
     return NextResponse.json(
       {
         success: true,

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
+import Image from "next/image";
 
-import { NavbarProps } from '@/interfaces';
+import { NavbarProps } from "@/interfaces/index.interfaces";
 
 export default function Navbar({ user, onLogout }: NavbarProps) {
   return (
@@ -12,9 +12,18 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
           {/* Navbar */}
           <div className="flex items-center gap-3">
             <div className="bg-white/10 border border-white/20 rounded-lg p-1.5 backdrop-blur-sm">
-              <Image src="/images/tokens/3d_token_nobg.png" width={28} height={28} alt="Logo Icon" className="w-7 h-7" unoptimized />
+              <Image
+                src="/images/tokens/3d_token_nobg.png"
+                width={28}
+                height={28}
+                alt="Logo Icon"
+                className="w-7 h-7"
+                unoptimized
+              />
             </div>
-              <h1 className="text-sm md:text-base font-semibold text-white">Decode Protocol</h1>
+            <h1 className="text-sm md:text-base font-semibold text-white">
+              Decode Protocol
+            </h1>
           </div>
 
           {/* Search */}
@@ -31,8 +40,12 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
             {user && (
               <div className="hidden sm:flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5">
                 <div className="leading-tight">
-                  <p className="text-xs text-white font-medium">{user.username}</p>
-                  {user.email && <p className="text-[10px] text-gray-400">{user.email}</p>}
+                  <p className="text-xs text-white font-medium">
+                    {user.username}
+                  </p>
+                  {user.email && (
+                    <p className="text-[10px] text-gray-400">{user.email}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -50,5 +63,3 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
     </nav>
   );
 }
-
-

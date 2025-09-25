@@ -1,8 +1,3 @@
-/**
- * Input sanitization utilities for security
- * Prevents XSS, injection attacks, and validates user input
- */
-
 export interface SanitizationResult {
   isValid: boolean;
   sanitizedValue: string;
@@ -18,9 +13,6 @@ export interface ValidationOptions {
   required?: boolean;
 }
 
-/**
- * Sanitize and validate text input
- */
 export const sanitizeText = (
   input: string,
   options: ValidationOptions = {}

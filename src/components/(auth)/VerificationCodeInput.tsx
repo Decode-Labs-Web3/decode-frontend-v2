@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 
-import { VerificationCodeInputProps } from "@/interfaces";
+import { VerificationCodeInputProps } from "@/interfaces/index.interfaces";
 
 export default function VerificationCodeInput({
   digits,

@@ -13,7 +13,7 @@ import {
   faPenToSquare,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { SidebarProps } from "@/interfaces";
+import { SidebarProps } from "@/interfaces/index.interfaces";
 
 const items = [
   { key: "overview", label: "Overview", icon: faGaugeHigh },

@@ -1,5 +1,5 @@
 "use client";
-import { SubmitButtonProps } from "@/interfaces";
+import { SubmitButtonProps } from "@/interfaces/index.interfaces";
 
 export default function SubmitButton({
   disabled = false,

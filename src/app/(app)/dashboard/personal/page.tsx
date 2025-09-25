@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import App from "@/components/(app)";
-import { UserInfoContext } from "@/contexts/UserInfoContext";
+import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { useState, useContext, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -12,8 +12,7 @@ import {
   faXmark,
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
-import { showSuccess, showError } from "@/utils/toast.utils";
-import { apiCallWithTimeout } from "@/utils/api.utils";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 import { IPFSUploadSkeleton } from "@/components/(loading)";
 
 export default function PersonalPage() {
@@ -74,7 +73,7 @@ export default function PersonalPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      showError("Please select a valid image file");
+      toastError("Please select a valid image file");
       e.target.value = "";
       return;
     }
@@ -106,13 +105,13 @@ export default function PersonalPage() {
 
         if (!response.ok) {
           console.error("Avatar upload failed:", apiResponse);
-          showError(apiResponse?.message || "Avatar upload failed");
+          toastError(apiResponse?.message || "Avatar upload failed");
           return;
         }
-        showSuccess("Avatar uploaded successfully");
+        toastSuccess("Avatar uploaded successfully");
       } catch (error) {
         console.error("Avatar upload request error:", error);
-        showError("Avatar upload failed. Please try again.");
+        toastError("Avatar upload failed. Please try again.");
         return;
       }
 
@@ -139,39 +138,38 @@ export default function PersonalPage() {
   ) => {
     setProfileForm((prevProfileForm) => ({
       ...prevProfileForm,
-      [event.target.id]: event.target.value }));
+      [event.target.id]: event.target.value,
+    }));
   };
 
   const handleSubmitProfile = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const updateProfile = async () => {
-      let response: {
-        success: boolean;
-        message?: string;
-        data?: { results?: unknown[] };
-      };
       try {
-        response = await apiCallWithTimeout("/api/users/profile-change", {
+        const apiResponse = await fetch("/api/users/profile-change", {
           method: "PUT",
-          body: {
+          headers: {
+            "Content-Type": "application/json",
+            "X-Frontend-Internal-Request": "true",
+          },
+          body: JSON.stringify({
             current: profileForm,
             original: {
               avatar_ipfs_hash: user?.avatar_ipfs_hash || "",
               display_name: user?.display_name || "",
               bio: user?.bio || "",
             },
-          },
+          }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000),
         });
-      } catch (error) {
-        console.error("Profile update request error:", error);
-        showError("Update failed. Please try again.");
-        return;
-      }
+
+        const response = await apiResponse.json();
 
       if (!response.success) {
         console.error("Profile update failed:", response);
-        showError(response?.message || "Update failed");
+        toastError(response?.message || "Update failed");
         return;
       }
 
@@ -186,13 +184,13 @@ export default function PersonalPage() {
             const fieldName = field
               .replace("_", " ")
               .replace(/\b\w/g, (l) => l.toUpperCase());
-            showSuccess(`${fieldName} updated successfully`);
+            toastSuccess(`${fieldName} updated successfully`);
           } else {
             hasErrors = true;
             const fieldName = field
               .replace("_", " ")
               .replace(/\b\w/g, (l) => l.toUpperCase());
-            showError(
+            toastError(
               `${fieldName} update failed: ${
                 typedResult.message || "Unknown error"
               }`
@@ -209,12 +207,17 @@ export default function PersonalPage() {
         }
       } else if (response.success) {
         // Fallback for single field updates
-        showSuccess("Profile updated successfully");
+        toastSuccess("Profile updated successfully");
         if (refetchUserData) {
           await refetchUserData();
         }
         setEditSection("none");
       }
+    } catch (error) {
+      console.error("Profile update request error:", error);
+      toastError("Update failed. Please try again.");
+      return;
+    }
     };
 
     await updateProfile();
@@ -234,18 +237,22 @@ export default function PersonalPage() {
     e.preventDefault();
     setLoading(false);
     const updateUsername = async () => {
-      const response = await apiCallWithTimeout("/api/users/username-change", {
+      const apiResponse = await fetch("/api/users/username-change", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
-      });
+          headers: {
+            "X-Frontend-Internal-Request": "true",
+          },
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000),
+        });
+
+        const response = await apiResponse.json();
 
       if (response.success && response.message === "Email verification sent") {
         setLoading(true);
       } else {
         setLoading(false);
-        showError(response.message || "Username update failed");
+        toastError(response.message || "Username update failed");
       }
     };
     await updateUsername();
@@ -259,24 +266,34 @@ export default function PersonalPage() {
 
   const handleSendUsernameCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    try{
-      const response = await apiCallWithTimeout("/api/users/username-change", {
+    try {
+      const apiResponse = await fetch("/api/users/username-change", {
         method: "POST",
-        body: accountForm,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(accountForm),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
       });
-      if (response.success && response.message === "Username changed successfully") {
+
+      const response = await apiResponse.json();
+      if (
+        response.success &&
+        response.message === "Username changed successfully"
+      ) {
         if (refetchUserData) {
           await refetchUserData();
         }
-        showSuccess(response.message || "Username code sent successfully");
+        toastSuccess(response.message || "Username code sent successfully");
       } else {
-        showError(response.message || "Username code send failed");
+        toastError(response.message || "Username code send failed");
       }
     } catch (error) {
       console.error("Username code send request error:", error);
-      showError("Username code send failed. Please try again.");
-    }
-    finally {
+      toastError("Username code send failed. Please try again.");
+    } finally {
       setLoading(false);
       setEditSection("none");
     }

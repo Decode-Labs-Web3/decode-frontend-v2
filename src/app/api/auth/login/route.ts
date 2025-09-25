@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { sanitizeText } from "@/utils/sanitization.utils";
-import { fingerprintService } from "@/services/fingerprint.service";
+import { sanitizeText } from "@/utils/index.utils";
+import { fingerprintService } from "@/services/index.services";
 import {
   createSecurityErrorResponse,
   SecurityErrorMessages,
   logSecurityEvent,
   generateRequestId,
-} from "@/utils/security-error-handling.utils";
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();

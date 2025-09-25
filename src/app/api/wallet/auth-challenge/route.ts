@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { generateRequestId } from "@/utils/index.utils";
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { VerifyRequest } from "@/interfaces";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { VerifyRequest } from "@/interfaces/index.interfaces";
+import { generateRequestId } from "@/utils/index.utils";
 
 const VERIFY_ENDPOINTS = {
   register: "/auth/register/verify-email",

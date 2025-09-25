@@ -3,9 +3,8 @@
 import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
-import { PasswordValidationService } from "@/services/password-validation.service";
-import { showSuccess, showError } from "@/utils/toast.utils";
-import { apiCallWithTimeout } from "@/utils/api.utils";
+import { PasswordValidationService } from "@/services/password-validation.services";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 
 export default function ChangePassword() {
   const router = useRouter();
@@ -34,34 +33,41 @@ export default function ChangePassword() {
       !formData.new_password.trim() ||
       !formData.confirm_new_password.trim()
     ) {
-      showError("Please fill in all fields");
+      toastError("Please fill in all fields");
       return;
     }
 
     if (!isPasswordValid) {
-      showError("Please meet all password requirements.");
+      toastError("Please meet all password requirements.");
       return;
     }
 
     try {
-      const responseData = await apiCallWithTimeout(
-        "/api/auth/change-password",
+      const apiResponse = await fetch("/api/auth/change-password",
         {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+            "X-Frontend-Internal-Request": "true",
+          },
+          body: JSON.stringify(formData),
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000),
         }
       );
 
-      if (responseData.success) {
-        showSuccess("Password changed successfully!");
+      const response = await apiResponse.json();
+
+      if (response.success) {
+        toastSuccess("Password changed successfully!");
         router.push("/login");
       } else {
-        console.error("Change password failed:", responseData);
-        showError(responseData.message || "Password change failed");
+        console.error("Change password failed:", response);
+        toastError(response.message || "Password change failed");
       }
     } catch (error) {
       console.error("Change password request error:", error);
-      showError("Password change failed. Please try again.");
+      toastError("Password change failed. Please try again.");
     }
   };
 

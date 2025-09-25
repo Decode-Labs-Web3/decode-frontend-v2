@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/fingerprint.service";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { fingerprintService } from "@/services/index.services";
+import { generateRequestId } from "@/utils/index.utils";
 
 export async function GET(req: Request) {
   const requestId = generateRequestId();

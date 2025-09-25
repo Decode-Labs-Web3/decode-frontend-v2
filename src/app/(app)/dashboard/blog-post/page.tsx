@@ -7,11 +7,9 @@ import Auth from "@/components/(auth)";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
 import {
-  showSuccess,
-  showError,
-  ERROR_MESSAGES,
-  SUCCESS_MESSAGES,
-} from "@/utils/toast.utils";
+  toastSuccess,
+  toastError,
+} from "@/utils/index.utils";
 import { IPFSUploadSkeleton } from "@/components/(loading)";
 
 const categories = [
@@ -88,6 +86,7 @@ export default function BlogPostPage() {
       const response = await fetch("/api/users/avatar", {
         method: "POST",
         headers: {
+          "Content-Type": "multipart/form-data",
           "X-Frontend-Internal-Request": "true",
         },
         body: formData,
@@ -101,10 +100,10 @@ export default function BlogPostPage() {
           ...prev,
           post_ipfs_hash: data.ipfsHash,
         }));
-        showSuccess("Image uploaded to IPFS successfully!");
+        toastSuccess("Image uploaded to IPFS successfully!");
       } else {
         const error = await response.json();
-        showError(error.message || "Failed to upload image to IPFS");
+        toastError(error.message || "Failed to upload image to IPFS");
         // Reset image if upload fails
         setFormData((prev) => ({
           ...prev,
@@ -114,7 +113,7 @@ export default function BlogPostPage() {
       }
     } catch (err) {
       console.error("Error uploading image to IPFS:", err);
-      showError("Error uploading image to IPFS");
+      toastError("Error uploading image to IPFS");
       // Reset image if upload fails
       setFormData((prev) => ({
         ...prev,
@@ -138,7 +137,7 @@ export default function BlogPostPage() {
     e.preventDefault();
 
     if (!formData.title || !formData.content || !formData.category) {
-      showError("Please fill in all required fields");
+      toastError("Please fill in all required fields");
       return;
     }
 
@@ -166,7 +165,7 @@ export default function BlogPostPage() {
       });
 
       if (response.ok) {
-        showSuccess(SUCCESS_MESSAGES.CREATED);
+        toastSuccess('Blog post created successfully');
         setFormData((prev) => ({
           ...prev,
           title: "",
@@ -178,11 +177,11 @@ export default function BlogPostPage() {
         setImagePreview(null);
       } else {
         const error = await response.json();
-        showError(error.message || "Failed to create blog post");
+        toastError(error.message || "Failed to create blog post");
       }
     } catch (err) {
       console.error("Error creating blog post:", err);
-      showError(ERROR_MESSAGES.GENERIC_ERROR);
+      toastError('Failed to create blog post');
     }
   };
 

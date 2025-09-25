@@ -3,10 +3,9 @@ import Link from "next/link";
 import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PasswordValidationService } from "@/services/password-validation.service";
-import { showSuccess, showError } from "@/utils/toast.utils";
-import { apiCallWithTimeout } from "@/utils/api.utils";
-import { getCookie, setCookie, deleteCookie } from "@/utils/cookie.utils";
+import { PasswordValidationService } from "@/services/password-validation.services";
+import { toastSuccess, toastError } from "@/utils/index.utils";
+import { getCookie } from "@/utils/index.utils";
 
 export default function Register() {
   const router = useRouter();
@@ -35,12 +34,12 @@ export default function Register() {
       } else {
         setFormData((prev) => ({ ...prev, username: value }));
       }
-      deleteCookie("email_or_username");
+      document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
     }
   }, []);
 
   const handleCookie = () => {
-    setCookie("gate-key-for-login", "true", { maxAge: 60, path: "/login" });
+    document.cookie = "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=lax";
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,49 +57,44 @@ export default function Register() {
       !formData.password.trim() ||
       !formData.confirmPassword.trim()
     ) {
-      showError("Please fill in all fields");
+      toastError("Please fill in all fields");
       return;
     }
     try {
-      const data = await apiCallWithTimeout("/api/auth/register", {
+      const apiResponse = await fetch("/api/auth/register", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(formData),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
       });
 
-      if (!data.success) {
-        console.error("Registration failed:", data);
-        if (data.message === "Email already exists") {
-          showError(
+      const response = await apiResponse.json();
+
+      if (!response.success) {
+        console.error("Registration failed:", response);
+        if (response.message === "Email already exists") {
+          toastError(
             "This email is already registered. Please use a different email or try logging in."
           );
         } else {
-          showError(data.message || "Registration failed. Please try again.");
+          toastError(response.message || "Registration failed. Please try again.");
         }
         return;
       }
 
       // Check if email verification is required
-      if (data.requiresVerification) {
+      if (response.requiresVerification) {
         // Store registration data in cookies for API access
-        setCookie(
-          "registration_data",
-          JSON.stringify({
-            email: formData.email,
-            username: formData.username,
-          }),
-          {
-            maxAge: 60 * 10, // 10 minutes
-            path: "/",
-            sameSite: "lax",
-            secure: process.env.NODE_ENV === "production",
-          }
-        );
-        setCookie("verification_required", "true", {
-          maxAge: 60 * 10, // 10 minutes
-          path: "/",
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
-        });
+        document.cookie = "registration_data=" + JSON.stringify({
+          email: formData.email,
+          username: formData.username,
+        }) + "; Max-Age=600; Path=/; SameSite=lax";
+
+        document.cookie = "verification_required=true; Max-Age=600; Path=/; SameSite=lax";
 
         // Redirect to verify email page
         router.push("/verify/register");
@@ -108,11 +102,11 @@ export default function Register() {
       }
 
       // If no verification needed, redirect to login
-      showSuccess("Account created successfully!");
+      toastSuccess("Account created successfully!");
       router.push("/login?registered=true");
     } catch (error) {
       console.error("Registration request error:", error);
-      showError("Registration failed. Please try again.");
+      toastError("Registration failed. Please try again.");
     } finally {
       console.info("/app/(auth)/register handleRegister completed");
     }

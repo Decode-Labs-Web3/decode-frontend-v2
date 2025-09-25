@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useContext } from "react";
 import App from "@/components/(app)";
-import { UserInfoContext } from "@/contexts/UserInfoContext";
+import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faShieldHalved,
@@ -125,11 +125,13 @@ export default function OverviewPage() {
             <span className="text-sm text-gray-300">Wallets</span>
           </div>
           <p className="text-white font-medium">Primary wallet</p>
-          <p className="text-xs text-gray-400 mt-1"> {user?.primary_wallet?.address ? (
-            user?.primary_wallet?.address.slice(0, 10) + "......" + user?.primary_wallet?.address.slice(-6)
-          ) : (
-            "No wallet connected"
-          )}
+          <p className="text-xs text-gray-400 mt-1">
+            {" "}
+            {user?.primary_wallet?.address
+              ? user?.primary_wallet?.address.slice(0, 10) +
+                "......" +
+                user?.primary_wallet?.address.slice(-6)
+              : "No wallet connected"}
           </p>
         </div>
 

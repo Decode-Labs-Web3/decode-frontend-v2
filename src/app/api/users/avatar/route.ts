@@ -5,13 +5,13 @@ import {
   validateFileSize,
   isAllowedFileExtension,
   sanitizeFileName,
-} from "@/utils/sanitization.utils";
+} from "@/utils/index.utils";
 import {
   createSecurityErrorResponse,
   SecurityErrorMessages,
   logSecurityEvent,
   generateRequestId,
-} from "@/utils/security-error-handling.utils";
+} from "@/utils/index.utils";
 
 // Allowed file types and configurations
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];

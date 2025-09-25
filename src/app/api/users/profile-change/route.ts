@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { ProfileData, RequestBody } from "@/interfaces";
-import { fingerprintService } from "@/services/fingerprint.service";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { ProfileData, RequestBody } from "@/interfaces/index.interfaces";
+import { fingerprintService } from "@/services/index.services";
+import { generateRequestId } from "@/utils/index.utils";
 
 // Helper function to detect changed fields
 function getChangedFields(current: ProfileData, original: ProfileData) {

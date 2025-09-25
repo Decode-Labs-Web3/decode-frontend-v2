@@ -2,9 +2,7 @@
 import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
-import { showSuccess, showError } from "@/utils/toast.utils";
-import { apiCallWithTimeout } from "@/utils/api.utils";
-import { setCookie } from "@/utils/cookie.utils";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -21,36 +19,43 @@ export default function ForgotPassword() {
   };
 
   const handleCookie = () => {
-    setCookie("gate-key-for-login", "true", { maxAge: 60, path: "/login" });
+    document.cookie = "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=strict";
+    router.push("/login");
   };
 
   const handleForgotPassword = async () => {
     if (!formData.email_or_username.trim()) {
-      showError("Please enter your email or username");
+      toastError("Please enter your email or username");
       return;
     }
     try {
-      const responseData = await apiCallWithTimeout(
-        "/api/auth/forgot-password",
-        {
+      const apiResponse = await fetch("/api/auth/forgot-password", {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+            "X-Frontend-Internal-Request": "true",
+          },
+          body: JSON.stringify(formData),
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000),
         }
       );
 
-      if (responseData.success) {
-        showSuccess("Reset link sent successfully!");
+      const response = await apiResponse.json();
+
+      if (response.success) {
+        toastSuccess("Reset link sent successfully!");
         router.push("/verify/forgot");
       } else {
-        console.error("Forgot password failed:", responseData);
-        showError(
-          responseData?.message ||
+        console.error("Forgot password failed:", response);
+        toastError(
+          response?.message ||
             "Failed to send reset link. Please try again."
         );
       }
     } catch (error) {
       console.error("Forgot password request error:", error);
-      showError("Failed to send reset link. Please try again.");
+      toastError("Failed to send reset link. Please try again.");
     } finally {
       console.info(
         "/app/(auth)/forgot-password handleForgotPassword completed"
