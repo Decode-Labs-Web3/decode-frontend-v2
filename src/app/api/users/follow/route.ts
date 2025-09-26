@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/relationship/follow/${tab}?page=0&limit=10`,
+      `${process.env.BACKEND_BASE_URL}/relationship/follow/${tab}/me?page=0&limit=10`,
       {
         method: "GET",
         headers: {

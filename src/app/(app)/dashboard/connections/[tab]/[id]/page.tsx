@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link"
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
@@ -33,7 +33,7 @@ interface Follower {
 }
 
 export default function UserData() {
-  const { id , tab } = useParams<{ id: string; tab: string }>();
+  const { id, tab } = useParams<{ id: string; tab: string }>();
   const [userData, setUserData] = useState<UserData | null>(null);
 
   const fetchUserData = async () => {
@@ -51,9 +51,8 @@ export default function UserData() {
 
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        const errorMessage = response?.message;
-        console.error(errorMessage);
-        toastError(errorMessage);
+        console.error(apiResponse);
+        toastError("API error");
         return;
       }
       setUserData(response.data);
@@ -68,6 +67,110 @@ export default function UserData() {
   useEffect(() => {
     fetchUserData();
   }, [id]);
+
+  const handleFollow = async () => {
+    try {
+      const apiResponse = await fetch("/api/users/follow-and-unfollow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ id }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      if (!apiResponse.ok) {
+        console.error(apiResponse.json());
+        toastError(`API error follow`);
+        return;
+      }
+      toastSuccess(response?.message || "Follow/unfollow action successful");
+      fetchUserData();
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleUnFollow = async () => {
+    try {
+      const apiResponse = await fetch("/api/users/follow-and-unfollow", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ id }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      if (!apiResponse.ok) {
+        console.error(apiResponse.json());
+        toastError(`API error unfollow`);
+        return;
+      }
+      toastSuccess(response?.message || "Follow/unfollow action successful");
+      fetchUserData();
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleBlock = async () => {
+    try {
+      const apiResponse = await fetch("/api/users/block-and-unblock", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ id }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      if (!apiResponse.ok) {
+        console.error(apiResponse.json());
+        toastError(`API error follow`);
+        return;
+      }
+      toastSuccess(response?.message || "Follow/unfollow action successful");
+      fetchUserData();
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleUnBlock = async () => {
+    try {
+      const apiResponse = await fetch("/api/users/block-and-unblock", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ id }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      if (!apiResponse.ok) {
+        console.error(apiResponse.json());
+        toastError(`API error unfollow`);
+        return;
+      }
+      toastSuccess(response?.message || "Follow/unfollow action successful");
+      fetchUserData();
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     userData && (
@@ -120,8 +223,36 @@ export default function UserData() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <button className="bg-red-500 p-2 rounded-xl">{ userData.is_blocked ? "UnBlock" : "Block" }</button>
-                  <button className="bg-blue-500 p-2 rounded-xl">{ userData.is_follower ? "Unfollow" : "Follow" }</button>
+                  {userData.is_blocked ? (
+                    <button
+                      onClick={handleUnBlock}
+                      className="bg-red-500 p-2 rounded-xl"
+                    >
+                      UnBlock
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleBlock}
+                      className="bg-red-500 p-2 rounded-xl"
+                    >
+                      Block
+                    </button>
+                  )}
+                  {userData.is_following ? (
+                    <button
+                      onClick={handleUnFollow}
+                      className="bg-blue-500 p-2 rounded-xl"
+                    >
+                      Unfollow
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleFollow}
+                      className="bg-blue-500 p-2 rounded-xl"
+                    >
+                      Follow
+                    </button>
+                  )}
                 </div>
               </div>
 
