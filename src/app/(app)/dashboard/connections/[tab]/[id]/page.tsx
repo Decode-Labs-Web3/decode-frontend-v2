@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
@@ -66,7 +66,7 @@ export default function UserData() {
 
   useEffect(() => {
     fetchUserData();
-  }, [id]);
+  }, [ id ]);
 
   const handleFollow = async () => {
     try {
@@ -82,8 +82,8 @@ export default function UserData() {
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        console.error(apiResponse.json());
-        toastError(`API error follow`);
+        console.error(response.message);
+        toastError(response.message || `API error follow`);
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
@@ -108,8 +108,8 @@ export default function UserData() {
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        console.error(apiResponse.json());
-        toastError(`API error unfollow`);
+        console.error(response.message);
+        toastError( response.message || `API error unfollow fail`);
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
@@ -134,8 +134,8 @@ export default function UserData() {
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        console.error(apiResponse.json());
-        toastError(`API error follow`);
+        console.error(response.message);
+        toastError( response.message || `API error block fail`);
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
@@ -160,8 +160,8 @@ export default function UserData() {
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        console.error(apiResponse.json());
-        toastError(`API error unfollow`);
+        console.error(response.message);
+        toastError( response.message || `API error unblock fail`);
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
