@@ -92,7 +92,7 @@ export default function VerifyPage() {
   };
 
   if (!type || !["register", "login", "forgot"].includes(type)) {
-    return null; // Will redirect in useEffect
+    return null; // Redirect handled in useEffect
   }
 
   return (

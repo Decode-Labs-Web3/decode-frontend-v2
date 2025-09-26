@@ -2,7 +2,11 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
 import { ProfileData, RequestBody } from "@/interfaces/index.interfaces";
-import { generateRequestId, apiPathName, guardInternal } from "@/utils/index.utils"
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 function getChangedFields(current: ProfileData, original: ProfileData) {
   const changes: { [key: string]: { data: ProfileData; endpoint: string } } =
@@ -61,7 +65,7 @@ async function makeBackendRequest(
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
-          fingerprint: fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint_hashed,
         },
         body: JSON.stringify(data),
         cache: "no-store",
@@ -93,13 +97,13 @@ async function makeBackendRequest(
 }
 
 export async function PUT(req: Request) {
-  const requestId = generateRequestId()
-  const pathname = apiPathName(req)
-  const denied = guardInternal(req)
-  if(denied) return denied
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
   try {
-    const body: RequestBody = await req.json();
+    const body = await req.json();
     const { current, original } = body;
 
     if (!current || !original) {

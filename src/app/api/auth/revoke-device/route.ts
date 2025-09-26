@@ -2,13 +2,17 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { Session } from "@/interfaces/index.interfaces";
 import { fingerprintService } from "@/services/index.services";
-import { generateRequestId, apiPathName, guardInternal } from "@/utils/index.utils"
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
-  const requestId = generateRequestId()
-  const pathname = apiPathName(req)
-  const denied = guardInternal(req)
-  if(denied) return denied
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
   try {
     const body = await req.json();
     const { deviceFingerprintId, sessions, currentSessionId } = body;
@@ -72,8 +76,8 @@ export async function POST(req: Request) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
-          fingerprint: fingerprint_hashed,
-          "X-Request-Id": requestId
+          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",

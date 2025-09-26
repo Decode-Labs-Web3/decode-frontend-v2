@@ -1,13 +1,17 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
-import { generateRequestId, apiPathName, guardInternal } from "@/utils/index.utils"
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 export async function GET(req: Request) {
-  const requestId = generateRequestId()
-  const pathname = apiPathName(req)
-  const denied = guardInternal(req)
-  if(denied) return denied
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
   try {
     const cookieStore = await cookies();
@@ -34,8 +38,8 @@ export async function GET(req: Request) {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          fingerprint: fingerprint_hashed,
-          "X-Request-Id": requestId
+          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Request-Id": requestId,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -43,12 +47,8 @@ export async function GET(req: Request) {
     );
 
     if (!backendRes.ok) {
-      console.error(
-        "Backend API error:",
-        backendRes.status,
-        backendRes.statusText
-      );
       const errorData = await backendRes.json().catch(() => ({}));
+      console.error("Overview fetch error:", errorData);
       return NextResponse.json(
         {
           success: false,
