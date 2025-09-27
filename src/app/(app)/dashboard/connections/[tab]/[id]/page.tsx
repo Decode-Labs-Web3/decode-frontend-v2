@@ -66,7 +66,7 @@ export default function UserData() {
 
   useEffect(() => {
     fetchUserData();
-  }, [ id ]);
+  }, [id]);
 
   const handleFollow = async () => {
     try {
