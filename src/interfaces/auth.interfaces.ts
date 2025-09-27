@@ -1,3 +1,24 @@
+export interface ChangePasswordData {
+  new_password: string;
+  confirm_new_password: string;
+}
+
+export interface ForgotPasswordData {
+  email_or_username: string;
+}
+
+export interface LoginData {
+  email_or_username: string;
+  password: string;
+}
+
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface Fingerprint {
   "_id": string;
   "user_id": string;
@@ -15,14 +36,13 @@ export interface Session {
   "_id": string;
   "user_id": string;
   "device_fingerprint_id": string;
-  "session_token": string;
+  "session_token"?: string;
   "app": string;
   "expires_at": string;
   "is_active": boolean;
   "last_used_at": string;
   "createdAt": string;
   "updatedAt": string;
-  "__v": number;
 }
 
 export interface VerifyRequest {

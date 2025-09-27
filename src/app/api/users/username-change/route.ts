@@ -1,28 +1,23 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/fingerprint.service";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { fingerprintService } from "@/services/index.services";
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
-export async function GET(req: Request){
+export async function GET(req: Request) {
   const userAgent = req.headers.get("user-agent") || "";
   const fingerprintResult = await fingerprintService(userAgent);
   const { fingerprint_hashed } = fingerprintResult;
 
   const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -38,15 +33,18 @@ export async function GET(req: Request){
     }
 
     console.log("this is api/users/username-change response", accessToken);
-    console.log("this is api/users/username-change response", fingerprint_hashed);
+    console.log(
+      "this is api/users/username-change response",
+      fingerprint_hashed
+    );
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/users/username/change/initiate`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId,
+          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Request-Id": requestId,
         },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -84,14 +82,12 @@ export async function GET(req: Request){
       },
       { status: 500 }
     );
-  }
-  finally {
-    console.info("/api/users/username-change", requestId);
+  } finally {
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 
-
-export async function POST(req: Request){
+export async function POST(req: Request) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -111,23 +107,17 @@ export async function POST(req: Request){
   const { fingerprint_hashed } = fingerprintResult;
 
   const requestId = generateRequestId();
-
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const body = await req.json();
     const { username, username_code } = body;
-    console.log("this is api/users/username-change response method post", username, username_code);
+    console.log(
+      "this is api/users/username-change response method post",
+      username,
+      username_code
+    );
 
     if (!username || !username_code) {
       return NextResponse.json(
@@ -151,9 +141,9 @@ export async function POST(req: Request){
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          fingerprint: fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint_hashed,
           "Content-Type": "application/json",
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -174,7 +164,10 @@ export async function POST(req: Request){
     }
 
     const response = await backendRes.json().catch(() => ({}));
-    console.log("this is api/users/username-change response method post", response);
+    console.log(
+      "this is api/users/username-change response method post",
+      response
+    );
     return NextResponse.json(
       {
         success: true,
@@ -194,6 +187,6 @@ export async function POST(req: Request){
       { status: 500 }
     );
   } finally {
-    console.info("/api/users/username-change", requestId);
+    console.info(`${pathname}: ${requestId}`);
   }
 }

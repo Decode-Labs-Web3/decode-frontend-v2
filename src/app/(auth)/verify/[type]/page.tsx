@@ -3,8 +3,8 @@
 import Auth from "@/components/(auth)";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useVerification } from "@/hooks/useVerification";
-import { showSuccess, showError } from "@/utils/toast.utils";
+import { useVerification } from "@/hooks/index.hooks";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 
 type VerificationType = "register" | "login" | "forgot";
 
@@ -51,21 +51,21 @@ export default function VerifyPage() {
       onSuccess: (data) => {
         switch (type) {
           case "register":
-            showSuccess("Account verified successfully! You can now log in.");
+            toastSuccess("Account verified successfully! You can now log in.");
             router.push("/login");
             break;
           case "login":
             if (data.requiresRelogin) {
-              showSuccess("Device verified! Please log in again.");
+              toastSuccess("Device verified! Please log in again.");
               router.push("/login");
             } else {
-              showSuccess("Device verified successfully!");
+              toastSuccess("Device verified successfully!");
               router.push("/login");
               router.refresh();
             }
             break;
           case "forgot":
-            showSuccess("Code verified! You can now reset your password.");
+            toastSuccess("Code verified! You can now reset your password.");
             router.push("/change-password");
             break;
           default:
@@ -73,7 +73,7 @@ export default function VerifyPage() {
         }
       },
       onError: (errorMessage) => {
-        showError(errorMessage);
+        toastError(errorMessage);
       },
     });
 
@@ -83,21 +83,20 @@ export default function VerifyPage() {
     setResendLoading(true);
     try {
       await handleResend(config.resendEndpoint);
-      showSuccess("Verification code sent! Please check your email.");
+      toastSuccess("Verification code sent! Please check your email.");
     } catch {
-      showError("Failed to resend code. Please try again.");
+      toastError("Failed to resend code. Please try again.");
     } finally {
       setResendLoading(false);
     }
   };
 
   if (!type || !["register", "login", "forgot"].includes(type)) {
-    return null; // Will redirect in useEffect
+    return null; // Redirect handled in useEffect
   }
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       <Auth.AuthCard title={config.title}>
@@ -122,7 +121,7 @@ export default function VerifyPage() {
           <Auth.VerificationCodeInput
             digits={digits}
             setDigits={setDigits}
-            onError={(errorMessage) => showError(errorMessage)}
+            onError={(errorMessage) => toastError(errorMessage)}
             loading={loading}
             error=""
           />

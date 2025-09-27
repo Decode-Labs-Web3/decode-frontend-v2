@@ -1,17 +1,10 @@
 'use client';
 
-import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldHalved, faMobileScreen, faLock, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
 export default function SecurityPage() {
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader 
-        title="Security" 
-        description="Protect your Decode account with multi‑factor and device trust." 
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white/5 border border-white/10 rounded-xl p-5">
           <div className="flex items-center gap-3 mb-3">
@@ -67,10 +60,5 @@ export default function SecurityPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
-
- 
-
-

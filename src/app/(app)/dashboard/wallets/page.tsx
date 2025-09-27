@@ -6,12 +6,11 @@ import {
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
-import App from "@/components/(app)";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { UserInfoContext } from "@/contexts/UserInfoContext";
+import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { useContext, useEffect, useState } from "react";
-import { showError, showSuccess, showInfo } from "@/utils/toast.utils";
+import { toastError, toastSuccess, toastInfo } from "@/utils/index.utils";
 
 interface AllWallets {
   id: string;
@@ -47,7 +46,7 @@ export default function WalletsPage() {
         if (!apiResponse.ok) {
           const error = await apiResponse.json();
           console.error("Get all wallets error:", error);
-          showError(error.message || `HTTP ${apiResponse.status}`);
+          toastError(error.message || `HTTP ${apiResponse.status}`);
           return;
         }
         const response = await apiResponse.json();
@@ -65,14 +64,14 @@ export default function WalletsPage() {
               updated_at: "",
             },
           ]);
-          showInfo("No wallets found. Please add a wallet.");
+          toastInfo("No wallets found. Please add a wallet.");
         } else {
           setAllWallets(response.data);
-          showSuccess("Wallets fetched successfully");
+          toastSuccess("Wallets fetched successfully");
         }
       } catch (error) {
         console.error("Get all wallets error:", error);
-        showError(
+        toastError(
           error instanceof Error ? error.message : "Get all wallets failed"
         );
       }
@@ -87,7 +86,7 @@ export default function WalletsPage() {
       await new Promise((r) => setTimeout(r, 100));
 
       if (!isConnected || !walletProvider || !address) {
-        showInfo("Connect cancelled.");
+        toastInfo("Connect cancelled.");
         return;
       }
 
@@ -141,7 +140,7 @@ export default function WalletsPage() {
       if (refetchUserData) {
         await refetchUserData();
       }
-      showSuccess("Wallet linked successfully");
+      toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
       // Handle user rejection (code 4001) or ACTION_REJECTED
       if (
@@ -149,11 +148,11 @@ export default function WalletsPage() {
         (error as { reason?: string })?.reason === "rejected" ||
         (error as { action?: string })?.action === "signMessage"
       ) {
-        showInfo("Signature request was cancelled.");
+        toastInfo("Signature request was cancelled.");
         return;
       }
       console.error("Add wallet error:", error);
-      showError(error instanceof Error ? error.message : "Add wallet failed");
+      toastError(error instanceof Error ? error.message : "Add wallet failed");
     }
   };
 
@@ -164,7 +163,7 @@ export default function WalletsPage() {
       await new Promise((r) => setTimeout(r, 100));
 
       if (!isConnected || !walletProvider || !address) {
-        showInfo("Connect cancelled.");
+        toastInfo("Connect cancelled.");
         return;
       }
 
@@ -218,7 +217,7 @@ export default function WalletsPage() {
       if (refetchUserData) {
         await refetchUserData();
       }
-      showSuccess("Wallet linked successfully");
+      toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
       // Handle user rejection (code 4001) or ACTION_REJECTED
       if (
@@ -226,17 +225,15 @@ export default function WalletsPage() {
         (error as { reason?: string })?.reason === "rejected" ||
         (error as { action?: string })?.action === "signMessage"
       ) {
-        showInfo("Signature request was cancelled.");
+        toastInfo("Signature request was cancelled.");
         return;
       }
       console.error("Add wallet error:", error);
-      showError(error instanceof Error ? error.message : "Add wallet failed");
+      toastError(error instanceof Error ? error.message : "Add wallet failed");
     }
   };
 
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader title="Wallets" description="Manage your wallets." />
       <div className="flex items-start flex-col gap-2">
         {allWallets.length > 0 && !user?.primary_wallet?.address && (
           <div className="flex items-start flex-col gap-2">
@@ -274,7 +271,7 @@ export default function WalletsPage() {
             </h3>
             <ul className="space-y-2">
               {allWallets.map((wallet) => {
-                if (wallet.address !== user?.primary_wallet?.address ) {
+                if (wallet.address !== user?.primary_wallet?.address) {
                   return (
                     <div
                       key={wallet.id || wallet.address}
@@ -292,6 +289,5 @@ export default function WalletsPage() {
           </div>
         )}
       </div>
-    </div>
   );
 }

@@ -1,13 +1,27 @@
 "use client";
 
 import App from "@/components/(app)";
-import Auth from "@/components/(auth)";
-import { UserProfile } from "@/interfaces";
-import { useEffect, useState } from "react";
+import Loading from "@/components/(loading)";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { UserInfoContext } from "@/contexts/UserInfoContext";
-import { showError } from "@/utils/toast.utils";
-import { DashboardSkeleton } from "@/components/(loading)";
+import { UserProfile } from "@/interfaces/index.interfaces";
+import { toastInfo, toastError } from "@/utils/index.utils";
+import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
+
+interface NotificationReceived {
+  _id: string;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
+type OutEvent =
+  | { type: "disconnect"; data: string }
+  | { type: "connect_error"; data: string }
+  | { type: "connected"; data: { sid: string } }
+  | { type: "user_connected"; data: Record<string, unknown> }
+  | { type: "notification_received"; data: Record<string, unknown> };
 
 export default function DashboardLayout({
   children,
@@ -56,7 +70,7 @@ export default function DashboardLayout({
       }
     } catch (error) {
       console.error("Error refetching user data:", error);
-      showError("Failed to refresh user data");
+      toastError("Failed to refresh user data");
     } finally {
       console.log("User data refetch operation completed");
     }
@@ -112,9 +126,10 @@ export default function DashboardLayout({
         localStorage.setItem("user", JSON.stringify(userData));
       } catch (error) {
         console.error("User data fetch error:", error);
-        showError("Failed to load user data");
+        toastError("Failed to load user data");
       } finally {
         setLoading(false);
+        // setLoading(true);
         console.log("User data fetch operation completed");
       }
     };
@@ -131,49 +146,89 @@ export default function DashboardLayout({
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
-        credentials: "include",
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      const data = await response.json();
-      console.log("Logout response:", data);
-      if (data.success && data.statusCode === 200) {
-        router.push("/");
-      } else {
-        console.log("Logout failed:", data.message);
-        showError(data.message || "Logout failed");
+  const [logs, setLogs] = useState<NotificationReceived[]>([]);
+  console.log("logs", logs);
+  const esRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    const es = new EventSource("/api/users/websocket");
+    esRef.current = es;
+
+    es.onopen = () => {
+      console.log("🟢 SSE connection opened");
+    };
+
+    es.onmessage = (ev) => {
+      try {
+        const msg = JSON.parse(ev.data) as OutEvent;
+        // const line =
+        //     msg.type === "connected"
+        //     ? `✅ [${timestamp}] Connected! sid=${msg.data.sid}`
+        //     : msg.type === "connect_error"
+        //     ? `❌ [${timestamp}] Connection failed: ${msg.data}`
+        //     : msg.type === "disconnect"
+        //     ? `🔌 [${timestamp}] Disconnected: ${msg.data}`
+        //     : msg.type === "user_connected"
+        //     ? `👤 [${timestamp}] User connected event: ${JSON.stringify(
+        //         msg.data
+        //       )}`
+        //     : msg.type === "notification_received"
+        //     ? `🔔 [${timestamp}] Notification received: ${JSON.stringify(
+        //         msg.data
+        //       )}`
+        //     : `⇦ [${timestamp}] ${ev.data}`;
+
+        if (msg.type === "notification_received") {
+          // msg.data: { event, data: {...}, timestamp, userId }
+          const payload = msg.data as unknown as Record<string, unknown>;
+          const notification = payload?.data as unknown as Record<
+            string,
+            unknown
+          >;
+
+          if (notification) {
+            toastInfo(`Notification received: ${notification.title}`);
+            setLogs((prev) => {
+              const newLogs = [
+                {
+                  _id: String(notification.id ?? ""),
+                  title: String(notification.title ?? ""),
+                  message: String(notification.message ?? ""),
+                  read: Boolean(notification.read ?? false),
+                  createdAt: String(
+                    notification.createdAt ?? new Date()
+                  ).toLocaleString(),
+                },
+                ...prev,
+              ];
+              sessionStorage.setItem("notifications", JSON.stringify(newLogs));
+              return newLogs;
+            });
+          }
+        }
+      } catch (error) {
+        console.log("error", error);
+        toastError("Error receiving notification from websocket");
       }
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        (error.name === "AbortError" || error.name === "TimeoutError")
-      ) {
-        console.error("Request timeout/aborted");
-      } else {
-        console.error(error);
-      }
-      showError("Logout failed. Please try again.");
-    } finally {
-      console.log("Logout operation completed");
-    }
-  };
+    };
+
+    es.onerror = () => {
+      console.log("SSE error");
+    };
+
+    return () => {
+      console.log("SSE closed");
+      es.close();
+    };
+  }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white overflow-hidden">
-        <Auth.BackgroundAccents />
-        <App.Navbar user={{ username: "", email: "" }} onLogout={() => {}} />
+        <App.Navbar />
         <App.Sidebar active="overview" onChange={() => {}} />
         <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-          <DashboardSkeleton />
+          <Loading.OverviewCard />
         </div>
       </div>
     );
@@ -182,13 +237,9 @@ export default function DashboardLayout({
   return (
     <UserInfoContext.Provider value={{ user, refetchUserData }}>
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        <Auth.BackgroundAccents />
-        <App.Navbar
-          user={{ username: user?.username || "", email: user?.email || "" }}
-          onLogout={handleLogout}
-        />
+        <App.Navbar />
         <App.Sidebar active={active} onChange={handleChange} />
-        {children}
+        <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>
       </div>
     </UserInfoContext.Provider>
   );

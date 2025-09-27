@@ -16,7 +16,7 @@ import { ethers } from "ethers";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { showError, showInfo, showSuccess } from "@/utils/toast.utils";
+import { toastError, toastInfo, toastSuccess } from "@/utils/index.utils";
 import { faWallet, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import {
   useAppKit,
@@ -85,21 +85,25 @@ function WalletContent() {
       const data = await response.json();
       console.log("Login/Register response:", data);
 
-      if (data.success && data.message === "User found" ) {
+      if (data.success && data.message === "User found") {
         console.log("User found, redirecting to login...");
-        showSuccess("User found! Redirecting to login...");
+        toastSuccess("User found! Redirecting to login...");
         router.push("/login");
-      } else if (!data.success && data.message === "User not found" && data.statusCode === 404) {
+      } else if (
+        !data.success &&
+        data.message === "User not found" &&
+        data.statusCode === 404
+      ) {
         console.log("User not found, redirecting to register...");
-        showInfo("User not found. Redirecting to register...");
+        toastInfo("User not found. Redirecting to register...");
         router.push("/register");
       } else {
         console.log("Unexpected response:", data.message);
-        showError(data.message || "Something went wrong");
+        toastError(data.message || "Something went wrong");
       }
     } catch (err: unknown) {
       console.error("Login/Register error:", err);
-      showError(err instanceof Error ? err.message : "Login failed");
+      toastError(err instanceof Error ? err.message : "Login failed");
     }
   };
 
@@ -110,10 +114,10 @@ function WalletContent() {
       await new Promise((r) => setTimeout(r, 100));
 
       if (!isConnected || !walletProvider || !address) {
-        showInfo("Connect cancelled.");
+        toastInfo("Connect cancelled.");
         return;
       }
-      showSuccess("Wallet connected");
+      toastSuccess("Wallet connected");
 
       const challengeRes = await fetch("/api/wallet/auth-challenge", {
         method: "POST",
@@ -156,7 +160,7 @@ function WalletContent() {
           statusText: verifyRes.statusText,
           url: verifyRes.url,
         });
-        showError("Wallet auth failed. Please try again.");
+        toastError("Wallet auth failed. Please try again.");
         return;
       }
 
@@ -168,14 +172,14 @@ function WalletContent() {
           statusCode: verifyJson.statusCode,
           message: verifyJson.message,
         });
-        showError(
+        toastError(
           verifyJson.message ||
             "Wallet authentication failed. Please try again."
         );
         return;
       }
 
-      showSuccess("Signed in with wallet");
+      toastSuccess("Signed in with wallet");
       try {
         // Ensure the AppKit modal is closed before navigating
         close?.();
@@ -191,19 +195,18 @@ function WalletContent() {
         (error as { action?: string })?.action === "signMessage"
       ) {
         console.log("User rejected signature request");
-        showInfo("Signature request was cancelled.");
+        toastInfo("Signature request was cancelled.");
         return;
       }
 
       console.error("Wallet auth error:", error);
 
-      showError("Wallet authentication failed. Please try again.");
+      toastError("Wallet authentication failed. Please try again.");
     }
   };
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       {/* Main Card */}

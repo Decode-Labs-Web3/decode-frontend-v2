@@ -3,65 +3,57 @@
 import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
-import { PasswordValidationService } from "@/services/password-validation.service";
-import { showSuccess, showError } from "@/utils/toast.utils";
-import { apiCallWithTimeout } from "@/utils/api.utils";
+import { toastSuccess, toastError } from "@/utils/index.utils";
+import { ChangePasswordData } from "@/interfaces/index.interfaces";
 
 export default function ChangePassword() {
   const router = useRouter();
-  const [formData, setFormData] = useState<{
-    new_password: string;
-    confirm_new_password: string;
-  }>({
-    new_password: "",
-    confirm_new_password: "",
-  });
-  const { isPasswordValid } = PasswordValidationService.validate(
-    formData.new_password,
-    formData.confirm_new_password
-  );
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData({
-      ...formData,
-      [id]: value,
+  const [changePasswordData, setChangePasswordData] =
+    useState<ChangePasswordData>({
+      new_password: "",
+      confirm_new_password: "",
     });
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setChangePasswordData((prevChangePasswordData) => ({
+      ...prevChangePasswordData,
+      [event.target.id]: event.target.value,
+    }));
   };
 
   const handleChangePassword = async () => {
     if (
-      !formData.new_password.trim() ||
-      !formData.confirm_new_password.trim()
+      !changePasswordData.new_password.trim() ||
+      !changePasswordData.confirm_new_password.trim()
     ) {
-      showError("Please fill in all fields");
-      return;
-    }
-
-    if (!isPasswordValid) {
-      showError("Please meet all password requirements.");
+      toastError("Please fill in all fields");
       return;
     }
 
     try {
-      const responseData = await apiCallWithTimeout(
-        "/api/auth/change-password",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const apiResponse = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(changePasswordData),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
+      });
 
-      if (responseData.success) {
-        showSuccess("Password changed successfully!");
+      const response = await apiResponse.json();
+
+      if (response.success) {
+        toastSuccess("Password changed successfully!");
         router.push("/login");
       } else {
-        console.error("Change password failed:", responseData);
-        showError(responseData.message || "Password change failed");
+        console.error("Change password failed:", response);
+        toastError(response.message || "Password change failed");
       }
     } catch (error) {
       console.error("Change password request error:", error);
-      showError("Password change failed. Please try again.");
+      toastError("Password change failed. Please try again.");
     }
   };
 
@@ -72,7 +64,6 @@ export default function ChangePassword() {
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       {/* Main Card */}
@@ -84,26 +75,19 @@ export default function ChangePassword() {
         <form noValidate onSubmit={handleSubmit}>
           <Auth.PasswordField
             id="new_password"
-            value={formData.new_password}
+            value={changePasswordData.new_password}
             onChange={handleChange}
             placeholder="New password"
           />
 
-          <Auth.PasswordValidation
-            password={formData.new_password}
-            confirmPassword={formData.confirm_new_password}
-          />
-
           <Auth.PasswordField
             id="confirm_new_password"
-            value={formData.confirm_new_password}
+            value={changePasswordData.confirm_new_password}
             onChange={handleChange}
             placeholder="Confirm new password"
           />
 
-          <Auth.SubmitButton disabled={!isPasswordValid}>
-            Save and log in
-          </Auth.SubmitButton>
+          <Auth.SubmitButton>Save and log in</Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
     </main>

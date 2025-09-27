@@ -1,25 +1,19 @@
 import { cookies } from "next/headers";
-import { Session } from "@/interfaces";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/fingerprint.service";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { Session } from "@/interfaces/index.interfaces";
+import { fingerprintService } from "@/services/index.services";
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
-
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const body = await req.json();
     const { deviceFingerprintId, sessions, currentSessionId } = body;
 
@@ -82,8 +76,8 @@ export async function POST(req: Request) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
-          fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId,
+          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -155,7 +149,7 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info("/api/auth/revoke-device", requestId);
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 

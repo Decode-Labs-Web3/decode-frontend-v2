@@ -11,20 +11,6 @@ export interface SidebarProps {
   onChange: (key: string) => void;
 }
 
-export interface NavbarProps {
-  user: {
-    username: string;
-    email: string;
-  };
-  onLogout?: () => void;
-}
-
-export interface PasswordValidationProps {
-  password: string;
-  confirmPassword?: string;
-  showConfirm?: boolean;
-}
-
 export interface BackButtonProps {
   href?: string;
   onClick?: () => void;

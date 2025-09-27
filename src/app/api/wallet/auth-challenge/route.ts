@@ -1,22 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { guardInternal, apiPathName, generateRequestId } from "@/utils/index.utils"
 
 export async function POST(request: NextRequest) {
-  const requestId = generateRequestId();
+  const requestId = generateRequestId()
+  const pathname = apiPathName(request)
+  const denied = guardInternal(request)
+  if(denied) return denied
 
   try {
-    const internalRequest = request.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const body = await request.json();
     const { address } = body;
 
@@ -41,7 +32,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -82,6 +73,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
+  } finally {
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 

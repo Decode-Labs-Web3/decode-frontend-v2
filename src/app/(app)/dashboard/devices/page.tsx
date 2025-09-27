@@ -2,26 +2,19 @@
 
 import Image from "next/image";
 import App from "@/components/(app)";
-import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { getCookie } from "@/utils/index.utils";
 import { useState, useEffect } from "react";
-import { getCookie } from "@/utils/cookie.utils";
-import { Fingerprint, Session } from "@/interfaces";
-import { apiCallWithTimeout } from "@/utils/api.utils";
-import { showError } from "@/utils/toast.utils";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faLaptop,
-  faMobileScreen,
-  faTablet,
-} from "@fortawesome/free-solid-svg-icons";
+import { Fingerprint, Session } from "@/interfaces/index.interfaces";
+import { faLaptop, faMobileScreen, faTablet } from "@fortawesome/free-solid-svg-icons";
 
 export default function DevicesPage() {
   const router = useRouter();
-  const [version, setVersion] = useState(0);
-  const [fingerprintsData, setFingerprintsData] = useState<Fingerprint[]>([]);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string>("");
+  const [fingerprintsData, setFingerprintsData] = useState<Fingerprint[] | null>(null);
+
 
   const getAppLogoSrc = (app: string) => {
     const key = (app || "")
@@ -44,108 +37,84 @@ export default function DevicesPage() {
   };
 
   useEffect(() => {
-    // Try both possible cookie names
-    let sessionId = getCookie("sessionId");
-    if (!sessionId) {
-      sessionId = getCookie("sessionid");
-    }
+    const sessionId = getCookie("sessionId");
+
     if (sessionId) {
       setCurrentSessionId(sessionId);
     }
   }, []);
 
-  useEffect(() => {
-    if (isLoggingOut) {
-      return;
-    }
-
-    const fetchFingerprints = async () => {
-      try {
-        const apiResponse = await apiCallWithTimeout("/api/auth/fingerprints", {
-          method: "GET",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-          },
-        });
-
-        if (
-          apiResponse.success ||
-          apiResponse.statusCode === 200 ||
-          apiResponse.message === "Device fingerprint fetched"
-        ) {
-          setFingerprintsData(
-            (apiResponse.data as unknown as Fingerprint[]) || []
-          );
-        } else if (apiResponse.statusCode === 401) {
-          setFingerprintsData([]);
-          router.push("/");
-        } else if (
-          apiResponse.statusCode === 400 &&
-          apiResponse.message === "Missing fingerprint"
-        ) {
-          setFingerprintsData([]);
-          router.push("/login");
-        } else {
-          toast.error("Failed to load devices");
-        }
-      } catch (error) {
-        console.error("Fetch devices error:", error);
-        showError("Network error for fetching devices. Please try again.");
-      } finally {
-        console.info("Fetch devices completed");
-      }
-    };
-    fetchFingerprints();
-  }, [version, router, isLoggingOut, currentSessionId]);
-
-  const handleRevokeDevice = async (
-    fingerprintId: string,
-    sessions: Session[]
-  ) => {
+  const fetchFingerprints = async () => {
     try {
-      console.log("Revoking device - currentSessionId:", currentSessionId);
-      console.log(
-        "Available sessions:",
-        sessions.map((session) => session._id)
-      );
+      const apiResponse = await fetch("/api/auth/fingerprints", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      const response = await apiResponse.json();
+
+      if ( response.success || response.statusCode === 200 || response.message === "Device fingerprint fetched") {
+        setFingerprintsData(response.data);
+      } else if ( response.statusCode === 400 && response.message === "Missing fingerprint" ) {
+        setFingerprintsData(null);
+        router.push("/login");
+      } else {
+        toastError("Failed to load devices");
+      }
+    } catch (error) {
+      console.error("Fetch devices error:", error);
+      toastError("Network error for fetching devices. Please try again.");
+    } finally {
+      console.info("Fetch done!");
+    }
+  };
+
+  useEffect(() => {
+    fetchFingerprints();
+  }, []);
+
+  const handleRevokeDevice = async ( fingerprintId: string, sessions: Session[]) => {
+    try {
       const isCurrentDevice = currentSessionId
         ? sessions.some((session) => session._id === currentSessionId)
         : false;
       console.log("Is current device:", isCurrentDevice);
 
-      const responseData = await apiCallWithTimeout(`/api/auth/revoke-device`, {
+      const apiResponse = await fetch(`/api/auth/revoke-device`, {
         method: "POST",
-        body: {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({
           deviceFingerprintId: fingerprintId,
           sessions,
           currentSessionId: currentSessionId,
-        },
+        }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
       });
-      if (
-        responseData.success ||
-        responseData.statusCode === 200 ||
-        responseData.message === "Device fingerprint revoked"
-      ) {
-        if (isCurrentDevice || responseData.reload) {
-          setIsLoggingOut(true);
-          toast.success("Device revoked successfully. You will be logged out.");
-          // Clear the session ID from state
-          setCurrentSessionId("");
-          // Redirect immediately without triggering refetch
+
+      const response = await apiResponse.json();
+      if ( response.success || response.statusCode === 200 || response.message === "Device fingerprint revoked") {
+        if (isCurrentDevice) {
+          toastSuccess("Device revoked successfully. You will be logged out.");
           router.push("/");
         } else {
-          toast.success("Device revoked successfully");
-          setVersion(version + 1);
+          toastSuccess("Device revoked successfully");
+          fetchFingerprints();
         }
-      } else if (responseData.statusCode === 401) {
-        toast.error("Session expired. Please log in again.");
-        router.push("/");
       } else {
-        toast.error(responseData.message || "Failed to revoke device");
+        toastError(response.message || "Failed to revoke device");
+        fetchFingerprints();
       }
     } catch (error) {
       console.error("Revoke device error:", error);
-      showError("Network error. Please try again.");
+      toastError("Network error. Please try again.");
     } finally {
       console.log("Device revocation operation completed");
     }
@@ -160,56 +129,44 @@ export default function DevicesPage() {
         : false;
       console.log("Is current session:", isCurrentSession);
 
-      const responseData = await apiCallWithTimeout(
-        `/api/auth/revoke-session`,
-        {
-          method: "POST",
-          body: { sessionId },
-        }
-      );
-      if (
-        responseData.success ||
-        responseData.statusCode === 200 ||
-        responseData.message === "Session revoked"
-      ) {
-        if (isCurrentSession || responseData.reload) {
-          setIsLoggingOut(true);
-          toast.success(
-            "Session revoked successfully. You will be logged out."
-          );
-          // Clear the session ID from state
-          setCurrentSessionId("");
-          // Redirect immediately without triggering refetch
+      const apiResponse = await fetch(`/api/auth/revoke-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ sessionId }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      const response = await apiResponse.json();
+
+      if ( response.success || response.statusCode === 200 || response.message === "Session revoked") {
+        if (isCurrentSession) {
+          toastSuccess("Session revoked successfully. You will be logged out.");
           router.push("/");
         } else {
-          toast.success("Session revoked successfully");
-          setVersion(version + 1);
+          toastSuccess("Session revoked successfully nha");
+          fetchFingerprints();
         }
-      } else if (responseData.statusCode === 401) {
-        toast.error("Session expired. Please log in again.");
-        router.push("/");
       } else {
-        toast.error(responseData.message || "Failed to revoke session");
+        toastError(response.message || "Failed to revoke session");
+        fetchFingerprints();
       }
     } catch (error) {
       console.error("Revoke session error:", error);
-      showError("Network error. Please try again.");
+      toastError("Network error. Please try again.");
     } finally {
       console.log("Session revocation operation completed");
     }
   };
 
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader
-        title="Devices"
-        description="Trusted devices that have signed in to your account."
-      />
-
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-        {fingerprintsData.map((fingerprint) => (
+        {fingerprintsData && fingerprintsData.map((fingerprint) => (
           <div
-            key={fingerprint._id}
+            key={fingerprint._id} id={fingerprint._id}
             className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6"
           >
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
@@ -237,7 +194,7 @@ export default function DevicesPage() {
               </div>
               <button
                 onClick={() =>
-                  handleRevokeDevice(fingerprint._id, fingerprint.sessions)
+                  handleRevokeDevice(fingerprint._id, fingerprint.sessions || [])
                 }
                 className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors w-full sm:w-auto"
               >
@@ -246,7 +203,7 @@ export default function DevicesPage() {
             </div>
 
             <div className="space-y-2 sm:space-y-3">
-              {fingerprint.sessions.map((session) => (
+              {fingerprint.sessions.length > 0 && fingerprint.sessions.map((session: Session) => (
                 <div
                   key={session._id}
                   className="bg-white/5 border border-white/10 rounded-lg p-3 sm:p-4 hover:bg-white/10 transition-colors"
@@ -263,10 +220,15 @@ export default function DevicesPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-white truncate">
                         {session.app.charAt(0).toUpperCase() +
                           session.app.slice(1)}
                       </h3>
+                      {session._id === currentSessionId && (
+                      <p className="text-lg text-green-400">*</p>
+                      )}
+                      </div>
                       <p className="text-xs text-gray-400 truncate">
                         {new Date(session.last_used_at).toLocaleString()}
                       </p>
@@ -284,6 +246,5 @@ export default function DevicesPage() {
           </div>
         ))}
       </div>
-    </div>
   );
 }

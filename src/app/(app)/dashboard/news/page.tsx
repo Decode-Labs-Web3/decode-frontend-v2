@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import App from "@/components/(app)";
-import { showError } from "@/utils/toast.utils";
+import { toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faNewspaper,
@@ -12,7 +12,6 @@ import {
   faComment,
   faShare,
 } from "@fortawesome/free-solid-svg-icons";
-import { BlogPostSkeleton } from "@/components/(loading)";
 
 interface BlogPost {
   _id: string;
@@ -31,9 +30,7 @@ interface BlogPost {
 export default function NewsPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch blog posts from API
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -57,12 +54,11 @@ export default function NewsPage() {
         } else {
           throw new Error(data.message || "Failed to fetch posts");
         }
-      } catch (err) {
-        console.error("Error fetching posts:", err);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
         const message =
-          err instanceof Error ? err.message : "Failed to load posts";
-        setError(message);
-        showError(message);
+          error instanceof Error ? error.message : "Failed to load posts";
+        toastError(message);
       } finally {
         setLoading(false);
       }
@@ -96,28 +92,9 @@ export default function NewsPage() {
   };
 
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader
-        title="News"
-        description="Latest blog posts from the community."
-      />
-
+    <>
       {loading ? (
-        <div className="space-y-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <BlogPostSkeleton key={i} />
-          ))}
-        </div>
-      ) : error ? (
-        <div className="text-center py-12">
-          <p className="text-red-400 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
+        <div className="text-center text-gray-400">Loading...</div>
       ) : posts.length === 0 ? (
         <div className="text-center py-12">
           <FontAwesomeIcon
@@ -202,6 +179,6 @@ export default function NewsPage() {
           ))}
         </div>
       )}
-    </div>
+    </>
   );
 }

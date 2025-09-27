@@ -1,24 +1,19 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { fingerprintService } from "@/services/fingerprint.service";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { fingerprintService } from "@/services/index.services";
+import {
+  guardInternal,
+  apiPathName,
+  generateRequestId,
+} from "@/utils/index.utils";
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
+  const pathname = apiPathName(request);
+  const denied = guardInternal(request);
+  if (denied) return denied;
 
   try {
-    const internalRequest = request.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const body = await request.json();
     const { address } = body || {};
     if (!address) {
@@ -47,8 +42,8 @@ export async function POST(request: NextRequest) {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
-          fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId,
+          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify({ address }),
         cache: "no-store",
@@ -87,6 +82,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
+  } finally {
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 

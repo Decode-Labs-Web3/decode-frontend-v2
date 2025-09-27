@@ -1,100 +1,113 @@
 "use client";
+
 import Link from "next/link";
 import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiCallWithTimeout } from "@/utils/api.utils";
-import { showSuccess, showError } from "@/utils/toast.utils";
-import { getCookie, setCookie, deleteCookie } from "@/utils/cookie.utils";
+import { getCookie } from "@/utils/index.utils";
+import { LoginData } from "@/interfaces/index.interfaces";
+import {
+  toastSuccess,
+  toastError,
+  setCookie,
+  deleteCookie,
+} from "@/utils/index.utils";
 
 export default function Login() {
   const router = useRouter();
-  const [formData, setFormData] = useState<{
-    email_or_username: string;
-    password: string;
-  }>({
+  const [loginData, setLoginData] = useState<LoginData>({
     email_or_username: "",
     password: "",
   });
 
-  const handleCookie = () => {
-    setCookie("gate-key-for-register", "true", {
+  useEffect(() => {
+    const value = getCookie("email_or_username");
+    if (value) {
+      setLoginData((prev) => ({
+        ...prev,
+        email_or_username: value,
+      }));
+      // document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
+      deleteCookie({ name: "email_or_username", path: "/" });
+    }
+  }, []);
+
+  const handleCookieRegister = () => {
+    // document.cookie = "gate-key-for-register=true; Max-Age=60; Path=/register; SameSite=lax";
+    setCookie({
+      name: "gate-key-for-register",
+      value: "true",
       maxAge: 60,
       path: "/register",
+      sameSite: "Lax",
     });
   };
 
   const handleCookieForgotPassword = () => {
-    setCookie("gate-key-for-forgot-password", "true", {
+    // document.cookie = "gate-key-for-forgot-password=true; Max-Age=60; Path=/forgot-password; SameSite=lax";
+    setCookie({
+      name: "gate-key-for-forgot-password",
+      value: "true",
       maxAge: 60,
       path: "/forgot-password",
+      sameSite: "Lax",
     });
   };
 
-  useEffect(() => {
-    const value = getCookie("email_or_username");
-    if (value) {
-      setFormData((prev) => ({ ...prev, email_or_username: value }));
-      deleteCookie("email_or_username");
-    }
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prevData) => ({
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginData((prevData) => ({
       ...prevData,
-      [id]: value,
+      [event.target.id]: event.target.value,
     }));
   };
 
-  const handleLogin = async () => {
-    if (!formData.email_or_username.trim() || !formData.password.trim()) {
-      showError("Please fill in all fields");
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!loginData.email_or_username.trim() || !loginData.password.trim()) {
+      toastError("Please fill in all fields");
       return;
     }
     try {
-      const responseData = await apiCallWithTimeout("/api/auth/login", {
+      const responseData = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: formData,
+        body: JSON.stringify(loginData),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
       });
+      const response = await responseData.json();
 
       if (
-        responseData.success &&
-        responseData.statusCode === 200 &&
-        responseData.message === "Login successful"
+        response.success &&
+        response.statusCode === 200 &&
+        response.message === "Login successful"
       ) {
-        showSuccess("Login successful!");
+        toastSuccess("Login successful!");
         router.push("/dashboard");
       } else if (
-        responseData.success &&
-        responseData.statusCode === 400 &&
-        responseData.message ===
+        response.success &&
+        response.statusCode === 400 &&
+        response.message ===
           "Device fingerprint not trusted, send email verification"
       ) {
         router.push("/verify/login");
       } else {
-        console.error("Login failed:", responseData);
-        showError(responseData?.message || "Login failed");
+        console.error("Login failed:", response);
+        toastError(response?.message || "Login failed");
       }
     } catch (error) {
       console.error("Login request error:", error);
-      showError("Login failed. Please try again.");
+      toastError("Login failed. Please try again.");
     } finally {
       console.info("/app/(auth)/login handleLogin completed");
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleLogin();
-  };
-
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       {/* Main Card */}
@@ -104,25 +117,25 @@ export default function Login() {
             id="email_or_username"
             type="text"
             placeholder="Enter username or email"
-            value={formData.email_or_username}
+            value={loginData.email_or_username}
             onChange={handleChange}
           />
 
           <Auth.PasswordField
             id="password"
-            value={formData.password}
+            value={loginData.password}
             onChange={handleChange}
             placeholder="Enter your password"
           />
 
           <div className="mb-5 text-right">
-            <a
+            <Link
               href="/forgot-password"
               onClick={handleCookieForgotPassword}
               className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <Auth.SubmitButton>Log in</Auth.SubmitButton>
@@ -133,7 +146,7 @@ export default function Login() {
           Don&apos;t have an account yet?{" "}
           <Link
             href="/register"
-            onClick={handleCookie}
+            onClick={handleCookieRegister}
             className="text-blue-500 hover:underline font-medium"
           >
             Register

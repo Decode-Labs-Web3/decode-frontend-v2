@@ -1,10 +1,13 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { ProfileData, RequestBody } from "@/interfaces";
-import { fingerprintService } from "@/services/fingerprint.service";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { fingerprintService } from "@/services/index.services";
+import { ProfileData, RequestBody } from "@/interfaces/index.interfaces";
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
-// Helper function to detect changed fields
 function getChangedFields(current: ProfileData, original: ProfileData) {
   const changes: { [key: string]: { data: ProfileData; endpoint: string } } =
     {};
@@ -62,8 +65,7 @@ async function makeBackendRequest(
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
-          fingerprint: fingerprint_hashed,
-          "X-Request-ID": requestId,
+          "X-Fingerprint-Hashed": fingerprint_hashed,
         },
         body: JSON.stringify(data),
         cache: "no-store",
@@ -96,21 +98,12 @@ async function makeBackendRequest(
 
 export async function PUT(req: Request) {
   const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
-    const body: RequestBody = await req.json();
+    const body = await req.json();
     const { current, original } = body;
 
     if (!current || !original) {
@@ -184,6 +177,6 @@ export async function PUT(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info("/api/users/profile-change", requestId);
+    console.info(`${pathname}: ${requestId}`);
   }
 }

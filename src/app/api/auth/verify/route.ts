@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { VerifyRequest } from "@/interfaces";
-import { generateRequestId } from "@/utils/security-error-handling.utils";
+import { VerifyRequest } from "@/interfaces/index.interfaces";
+import { generateRequestId, guardInternal, apiPathName } from "@/utils/index.utils"
 
 const VERIFY_ENDPOINTS = {
   register: "/auth/register/verify-email",
@@ -15,21 +15,11 @@ const SUCCESS_MESSAGES = {
 };
 
 export async function POST(req: Request) {
-  const requestId = generateRequestId();
-
+  const requestId = generateRequestId()
+  const pathname = apiPathName(req)
+  const denied = guardInternal(req)
+  if (denied) return denied
   try {
-    const internalRequest = req.headers.get("X-Frontend-Internal-Request");
-    if (internalRequest !== "true") {
-      return NextResponse.json(
-        {
-          success: false,
-          statusCode: 400,
-          message: "Missing X-Frontend-Internal-Request header",
-        },
-        { status: 400 }
-      );
-    }
-
     const body: VerifyRequest = await req.json();
     const { code, type } = body;
 
@@ -63,7 +53,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-ID": requestId,
+          "X-Request-Id": requestId
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -95,7 +85,6 @@ export async function POST(req: Request) {
         requiresRelogin: type === "login",
       });
 
-      // Set cookies based on verification type
       if (type === "forgot") {
         res.cookies.set("forgot_code", code, {
           httpOnly: false,
@@ -113,7 +102,6 @@ export async function POST(req: Request) {
           maxAge: 60,
         });
       } else if (type === "register") {
-        // Clear registration data cookies after successful verification
         res.cookies.set("registration_data", "", { maxAge: 0, path: "/" });
         res.cookies.set("verification_required", "", { maxAge: 0, path: "/" });
       }
@@ -141,7 +129,7 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info("/api/auth/verify", requestId);
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 

@@ -9,12 +9,12 @@ export interface UserProfile {
   bio?: string;
   avatar_ipfs_hash?: string;
   last_login?: string;
-  primary_wallet?: Wallet;
+  primary_wallet?: PrimaryWallet;
   following_number: number;
   followers_number: number;
 }
 
-export interface Wallet {
+export interface PrimaryWallet {
   id: string;
   address: string;
   user_id: string;

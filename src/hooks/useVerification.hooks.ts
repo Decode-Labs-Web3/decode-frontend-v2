@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { UseVerificationProps } from "@/interfaces";
+import { UseVerificationProps } from "@/interfaces/index.interfaces";
 
 export function useVerification({
   type,

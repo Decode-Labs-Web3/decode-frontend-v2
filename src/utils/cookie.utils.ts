@@ -1,30 +1,29 @@
 export const getCookie = (name: string): string | null => {
-  if (typeof document === 'undefined') return null;
-  
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]+)'));
+  if (typeof document === "undefined") return null;
+
+  const match = document.cookie.match(
+    new RegExp("(?:^|; )" + name + "=([^;]+)")
+  );
   return match ? decodeURIComponent(match[1]) : null;
 };
 
-export const setCookie = (name: string, value: string, options: {
-  maxAge?: number;
-  path?: string;
-  sameSite?: 'strict' | 'lax' | 'none';
-  secure?: boolean;
-} = {}) => {
-  if (typeof document === 'undefined') return;
-  
-  const { maxAge, path = '/', sameSite = 'lax', secure = false } = options;
-  let cookieString = `${name}=${encodeURIComponent(value)}`;
-  
-  if (maxAge !== undefined) cookieString += `; max-age=${maxAge}`;
-  if (path) cookieString += `; path=${path}`;
-  if (sameSite) cookieString += `; samesite=${sameSite}`;
-  if (secure) cookieString += `; secure`;
-  
-  document.cookie = cookieString;
-};
+interface SetCookieOptions {
+  name: string;
+  value: string;
+  maxAge: number;
+  path: string;
+  sameSite?: "Lax" | "Strict" | "None";
+}
 
-export const deleteCookie = (name: string, path: string = '/') => {
-  if (typeof document === 'undefined') return;
-  document.cookie = `${name}=; Max-Age=0; path=${path}`;
-};
+export const setCookie = ({ name, value, maxAge, path, sameSite = "Lax" }: SetCookieOptions) => {
+  document.cookie = `${name}=${value}; Max-Age=${maxAge}; Path=${path}; SameSite=${sameSite}`;
+}
+
+interface DeleteCookieOptions {
+  name: string;
+  path?: string;
+}
+
+export const deleteCookie = ({name, path}: DeleteCookieOptions) => {
+  document.cookie = `${name}=; Max-Age=0; Path=${path}`;
+}

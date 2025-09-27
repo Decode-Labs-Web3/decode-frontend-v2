@@ -3,129 +3,138 @@ import Link from "next/link";
 import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PasswordValidationService } from "@/services/password-validation.service";
-import { showSuccess, showError } from "@/utils/toast.utils";
-import { apiCallWithTimeout } from "@/utils/api.utils";
-import { getCookie, setCookie, deleteCookie } from "@/utils/cookie.utils";
+import { getCookie } from "@/utils/index.utils";
+import { RegisterData } from "@/interfaces/index.interfaces";
+import {
+  toastSuccess,
+  toastError,
+  setCookie,
+  deleteCookie,
+} from "@/utils/index.utils";
 
 export default function Register() {
   const router = useRouter();
-  const [formData, setFormData] = useState<{
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }>({
+  const [registerData, setRegisterData] = useState<RegisterData>({
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
 
-  const { isPasswordValid } = PasswordValidationService.validate(
-    formData.password,
-    formData.confirmPassword
-  );
-
   useEffect(() => {
     const value = getCookie("email_or_username");
     if (value) {
       if (value.includes("@")) {
-        setFormData((prev) => ({ ...prev, email: value }));
+        setRegisterData((prev) => ({ ...prev, email: value }));
       } else {
-        setFormData((prev) => ({ ...prev, username: value }));
+        setRegisterData((prev) => ({ ...prev, username: value }));
       }
-      deleteCookie("email_or_username");
+      // document.cookie = "email_or_username=; Max-Age=0; Path=/; SameSite=lax";
+      deleteCookie({ name: "email_or_username", path: "/" });
     }
   }, []);
 
   const handleCookie = () => {
-    setCookie("gate-key-for-login", "true", { maxAge: 60, path: "/login" });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData({
-      ...formData,
-      [id]: value,
+    // document.cookie = "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=lax";
+    setCookie({
+      name: "gate-key-for-login",
+      value: "true",
+      maxAge: 60,
+      path: "/login",
+      sameSite: "Lax",
     });
   };
 
-  const handleRegister = async () => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRegisterData((prevRegisterData) => ({
+      ...prevRegisterData,
+      [event.target.id]: event.target.value,
+    }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (
-      !formData.email.trim() ||
-      !formData.username.trim() ||
-      !formData.password.trim() ||
-      !formData.confirmPassword.trim()
+      !registerData.email.trim() ||
+      !registerData.username.trim() ||
+      !registerData.password.trim() ||
+      !registerData.confirmPassword.trim()
     ) {
-      showError("Please fill in all fields");
+      toastError("Please fill in all fields");
       return;
     }
     try {
-      const data = await apiCallWithTimeout("/api/auth/register", {
+      const apiResponse = await fetch("/api/auth/register", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify(registerData),
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000),
       });
 
-      if (!data.success) {
-        console.error("Registration failed:", data);
-        if (data.message === "Email already exists") {
-          showError(
+      const response = await apiResponse.json();
+
+      if (!response.success) {
+        console.error("Registration failed:", response);
+        if (response.message === "Email already exists") {
+          toastError(
             "This email is already registered. Please use a different email or try logging in."
           );
         } else {
-          showError(data.message || "Registration failed. Please try again.");
+          toastError(
+            response.message || "Registration failed. Please try again."
+          );
         }
         return;
       }
 
-      // Check if email verification is required
-      if (data.requiresVerification) {
-        // Store registration data in cookies for API access
-        setCookie(
-          "registration_data",
-          JSON.stringify({
-            email: formData.email,
-            username: formData.username,
+      if (response.requiresVerification) {
+        // document.cookie =
+        //   "registration_data=" +
+        //   JSON.stringify({
+        //     email: registerData.email,
+        //     username: registerData.username,
+        //   }) +
+        //   "; Max-Age=60; Path=/; SameSite=lax";
+        setCookie({
+          name: "registration_data",
+          value: JSON.stringify({
+            email: registerData.email,
+            username: registerData.username,
           }),
-          {
-            maxAge: 60 * 10, // 10 minutes
-            path: "/",
-            sameSite: "lax",
-            secure: process.env.NODE_ENV === "production",
-          }
-        );
-        setCookie("verification_required", "true", {
-          maxAge: 60 * 10, // 10 minutes
+          maxAge: 60,
           path: "/",
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
+          sameSite: "Lax",
         });
 
-        // Redirect to verify email page
+        // document.cookie = "verification_required=true; Max-Age=60; Path=/; SameSite=lax";
+        setCookie({
+          name: "verification_required",
+          value: "true",
+          maxAge: 60,
+          path: "/",
+          sameSite: "Lax",
+        });
+
         router.push("/verify/register");
         return;
       }
 
-      // If no verification needed, redirect to login
-      showSuccess("Account created successfully!");
+      toastSuccess("Account created successfully!");
       router.push("/login?registered=true");
     } catch (error) {
       console.error("Registration request error:", error);
-      showError("Registration failed. Please try again.");
+      toastError("Registration failed. Please try again.");
     } finally {
       console.info("/app/(auth)/register handleRegister completed");
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleRegister();
-  };
-
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
-      <Auth.BackgroundAccents />
       <Auth.Logo />
 
       <Auth.AuthCard title="Get Started">
@@ -134,7 +143,7 @@ export default function Register() {
             id="username"
             type="text"
             placeholder="Enter username"
-            value={formData.username}
+            value={registerData.username}
             onChange={handleChange}
           />
 
@@ -142,32 +151,25 @@ export default function Register() {
             id="email"
             type="email"
             placeholder="Enter email"
-            value={formData.email}
+            value={registerData.email}
             onChange={handleChange}
           />
 
           <Auth.PasswordField
             id="password"
-            value={formData.password}
+            value={registerData.password}
             onChange={handleChange}
             placeholder="Enter password"
           />
 
-          <Auth.PasswordValidation
-            password={formData.password}
-            confirmPassword={formData.confirmPassword}
-          />
-
           <Auth.PasswordField
             id="confirmPassword"
-            value={formData.confirmPassword}
+            value={registerData.confirmPassword}
             onChange={handleChange}
             placeholder="Confirm password"
           />
 
-          <Auth.SubmitButton disabled={!isPasswordValid}>
-            Register
-          </Auth.SubmitButton>
+          <Auth.SubmitButton>Register</Auth.SubmitButton>
         </form>
 
         {/* Login Link */}
