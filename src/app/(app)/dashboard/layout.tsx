@@ -23,7 +23,11 @@ type OutEvent =
   | { type: "user_connected"; data: Record<string, unknown> }
   | { type: "notification_received"; data: Record<string, unknown> };
 
-export default function DashboardLayout({ children,}: {children: React.ReactNode;}) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
@@ -184,18 +188,22 @@ export default function DashboardLayout({ children,}: {children: React.ReactNode
 
           if (notification) {
             toastInfo(`Notification received: ${notification.title}`);
-            setLogs((prev) => [
-              {
-                id: String(notification.id ?? ""),
-                title: String(notification.title ?? ""),
-                message: String(notification.message ?? ""),
-                read: Boolean(notification.read ?? false),
-                createdAt: String(
-                  notification.createdAt ?? new Date()
-                ).toLocaleString(),
-              },
-              ...prev,
-            ]);
+            setLogs((prev) => {
+              const newLogs = [
+                {
+                  id: String(notification.id ?? ""),
+                  title: String(notification.title ?? ""),
+                  message: String(notification.message ?? ""),
+                  read: Boolean(notification.read ?? false),
+                  createdAt: String(
+                    notification.createdAt ?? new Date()
+                  ).toLocaleString(),
+                },
+                ...prev,
+              ];
+              sessionStorage.setItem("notifications", JSON.stringify(newLogs));
+              return newLogs;
+            });
           }
         }
       } catch (error) {

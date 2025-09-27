@@ -1,20 +1,52 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
-import { useContext } from "react";
-import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { useRouter } from "next/navigation";
+import { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import {
   faShieldHalved,
   faWallet,
   faLaptop,
   faPlug,
   faCircleCheck,
+  faBell,
 } from "@fortawesome/free-solid-svg-icons";
 
+interface NotificationReceived {
+  id: string;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
 export default function OverviewPage() {
+  const router = useRouter();
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
+  const [notifications, setNotifications] = useState<NotificationReceived[]>(
+    []
+  );
+
+  useEffect(() => {
+    router.refresh();
+
+    const interval = setInterval(() => {
+      const storedNotifications = sessionStorage.getItem("notifications");
+      const notificationsData = storedNotifications
+        ? JSON.parse(storedNotifications)
+        : [];
+      if (notificationsData.length > notifications.length) {
+        setNotifications(notificationsData);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [router]);
+
   return (
     <>
       {/* Profile */}
@@ -150,37 +182,49 @@ export default function OverviewPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-white">Recent Activity</h3>
-          <button className="text-sm text-gray-400 hover:text-white">
-            View all
-          </button>
-        </div>
-        <div className="space-y-3">
-          {[
-            { title: "Signed in on Chrome (Mac)", time: "Just now" },
-            { title: "Connected to dApp: DeSwap", time: "2 hours ago" },
-            { title: "API key used by server-01", time: "Yesterday" },
-          ].map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-3">
-                <FontAwesomeIcon
-                  icon={faCircleCheck}
-                  className="text-green-400 text-sm"
-                />
-                <div>
-                  <p className="text-sm text-white">{item.title}</p>
-                  <p className="text-xs text-gray-400">{item.time}</p>
+      {notifications.length > 0 && (
+        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-white">Recent Activity</h3>
+            <Link href="/dashboard/notifications" className="text-sm text-gray-400 hover:text-white">View all</Link>
+          </div>
+          <div className="space-y-3">
+            {notifications.slice(0, 5).map((notification) => (
+              <div
+                key={notification.id}
+                className="flex items-center justify-between py-2"
+              >
+                <div className="flex justify-between items-center w-full gap-3">
+
+                  {notification.read ? (
+                    <FontAwesomeIcon
+                      icon={faCircleCheck}
+                      className="text-green-400 text-sm"
+                    />
+                  ) : (
+                    <FontAwesomeIcon
+                      icon={faBell}
+                      className="text-yellow-400 text-sm"
+                    />
+                  )}
+
+                  <div className="flex justify-between w-full gap-3">
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm text-white">{notification.title}</p>
+                      <p className="text-xs text-gray-400">
+                        {notification.message}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      {notification.createdAt.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <button className="text-xs text-gray-400 hover:text-white">
-                Details
-              </button>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
