@@ -6,7 +6,6 @@ import {
   useAppKitProvider,
 } from "@reown/appkit/react";
 import { ethers } from "ethers";
-import App from "@/components/(app)";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
@@ -235,8 +234,6 @@ export default function WalletsPage() {
   };
 
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader title="Wallets" description="Manage your wallets." />
       <div className="flex items-start flex-col gap-2">
         {allWallets.length > 0 && !user?.primary_wallet?.address && (
           <div className="flex items-start flex-col gap-2">
@@ -292,6 +289,5 @@ export default function WalletsPage() {
           </div>
         )}
       </div>
-    </div>
   );
 }

@@ -1,12 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import App from "@/components/(app)";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { useState, useContext, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
-import { faEnvelope, faCamera, faPen, faXmark, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faCamera, faPen, faXmark, faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function PersonalPage() {
   const userContext = useContext(UserInfoContext);
@@ -291,14 +290,8 @@ export default function PersonalPage() {
   };
 
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader
-        title="Personal info"
-        description="Manage your personal details and how they appear."
-      />
-
+    <>
       <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/[0.02] to-white/5 backdrop-blur-sm p-8 mb-8 shadow-2xl">
-        {/* Header with Edit Button */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h3 className="text-lg font-semibold text-white mb-1">
@@ -358,14 +351,7 @@ export default function PersonalPage() {
                   unoptimized
                 />
                 {uploadingAvatar && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                    <div className="text-white text-center">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                        <span>Uploading...</span>
-                      </div>
-                    </div>
-                  </div>
+                  <FontAwesomeIcon icon={faSpinner} className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-spin" />
                 )}
               </div>
               {editSection === "profile" && (
@@ -614,6 +600,6 @@ export default function PersonalPage() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

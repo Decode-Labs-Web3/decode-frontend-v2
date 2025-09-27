@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useContext } from "react";
-import App from "@/components/(app)";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -17,13 +16,7 @@ export default function OverviewPage() {
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      {/* Headline */}
-      <App.PageHeader
-        title="Overview"
-        description="Manage your Decode account, security and Web3 connections."
-      />
-
+    <>
       {/* Profile */}
       {user && (
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/[0.02] to-white/5 backdrop-blur-sm p-8 mb-8 shadow-2xl">
@@ -188,6 +181,6 @@ export default function OverviewPage() {
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 }

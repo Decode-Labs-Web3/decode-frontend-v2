@@ -163,12 +163,6 @@ export default function DevicesPage() {
   };
 
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader
-        title="Devices"
-        description="Trusted devices that have signed in to your account."
-      />
-
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {fingerprintsData && fingerprintsData.map((fingerprint) => (
           <div
@@ -252,6 +246,5 @@ export default function DevicesPage() {
           </div>
         ))}
       </div>
-    </div>
   );
 }

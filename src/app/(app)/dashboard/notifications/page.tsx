@@ -12,11 +12,6 @@ export default function NotificationsPage() {
   ];
 
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader 
-        title="Notifications" 
-        description="Security and account events." 
-      />
 
       <div className="bg-white/5 border border-white/10 rounded-xl">
         <ul className="divide-y divide-white/10">
@@ -34,10 +29,5 @@ export default function NotificationsPage() {
           ))}
         </ul>
       </div>
-    </div>
   );
 }
-
- 
-
-

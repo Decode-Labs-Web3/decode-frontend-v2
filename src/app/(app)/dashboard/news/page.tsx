@@ -92,12 +92,7 @@ export default function NewsPage() {
   };
 
   return (
-    <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-      <App.PageHeader
-        title="News"
-        description="Latest blog posts from the community."
-      />
-
+    <>
       {loading ? (
         <div className="text-center text-gray-400">Loading...</div>
       ) : posts.length === 0 ? (
@@ -184,6 +179,6 @@ export default function NewsPage() {
           ))}
         </div>
       )}
-    </div>
+    </>
   );
 }
