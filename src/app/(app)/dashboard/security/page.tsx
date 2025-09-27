@@ -1,6 +1,5 @@
 'use client';
 
-import App from '@/components/(app)';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShieldHalved, faMobileScreen, faLock, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 

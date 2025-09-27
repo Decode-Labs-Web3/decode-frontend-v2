@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       status: true,
       statusCode: 200,
-      message: response.message || "Follow/unfollow action successful",
+      message: response.message || "Block action successful",
       data: response.data || null
     },{status: 200})
   } catch (error){
@@ -146,7 +146,7 @@ export async function DELETE(req: Request) {
       {
         status: true,
         statusCode: 200,
-        message: response.message || "Unfollow action successful",
+        message: response.message || "Unblock action successful",
         data: response.data || null,
       },
       { status: 200 }

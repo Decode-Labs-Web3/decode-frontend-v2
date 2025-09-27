@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGaugeHigh,
@@ -27,7 +29,48 @@ const items = [
   { key: "blog-post", label: "Create Post", icon: faPenToSquare },
 ];
 
+interface NotificationReceived {
+  id: string;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
 export default function Sidebar({ active, onChange }: SidebarProps) {
+  const [unread, setUnread] = useState<number>(0);
+  // const [notifications, setNotifications] = useState<NotificationReceived[]>(
+  //   []
+  // );
+
+  const getUnread = async () => {
+    try {
+      const apiResponse = await fetch("/api/users/unread", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      if (!apiResponse.ok) {
+        const errorMessage =
+          response?.message || `API error: ${apiResponse.status}`;
+        console.error("Follow API error:", errorMessage);
+        return;
+      }
+      console.log("this is sidebar count notification", response);
+      setUnread(response.data.count);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getUnread();
+  }, []);
+
   return (
     <aside className="fixed top-16 left-0 bottom-0 w-64 bg-black/60 backdrop-blur-xl border-r border-white/10 hidden md:flex flex-col">
       <nav className="p-3 space-y-1">
@@ -41,8 +84,15 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
                 : "text-gray-300 hover:bg-white/5 hover:text-white"
             }`}
           >
-            <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-            <span>{item.label}</span>
+            <div className="flex justify-between w-full">
+              <div>
+                <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+                <span>{item.label}</span>
+              </div>
+              {item.key === "notifications" && unread > 0 && (
+                <span className="text-xs text-gray-400">{unread}</span>
+              )}
+            </div>
           </button>
         ))}
       </nav>

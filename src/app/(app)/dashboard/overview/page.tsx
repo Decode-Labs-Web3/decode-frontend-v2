@@ -16,7 +16,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 interface NotificationReceived {
-  id: string;
+  _id: string;
   title: string;
   message: string;
   read: boolean;
@@ -27,9 +27,7 @@ export default function OverviewPage() {
   const router = useRouter();
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
-  const [notifications, setNotifications] = useState<NotificationReceived[]>(
-    []
-  );
+  const [notifications, setNotifications] = useState<NotificationReceived[]>([]);
 
   useEffect(() => {
     router.refresh();
@@ -191,7 +189,7 @@ export default function OverviewPage() {
           <div className="space-y-3">
             {notifications.slice(0, 5).map((notification) => (
               <div
-                key={notification.id}
+                key={notification._id}
                 className="flex items-center justify-between py-2"
               >
                 <div className="flex justify-between items-center w-full gap-3">

@@ -9,7 +9,7 @@ import { toastInfo, toastError } from "@/utils/index.utils";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 
 interface NotificationReceived {
-  id: string;
+  _id: string;
   title: string;
   message: string;
   read: boolean;
@@ -151,7 +151,7 @@ export default function DashboardLayout({
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    const es = new EventSource("/api/users/notification");
+    const es = new EventSource("/api/users/websocket");
     esRef.current = es;
 
     es.onopen = () => {
@@ -191,7 +191,7 @@ export default function DashboardLayout({
             setLogs((prev) => {
               const newLogs = [
                 {
-                  id: String(notification.id ?? ""),
+                  _id: String(notification.id ?? ""),
                   title: String(notification.title ?? ""),
                   message: String(notification.message ?? ""),
                   read: Boolean(notification.read ?? false),
