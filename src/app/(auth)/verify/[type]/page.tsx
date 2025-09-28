@@ -95,6 +95,16 @@ export default function VerifyPage() {
     return null; // Redirect handled in useEffect
   }
 
+  // const handleSetCookie = () => {
+  //   setCookie({
+  //     name: "gate-key-for-login",
+  //     value: "true",
+  //     maxAge: 60,
+  //     path: "/login",
+  //     sameSite: "Strict",
+  //   });
+  // };
+
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
       <Auth.Logo />
@@ -104,18 +114,11 @@ export default function VerifyPage() {
           {config.description}
         </p>
 
-        {/* Back to Home button for login verification */}
-        {type === "login" && (
-          <div className="mb-4 text-center">
-            <button
-              type="button"
-              onClick={() => router.push("/")}
-              className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              ← Back to Home
-            </button>
-          </div>
-        )}
+        <Auth.BackButton
+          href="/"
+          // onClick={handleSetCookie}
+          text="Back to Home"
+        />
 
         <form noValidate onSubmit={handleVerify}>
           <Auth.VerificationCodeInput

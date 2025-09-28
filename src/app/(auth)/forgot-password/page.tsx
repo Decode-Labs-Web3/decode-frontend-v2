@@ -76,19 +76,21 @@ export default function ForgotPassword() {
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
       <Auth.Logo />
 
+
       {/* Main Card */}
       <Auth.AuthCard title="Reset Password">
+
+        {/* Simple Description */}
+        <p className="text-sm text-gray-400 text-center mb-8">
+          Enter your email to receive a reset link
+        </p>
+
         {/* Back to Login Button */}
         <Auth.BackButton
           href="/login"
           onClick={handleSetCookie}
           text="Back to Login"
         />
-
-        {/* Simple Description */}
-        <p className="text-sm text-gray-400 text-center mb-8">
-          Enter your email to receive a reset link
-        </p>
 
         <form onSubmit={handleSubmit} noValidate>
           <Auth.TextField
@@ -98,6 +100,8 @@ export default function ForgotPassword() {
             value={forgotData.email_or_username}
             onChange={handleChange}
           />
+
+          <Auth.SubmitButton>Send Reset Password</Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
 
