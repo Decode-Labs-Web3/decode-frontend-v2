@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
-import { ProfileData, RequestBody } from "@/interfaces/index.interfaces";
+import { ProfileData } from "@/interfaces/index.interfaces";
 import {
   generateRequestId,
   apiPathName,
@@ -66,6 +66,7 @@ async function makeBackendRequest(
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
           "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(data),
         cache: "no-store",

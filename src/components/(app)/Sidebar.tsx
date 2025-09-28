@@ -29,13 +29,13 @@ const items = [
   { key: "blog-post", label: "Create Post", icon: faPenToSquare },
 ];
 
-interface NotificationReceived {
-  id: string;
-  title: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-}
+// interface NotificationReceived {
+//   id: string;
+//   title: string;
+//   message: string;
+//   read: boolean;
+//   createdAt: string;
+// }
 
 export default function Sidebar({ active, onChange }: SidebarProps) {
   const [unread, setUnread] = useState<number>(0);

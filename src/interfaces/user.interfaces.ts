@@ -32,8 +32,3 @@ export interface ProfileData {
   display_name?: string;
   bio?: string;
 }
-
-export interface RequestBody {
-  current: ProfileData;
-  original: ProfileData;
-}

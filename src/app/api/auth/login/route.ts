@@ -87,6 +87,9 @@ export async function POST(req: Request) {
       const accessExpISO = response.data.expires_at as string;
       const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
       const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
+      console.log("this is accessMaxAge", accessMaxAge);
+      console.log("this is accessExpSec", accessExpSec);
+      console.log(`this is login ${pathname}`, response.data);
 
       res.cookies.set("sessionId", response.data._id, {
         httpOnly: false,

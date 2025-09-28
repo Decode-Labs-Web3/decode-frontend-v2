@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from "next/image";
 import App from "@/components/(app)";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 
@@ -27,7 +27,7 @@ export default function Page() {
   const { tab } = useParams<{ tab: string }>();
   const [userFollow, setUserFollow] = useState<UserFollow[]>([]);
 
-  const fetchFollowData = async () => {
+  const fetchFollowData = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/users/follow", {
         method: "POST",
@@ -57,11 +57,11 @@ export default function Page() {
       console.error(errorMessage);
       toastError(errorMessage);
     }
-  };
+  }, [tab]);
 
   useEffect(()=> {
     fetchFollowData()
-  },[tab])
+  },[fetchFollowData])
 
   return (
     <main className="p-6">

@@ -21,7 +21,11 @@ export function useWebSocket(url: string, opts: WSOptions = {}) {
         const ws = new WebSocket(url, opts.protocols);
         wsRef.current = ws;
 
-        ws.onopen = () => { setReady(true); setError(null); retry = 0; };
+        ws.onopen = () => {
+          setReady(true);
+          setError(null);
+          retry = 0;
+        };
         ws.onmessage = (e) => opts.onMessage?.(e);
         ws.onerror = () => setError("WebSocket error");
         ws.onclose = () => {
@@ -33,13 +37,18 @@ export function useWebSocket(url: string, opts: WSOptions = {}) {
         };
       } catch (error: unknown) {
         console.error("WebSocket connection error:", error);
-        setError(error instanceof Error ? error.message : "Cannot open WebSocket");
+        setError(
+          error instanceof Error ? error.message : "Cannot open WebSocket"
+        );
       }
     };
 
     connect();
-    return () => { stopped = true; wsRef.current?.close(); };
-  }, [url]);
+    return () => {
+      stopped = true;
+      wsRef.current?.close();
+    };
+  }, [url, opts]);
 
   const send = (payload: unknown) => {
     const ws = wsRef.current;

@@ -42,7 +42,9 @@ export async function POST(req: Request) {
     }
 
     cookieStore.delete("accessToken");
-    cookieStore.delete("refreshToken");
+    // cookieStore.delete("refreshToken");
+    cookieStore.delete("sessionId");
+    cookieStore.delete("accessExp");
 
     return NextResponse.json(
       {
@@ -63,7 +65,7 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info(`{pathname}: ${requestId}`);
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 

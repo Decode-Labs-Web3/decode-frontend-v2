@@ -43,7 +43,7 @@ export default function OverviewPage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [router]);
+  }, [notifications.length, router]);
 
   return (
     <>

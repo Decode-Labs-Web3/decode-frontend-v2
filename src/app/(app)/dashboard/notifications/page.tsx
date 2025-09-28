@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 
@@ -14,11 +13,10 @@ interface NotificationReceived {
 }
 
 export default function NotificationsPage() {
-  const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
     []
   );
-  const getNotifications = async () => {
+  const getNotifications = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/users/notifications", {
         method: "GET",
@@ -30,8 +28,7 @@ export default function NotificationsPage() {
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        const errorMessage =
-          response?.message || `API error: ${apiResponse.status}`;
+        const errorMessage = await apiResponse.json()
         console.error("Follow API error:", errorMessage);
         return;
       }
@@ -47,7 +44,7 @@ export default function NotificationsPage() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, []);
 
   const markAllAsRead = async () => {
     try {
@@ -100,7 +97,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     getNotifications();
-  }, []);
+  }, [getNotifications]);
 
   return (
     <div className="flex flex-col justify-start gap-2">

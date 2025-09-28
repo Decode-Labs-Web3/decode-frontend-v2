@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import App from "@/components/(app)";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/index.utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Fingerprint, Session } from "@/interfaces/index.interfaces";
@@ -12,6 +11,7 @@ import { faLaptop, faMobileScreen, faTablet } from "@fortawesome/free-solid-svg-
 
 export default function DevicesPage() {
   const router = useRouter();
+  console.log("Rendering DevicesPage efwfwefwrfkjwrfkrfbrwkwfbwkfb", router);
   const [currentSessionId, setCurrentSessionId] = useState<string>("");
   const [fingerprintsData, setFingerprintsData] = useState<Fingerprint[] | null>(null);
 
@@ -44,7 +44,7 @@ export default function DevicesPage() {
     }
   }, []);
 
-  const fetchFingerprints = async () => {
+  const fetchFingerprints = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/auth/fingerprints", {
         method: "GET",
@@ -71,11 +71,11 @@ export default function DevicesPage() {
     } finally {
       console.info("Fetch done!");
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     fetchFingerprints();
-  }, []);
+  }, [fetchFingerprints]);
 
   const handleRevokeDevice = async ( fingerprintId: string, sessions: Session[]) => {
     try {
