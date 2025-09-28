@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
 import Auth from "@/components/(auth)";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/index.utils";
+import { useEffect, useState, useMemo } from "react";
 import { RegisterData } from "@/interfaces/index.interfaces";
 import {
   toastSuccess,
@@ -11,6 +11,8 @@ import {
   setCookie,
   deleteCookie,
 } from "@/utils/index.utils";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faX, faInfo } from "@fortawesome/free-solid-svg-icons";
 
 export default function Register() {
   const router = useRouter();
@@ -122,7 +124,6 @@ export default function Register() {
         router.push("/verify/register");
         return;
       }
-
       toastSuccess("Account created successfully!");
       router.push("/login?registered=true");
     } catch (error) {
@@ -132,6 +133,20 @@ export default function Register() {
       console.info("/app/(auth)/register handleRegister completed");
     }
   };
+
+  const passwordChecks = useMemo(() => {
+    const password = registerData.password ?? "";
+    return {
+      length: password.length >= 8,
+      number: /\d/.test(password),
+      uppercase: /[A-Z]/.test(password),
+      special: /[^A-Za-z0-9]/.test(password),
+      match:
+        (registerData.password?.length ?? 0) > 0 &&
+        (registerData.confirmPassword?.length ?? 0) > 0 &&
+        registerData.password === registerData.confirmPassword,
+    };
+  }, [registerData.password, registerData.confirmPassword]);
 
   return (
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
@@ -162,12 +177,55 @@ export default function Register() {
             placeholder="Enter password"
           />
 
+          <div className="mb-5">
+            {!passwordChecks.number ? (
+              <p className="text-red-400">
+                <FontAwesomeIcon icon={faX} className="mr-2" />
+                Password must contain at least one number
+              </p>
+            ) : !passwordChecks.uppercase ? (
+              <p className="text-red-400">
+                <FontAwesomeIcon icon={faX} className="mr-2" />
+                Password must contain at least one uppercase letter
+              </p>
+            ) : !passwordChecks.special ? (
+              <p className="text-red-400">
+                <FontAwesomeIcon icon={faX} className="mr-2" />
+                Password must contain at least one special character
+              </p>
+            ) : !passwordChecks.length ? (
+              <p className="text-red-400">
+                <FontAwesomeIcon icon={faX} className="mr-2" />
+                Password must be at least 8 characters long
+              </p>
+            ) : (
+              <p className="text-green-400">
+                <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                Password meets all requirements
+              </p>
+            )}
+          </div>
+
           <Auth.PasswordField
             id="confirmPassword"
             value={registerData.confirmPassword}
             onChange={handleChange}
             placeholder="Confirm password"
           />
+
+          <div className="mb-5">
+            {passwordChecks.match ? (
+              <p className="text-green-500">
+                <FontAwesomeIcon icon={faCheck} className="text-green-500" />{" "}
+                Passwords match
+              </p>
+            ) : (
+              <p className="text-red-400">
+                <FontAwesomeIcon icon={faX} className="text-red-400" />{" "}
+                Passwords do not match
+              </p>
+            )}
+          </div>
 
           <Auth.SubmitButton>Register</Auth.SubmitButton>
         </form>
