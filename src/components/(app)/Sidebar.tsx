@@ -85,7 +85,7 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
             }`}
           >
             <div className="flex justify-between w-full">
-              <div>
+              <div className="flex items-center gap-2">
                 <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
                 <span>{item.label}</span>
               </div>

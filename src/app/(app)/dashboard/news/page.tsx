@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { toastError } from "@/utils/index.utils";
+import Loading from "@/components/(loading)";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faNewspaper,
@@ -93,20 +94,7 @@ export default function NewsPage() {
   return (
     <>
       {loading ? (
-        <div className="text-center text-gray-400">Loading...</div>
-      ) : posts.length === 0 ? (
-        <div className="text-center py-12">
-          <FontAwesomeIcon
-            icon={faNewspaper}
-            className="w-16 h-16 text-gray-600 mx-auto mb-4"
-          />
-          <h3 className="text-xl font-semibold text-white mb-2">
-            No posts yet
-          </h3>
-          <p className="text-gray-400">
-            Be the first to share something with the community!
-          </p>
-        </div>
+        <Loading.NewsCard />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
           {posts.map((post) => (

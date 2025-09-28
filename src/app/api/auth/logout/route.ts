@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     }
 
     cookieStore.delete("accessToken");
-    // cookieStore.delete("refreshToken");
+    cookieStore.delete("refreshToken");
     cookieStore.delete("sessionId");
     cookieStore.delete("accessExp");
 
