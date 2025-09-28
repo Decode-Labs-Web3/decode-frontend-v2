@@ -12,7 +12,7 @@ import {
   deleteCookie,
 } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faX, faInfo } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faX } from "@fortawesome/free-solid-svg-icons";
 
 export default function Register() {
   const router = useRouter();
