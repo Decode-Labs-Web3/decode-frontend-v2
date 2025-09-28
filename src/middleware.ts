@@ -30,8 +30,17 @@ const GATE_RULES: GateRule[] = [
   },
 ];
 
+function isoToMaxAgeSeconds(expiresAtISO: string): number {
+  const now = Date.now();
+  const expMs = Date.parse(expiresAtISO);
+  return Math.max(0, Math.floor((expMs - now) / 1000));
+}
+
 // Handle gate rules for specific routes, checking for required cookies and clearing them after use
-function handleGate( request: NextRequest, pathname: string ): NextResponse | null {
+function handleGate(
+  request: NextRequest,
+  pathname: string
+): NextResponse | null {
   if (pathname.startsWith("/verify/")) {
     const verifyType = pathname.split("/")[2];
     let requiredCookie = "";
@@ -80,29 +89,17 @@ function handleGate( request: NextRequest, pathname: string ): NextResponse | nu
   return null;
 }
 
-// Check if a JWT token is still valid & return TTL (seconds)
-function getJwtRemainingSeconds(
-  token: string,
+// Check if a JWT token is still valid
+function getRemainingFromAccessExpCookie(
+  request: NextRequest,
   skewSeconds = 10
-): number | null {
-  try {
-    const payload = token.split(".")[1];
-    if (!payload) return null;
-
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
-    const json = JSON.parse(atob(padded));
-
-    const exp = Number(json.exp);
-    if (!exp || Number.isNaN(exp)) return null;
-
-    const now = Math.floor(Date.now() / 1000);
-    const remaining = exp - now - skewSeconds;
-
-    return Math.max(0, remaining);
-  } catch {
-    return null;
-  }
+): number {
+  const expStr = request.cookies.get("accessExp")?.value; // "1761631300"
+  if (!expStr) return -1;
+  const exp = Number(expStr);
+  if (!Number.isFinite(exp)) return -1;
+  const now = Math.floor(Date.now() / 1000);
+  return exp - now - skewSeconds;
 }
 
 // Main middleware function for handling authentication, gate rules, and API/dashboard access
@@ -162,15 +159,16 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
-    const remaining = accessToken ? getJwtRemainingSeconds(accessToken) : null;
-    const expired = (remaining ?? 0) <= 0;
+    const remaining = getRemainingFromAccessExpCookie(request); // giây còn lại
+    const stillValid = !!accessToken && remaining > 0;
 
-    if (accessToken && !expired) {
+    if (stillValid) {
       return NextResponse.next();
     }
+
     try {
       // Attempt to refresh tokens if access token is missing or expired
-      const response = await fetch(`${origin}/api/auth/refresh`, {
+      const apiResponse = await fetch(`${origin}/api/auth/refresh`, {
         method: "GET",
         headers: {
           "X-Frontend-Internal-Request": "true",
@@ -179,53 +177,48 @@ export async function middleware(request: NextRequest) {
         signal: AbortSignal.timeout(10000),
       });
 
-      if (!response.ok) {
+      if (!apiResponse.ok) {
         return NextResponse.redirect(new URL("/", request.url));
       }
 
-      const {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-        _id: newSessionId,
-        expires_at: newExpiresAt,
-      } = await response.json();
+      const response = await apiResponse.json();
       const res = NextResponse.next();
 
-      if (newSessionId) {
-        res.cookies.set("sessionId", newSessionId, {
-          httpOnly: false,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          path: "/",
-          maxAge: 60 * 15,
-        });
-      }
+      const accessExpISO = response.data.expires_at as string;
+      const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
+      const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
 
-      const accessTokenAge = getJwtRemainingSeconds(newAccessToken);
+      res.cookies.set("sessionId", response.data.session._id, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 15,
+      });
 
-      if (newAccessToken) {
-        res.cookies.set("accessToken", newAccessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          path: "/",
-          maxAge: accessTokenAge ?? 60 * 15,
-        });
-      }
+      res.cookies.set("accessToken", response.data.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: accessMaxAge,
+      });
 
-      const refreshTokenAge = Math.floor(
-        (new Date(newExpiresAt).getTime() - Date.now()) / 1000
-      );
+      res.cookies.set("accessExp", String(accessExpSec), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: accessMaxAge,
+      });
 
-      if (newRefreshToken) {
-        res.cookies.set("refreshToken", newRefreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          path: "/",
-          maxAge: refreshTokenAge > 0 ? refreshTokenAge : 0,
-        });
-      }
+      res.cookies.set("refreshToken", response.data.session.session_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
 
       return res;
     } catch (error) {

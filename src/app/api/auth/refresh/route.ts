@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       {
         success: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Token refreshed successfully",
+        message: response.message || "Session refreshed",
         data: response.data,
       },
       { status: response.statusCode || 200 }

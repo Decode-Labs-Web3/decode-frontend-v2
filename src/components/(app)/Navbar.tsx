@@ -52,6 +52,7 @@ export default function Navbar() {
       } else {
         console.log("Logout failed:", data.message);
         toastError(data.message || "Logout failed");
+        router.push("/")
       }
     } catch (error: unknown) {
       if (

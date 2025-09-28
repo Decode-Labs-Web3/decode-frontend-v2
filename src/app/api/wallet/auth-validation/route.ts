@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
 import { guardInternal, apiPathName, generateRequestId } from "@/utils/index.utils"
 
+function isoToMaxAgeSeconds(expiresAtISO: string): number {
+  const now = Date.now();
+  const expMs = Date.parse(expiresAtISO);
+  return Math.max(0, Math.floor((expMs - now) / 1000));
+}
+
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId()
   const pathname = apiPathName(request)
@@ -69,6 +75,10 @@ export async function POST(request: NextRequest) {
       response.statusCode === 200 &&
       response.message === "Challenge validated successfully"
     ) {
+      const accessExpISO = response.data.expires_at as string;
+      const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
+      const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
+
       const res = NextResponse.json({
         success: true,
         statusCode: response.statusCode || 200,
@@ -81,7 +91,7 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 15,
+        maxAge: accessMaxAge,
       });
 
       res.cookies.set("accessToken", response.data.access_token, {
@@ -89,19 +99,23 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 15,
+        maxAge: accessMaxAge,
       });
 
-      const refreshTokenAge = Math.floor(
-        (new Date(response.data.expires_at).getTime() - Date.now()) / 1000
-      );
+      res.cookies.set("accessExp", String(accessExpSec), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: '/',
+        maxAge: accessMaxAge,
+      });
 
       res.cookies.set("refreshToken", response.data.session_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: refreshTokenAge > 0 ? refreshTokenAge : 0,
+        maxAge: 60 * 60 * 24 * 7,
       });
 
       return res;

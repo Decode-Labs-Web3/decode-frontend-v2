@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 
 interface UserData {
@@ -36,7 +36,7 @@ export default function UserData() {
   const { id, tab } = useParams<{ id: string; tab: string }>();
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/users/relationship", {
         method: "POST",
@@ -62,11 +62,11 @@ export default function UserData() {
       console.log(error);
       toastError("error");
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchUserData();
-  }, [id]);
+  },[fetchUserData]);
 
   const handleFollow = async () => {
     try {
