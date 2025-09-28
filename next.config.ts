@@ -35,10 +35,17 @@ const nextConfig: NextConfig = {
   // Build optimizations for memory-constrained environments
   experimental: {
     memoryBasedWorkersCount: true,
+    // Reduce memory usage during build
+    workerThreads: false,
+    // Use fewer workers to reduce memory pressure
+    cpus: 1,
   },
 
-  // Reduce memory usage during build
-  swcMinify: true,
+  // Additional memory optimizations
+  compiler: {
+    // Remove console.log in production
+    removeConsole: process.env.NODE_ENV === "production",
+  },
 
   images: {
     unoptimized: true,

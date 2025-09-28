@@ -8,6 +8,7 @@
     "prebuild:prod": "npm run type-check",
     "build": "next build",
     "build:prod": "npm run prebuild:prod && next build",
+    "build:minimal": "next build",
     "start": "PORT=${PORT:-3000} HOSTNAME=127.0.0.1 next start",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "type-check": "tsc --noEmit",
