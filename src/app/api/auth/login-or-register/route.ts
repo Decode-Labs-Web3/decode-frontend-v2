@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       }
     );
 
-    if (!backendResponse.ok && backendResponse.status != 400) {
+    if (!backendResponse.ok && backendResponse.status != 404) {
       const error = await backendResponse.json().catch(() => null);
       console.error(
         "/api/auth/login-or-register backend error status:",

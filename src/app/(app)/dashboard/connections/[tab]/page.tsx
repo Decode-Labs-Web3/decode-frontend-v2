@@ -65,7 +65,7 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  }, [tab, page]);
+  }, [tab, page, endOfData]);
 
   useEffect(() => {
     fetchFollowData();
@@ -98,7 +98,7 @@ export default function Page() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [endOfData, loading]);
 
   return (
     <main className="p-6">
@@ -143,8 +143,14 @@ export default function Page() {
                 </Link>
               </div>
             ))}
-          {endOfData && <div className="text-white/60 text-sm mt-2">End of data</div>}
-          {!endOfData && <div className="text-white/60 text-sm mt-2">Current page: {page}</div>}
+          {endOfData && (
+            <div className="text-white/60 text-sm mt-2">End of data</div>
+          )}
+          {!endOfData && (
+            <div className="text-white/60 text-sm mt-2">
+              Current page: {page}
+            </div>
+          )}
         </div>
       )}
       {loading && <Loading.AuthCard />}
