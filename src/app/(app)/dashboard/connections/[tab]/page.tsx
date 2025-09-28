@@ -1,11 +1,12 @@
 "use client";
 
-import Link from 'next/link'
+import Link from "next/link";
 import Image from "next/image";
 import App from "@/components/(app)";
-import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import { useState, useEffect, useCallback, useRef } from "react";
+import Loading from "@/components/(loading)";
 
 interface UserFollow {
   followers_number: number;
@@ -24,10 +25,15 @@ interface UserFollow {
 }
 
 export default function Page() {
+  const [page, setPage] = useState(0);
   const { tab } = useParams<{ tab: string }>();
+  const [loading, setLoading] = useState(false);
+  const [endOfData, setEndOfData] = useState(false);
   const [userFollow, setUserFollow] = useState<UserFollow[]>([]);
 
   const fetchFollowData = useCallback(async () => {
+    if (endOfData) return;
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/follow", {
         method: "POST",
@@ -35,7 +41,7 @@ export default function Page() {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify({ tab }),
+        body: JSON.stringify({ tab, page }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -46,22 +52,53 @@ export default function Page() {
           response?.message || `API error: ${apiResponse.status}`;
         console.error("Follow API error:", errorMessage);
         toastError(errorMessage);
+        setLoading(false);
         return;
       }
-      setUserFollow(response.data.users);
+      setUserFollow((prev) => [...prev, ...response.data.users]);
+      setEndOfData(response.data.meta.is_last_page);
       console.log("Follow API response:", response);
       toastSuccess(response?.message || "Follow data fetched successfully");
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      console.error(errorMessage);
-      toastError(errorMessage);
+      console.error(error);
+      toastError("Fetch follow data failed");
+    } finally {
+      setLoading(false);
     }
-  }, [tab]);
+  }, [tab, page]);
 
-  useEffect(()=> {
-    fetchFollowData()
-  },[fetchFollowData])
+  useEffect(() => {
+    fetchFollowData();
+  }, [fetchFollowData]);
+
+  const ticking = useRef(false);
+  const cooldownRef = useRef(false);
+
+  useEffect(() => {
+    if (endOfData) return;
+    const onScroll = () => {
+      if (loading) return;
+      if (ticking.current) return;
+      ticking.current = true;
+      requestAnimationFrame(() => {
+        const contentHeight = document.documentElement.scrollHeight;
+        const scrolled = window.scrollY + window.innerHeight;
+        const atBottom = contentHeight - scrolled <= 10;
+
+        if (atBottom && !cooldownRef.current) {
+          cooldownRef.current = true;
+          setPage((p) => p + 1);
+          setTimeout(() => {
+            cooldownRef.current = false;
+          }, 300);
+        }
+        ticking.current = false;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <main className="p-6">
@@ -69,41 +106,48 @@ export default function Page() {
         title={`${tab.charAt(0).toUpperCase() + tab.slice(1)}`}
         description={`Your ${tab}`}
       />{" "}
-      <div className="grid gap-2 md:grid-cols-2 sm:grid-cols-1">
-        {userFollow.length > 0 &&
-          userFollow.map((user) => (
-            <div
-              key={user.user_id}
-              id={user.user_id}
-              className="flex items-center justify-between mb-2 w-100 px-2 bg-gray-800 p-2 rounded-2xl"
-            >
-              <div className="flex flex-row gap-3 min-w-0">
-                <div className="w-18 h-18 rounded-2xl border-2 border-white/20 overflow-hidden shadow-xl">
-                  <Image
-                    src={
-                      user.avatar_ipfs_hash
-                        ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                        : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                    }
-                    alt={"Avatar"}
-                    width={10}
-                    height={10}
-                    className="w-full h-full object-cover"
-                    unoptimized
-                  />
+      {!loading && (
+        <div className="flex flex-col gap-2">
+          {userFollow.length > 0 &&
+            userFollow.map((user) => (
+              <div
+                key={user.user_id}
+                id={user.user_id}
+                className="flex items-center justify-between mb-2 w-100 px-2 bg-gray-800 p-2 rounded-2xl"
+              >
+                <div className="flex flex-row gap-3 min-w-0">
+                  <div className="w-18 h-18 rounded-2xl border-2 border-white/20 overflow-hidden shadow-xl">
+                    <Image
+                      src={
+                        user.avatar_ipfs_hash
+                          ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
+                          : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      }
+                      alt={"Avatar"}
+                      width={10}
+                      height={10}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <h3>{user.username}</h3>
+                    <p>{user.display_name}</p>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <h3>{user.username}</h3>
-                  <p>{user.display_name}</p>
-                </div>
+                <Link
+                  href={`/dashboard/connections/${tab}/${user.user_id}`}
+                  className="bg-blue-500 p-2"
+                >
+                  View
+                </Link>
               </div>
-            <Link href={`/dashboard/connections/${tab}/${user.user_id}`}
-            className="bg-blue-500 p-2">
-                View
-              </Link>
-            </div>
-          ))}
-      </div>
+            ))}
+          {endOfData && <div className="text-white/60 text-sm mt-2">End of data</div>}
+          {!endOfData && <div className="text-white/60 text-sm mt-2">Current page: {page}</div>}
+        </div>
+      )}
+      {loading && <Loading.AuthCard />}
     </main>
   );
 }

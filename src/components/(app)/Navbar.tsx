@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toastError } from "@/utils/index.utils";
+// import { toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSun,
@@ -51,7 +51,7 @@ export default function Navbar() {
         router.push("/");
       } else {
         console.log("Logout failed:", data.message);
-        toastError(data.message || "Logout failed");
+        // toastError(data.message || "Logout failed");
         router.push("/")
       }
     } catch (error: unknown) {
@@ -63,7 +63,7 @@ export default function Navbar() {
       } else {
         console.error(error);
       }
-      toastError("Logout failed. Please try again.");
+      // toastError("Logout failed. Please try again.");
     } finally {
       console.log("Logout operation completed");
     }
@@ -88,15 +88,6 @@ export default function Navbar() {
             <h1 className="text-sm md:text-base font-semibold text-white">
               Decode Protocol
             </h1>
-          </div>
-
-          {/* Search */}
-          <div className="hidden md:flex items-center flex-1 max-w-xl mx-6">
-            <input
-              type="text"
-              placeholder="Search settings, security, devices..."
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-            />
           </div>
 
           <div className="flex items-center gap-3">

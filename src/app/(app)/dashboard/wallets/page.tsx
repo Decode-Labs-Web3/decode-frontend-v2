@@ -234,60 +234,58 @@ export default function WalletsPage() {
   };
 
   return (
-      <div className="flex items-start flex-col gap-2">
-        {allWallets.length > 0 && !user?.primary_wallet?.address && (
-          <div className="flex items-start flex-col gap-2">
-            <button
-              onClick={handleAddPrimaryWallet}
-              className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
-            >
-              <FontAwesomeIcon icon={faPlus} />
-              Add primary wallet
-            </button>
-            <p className="text-sm text-gray-400">
-              Please add your primary wallet to your account to activate more
-              features.
-            </p>
-          </div>
-        )}
-        {user?.primary_wallet?.address && (
-          <div className="flex items-start flex-col gap-2">
-            <h1 className="text-sm text-gray-400">
-              Primary wallet: {user?.primary_wallet?.address}
-            </h1>
-          </div>
-        )}
-        <button
-          onClick={handleAddWallet}
-          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
-        >
-          <FontAwesomeIcon icon={faPlus} />
-          Add wallets
-        </button>
-        {allWallets.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold text-white mb-2">
-              All Wallets
-            </h3>
-            <ul className="space-y-2">
-              {allWallets.map((wallet) => {
-                if (wallet.address !== user?.primary_wallet?.address) {
-                  return (
-                    <div
-                      key={wallet.id || wallet.address}
-                      className="flex items-center gap-2"
-                    >
-                      <h1>{wallet.address || "-"}</h1>
-                      <button className="text-sm text-gray-400 hover:text-red-500 transition-colors">
-                        Remove
-                      </button>
-                    </div>
-                  );
-                }
-              })}
-            </ul>
-          </div>
-        )}
-      </div>
+    <div className="flex items-start flex-col gap-2">
+      {allWallets.length > 0 && !user?.primary_wallet?.address && (
+        <div className="flex items-start flex-col gap-2">
+          <button
+            onClick={handleAddPrimaryWallet}
+            className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            Add primary wallet
+          </button>
+          <p className="text-sm text-gray-400">
+            Please add your primary wallet to your account to activate more
+            features.
+          </p>
+        </div>
+      )}
+      {user?.primary_wallet?.address && (
+        <div className="flex items-start flex-col gap-2">
+          <h1 className="text-sm text-gray-400">
+            Primary wallet: {user?.primary_wallet?.address}
+          </h1>
+        </div>
+      )}
+      <button
+        onClick={handleAddWallet}
+        className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
+      >
+        <FontAwesomeIcon icon={faPlus} />
+        Add wallets
+      </button>
+      {allWallets.length > 0 && (
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold text-white mb-2">All Wallets</h3>
+          <ul className="space-y-2">
+            {allWallets.map((wallet) => {
+              if (wallet.address !== user?.primary_wallet?.address) {
+                return (
+                  <div
+                    key={wallet.id || wallet.address}
+                    className="flex items-center gap-2"
+                  >
+                    <h1>{wallet.address || "-"}</h1>
+                    <button className="text-sm text-gray-400 hover:text-red-500 transition-colors">
+                      Remove
+                    </button>
+                  </div>
+                );
+              }
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }

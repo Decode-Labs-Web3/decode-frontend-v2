@@ -161,6 +161,9 @@ export default function DashboardLayout({
     es.onmessage = (ev) => {
       try {
         const msg = JSON.parse(ev.data) as OutEvent;
+        if (msg.type === "connected") {
+          console.log("🟢 SSE connection opened");
+        }
         // const line =
         //     msg.type === "connected"
         //     ? `✅ [${timestamp}] Connected! sid=${msg.data.sid}`

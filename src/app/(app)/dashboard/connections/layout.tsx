@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function ConnectionsLayout({ children, }: { children: React.ReactNode; }) {
   return (
     <>
-      <div>
+      <div className="flex flex-row gap-4">
         <Link
           href="/dashboard/connections"
           className="px-4 py-2 rounded-lg border hover:bg-black hover:text-white"

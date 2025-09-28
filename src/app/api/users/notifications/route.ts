@@ -7,13 +7,18 @@ import {
   generateRequestId,
 } from "@/utils/index.utils";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
   if (denied) return denied;
 
   try {
+    const body = await req.json();
+    const { page } = body;
+
+    console.log("this is page from backend route notifications", page);
+
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
@@ -32,7 +37,7 @@ export async function GET(req: Request) {
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/notifications?page=0&limit=10`,
+      `${process.env.BACKEND_BASE_URL}/notifications?page=${page}&limit=15`,
       {
         method: "GET",
         headers: {

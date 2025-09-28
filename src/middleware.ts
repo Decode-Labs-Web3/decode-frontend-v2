@@ -170,6 +170,10 @@ export async function middleware(request: NextRequest) {
 
   // Special handling for API routes
   if (pathname.startsWith("/api")) {
+    if (pathname === "/api/users/websocket") {
+      return NextResponse.next();
+    }
+
     const mode = request.headers.get("sec-fetch-mode") || "";
     const dest = request.headers.get("sec-fetch-dest") || "";
     const userNav = request.headers.get("sec-fetch-user") === "?1";
@@ -269,7 +273,6 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|images/|favicons/|fonts/).*)",
   ],
 };
-
 
 // import { NextRequest, NextResponse } from "next/server";
 

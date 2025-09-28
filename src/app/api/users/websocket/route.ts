@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
           socket = createClient(`${process.env.NOTIFICATIONS_SIO_URL}/notifications`, {
             auth: { token },
             path: "/socket.io",
-            timeout: 10000,
+            timeout: 20000,
           });
 
           socket.on("connect", () => {

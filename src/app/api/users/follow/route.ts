@@ -28,13 +28,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { tab } = body;
+    const { tab, page } = body;
 
+    console.log("this is page", page);
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/relationship/follow/${tab}/me?page=0&limit=10`,
+      `${process.env.BACKEND_BASE_URL}/relationship/follow/${tab}/me?page=${page}&limit=10`,
       {
         method: "GET",
         headers: {

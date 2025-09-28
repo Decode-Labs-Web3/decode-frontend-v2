@@ -9,20 +9,24 @@ if (PROD && !PROD_ORIGIN) {
 }
 
 const BACKEND = process.env.BACKEND_BASE_URL || "";
-const SIO_URL = process.env.NEXT_PUBLIC_SIO_URL || ""; // e.g. http://localhost:4006 (dev) hoặc wss://socket.decodenetwork.app (prod)
+const SIO_URL = process.env.NEXT_PUBLIC_SIO_URL || "";
 
-// Rút gọn host ws/wss để nhúng vào CSP (nếu có)
+// host ws/wss to add to CSP
 let SIO_CONNECT_SRC = "";
 try {
   if (SIO_URL) {
     const u = new URL(SIO_URL);
-    // Engine.io thực tế sẽ gọi ws(s)://host[:port]/socket.io
-    SIO_CONNECT_SRC = `${u.protocol.startsWith("wss") ? "wss" : "ws"}://${u.host}`;
+    // Engine.io ws(s)://host[:port]/socket.io
+    SIO_CONNECT_SRC = `${u.protocol.startsWith("wss") ? "wss" : "ws"}://${
+      u.host
+    }`;
   }
-} catch { /* ignore */ }
+} catch {
+  /* ignore */
+}
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   serverExternalPackages: ["@reown/appkit"],
   env: {
     BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
@@ -35,17 +39,16 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    // Tập hợp connect-src
     const connectSrc = [
       "'self'",
-      BACKEND,                          // API backend của bạn (có thể là http://178.128... hoặc https://api...)
-      "http://localhost:4006",          // dev http
-      "ws://localhost:4006",            // dev ws
-      SIO_CONNECT_SRC || "",            // tự động thêm ws(s)://host:port từ NEXT_PUBLIC_SIO_URL nếu có
+      BACKEND,
+      "http://localhost:4006", // dev http
+      "ws://localhost:4006", // dev ws
+      SIO_CONNECT_SRC || "",
       "https://api.pinata.cloud",
       "https://gateway.pinata.cloud",
       "https://fonts.reown.com",
-      "https://api.web3modal.org",      // ← đã sửa đúng domain
+      "https://api.web3modal.org",
       "https://registry.npmjs.org",
       "https://pulse.walletconnect.org",
       "https://verify.walletconnect.org",
@@ -56,25 +59,41 @@ const nextConfig: NextConfig = {
       "https://static.cloudflareinsights.com",
       "wss://relay.walletconnect.org",
       "wss://*.walletconnect.org",
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     return [
       {
         source: "/(.*)",
         headers: [
-          // CORS (chỉ hữu dụng cho route do Next phục vụ – OK để nguyên)
-          { key: "Access-Control-Allow-Origin", value: PROD ? PROD_ORIGIN : "http://localhost:3000" },
-          { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization, X-Frontend-Internal-Request" },
+          {
+            key: "Access-Control-Allow-Origin",
+            value: PROD ? PROD_ORIGIN : "http://localhost:3000",
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, DELETE, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "Content-Type, Authorization, X-Frontend-Internal-Request",
+          },
           { key: "Access-Control-Allow-Credentials", value: "true" },
 
           // Security headers
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), payment=()",
+          },
           { key: "X-XSS-Protection", value: "1; mode=block" },
-          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains; preload",
+          },
 
           // CSP
           {
@@ -106,7 +125,12 @@ const nextConfig: NextConfig = {
       config.externals = ["lokijs", "encoding"];
     }
     if (!isServer) {
-      config.resolve.fallback = { ...config.resolve.fallback, fs: false, net: false, tls: false };
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
     }
     config.optimization.splitChunks = {
       ...config.optimization.splitChunks,
@@ -125,9 +149,6 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-
-
 
 // import type { NextConfig } from "next";
 
