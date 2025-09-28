@@ -32,6 +32,14 @@ const nextConfig: NextConfig = {
     BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
   },
 
+  // Build optimizations for memory-constrained environments
+  experimental: {
+    memoryBasedWorkersCount: true,
+  },
+
+  // Reduce memory usage during build
+  swcMinify: true,
+
   images: {
     unoptimized: true,
     domains: [],
