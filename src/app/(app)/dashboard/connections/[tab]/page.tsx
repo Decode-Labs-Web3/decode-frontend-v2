@@ -150,13 +150,13 @@ export default function Page() {
                 >
                   View
                 </Link>
-                {endOfData && (
-                  <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
-                    End of data
-                  </div>
-                )}
               </div>
             ))}
+          {endOfData && (
+            <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
+              End of data
+            </div>
+          )}
           {!endOfData && (
             <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
               Current page: {page}

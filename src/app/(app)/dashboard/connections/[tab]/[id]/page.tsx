@@ -124,9 +124,7 @@ export default function Page() {
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
-      setUserData((prev) =>
-        prev ? { ...prev, is_following: !prev.is_following } : prev
-      );
+      setUserData(response.data);
       fetchUserData();
       console.log(response);
     } catch (error) {
@@ -186,9 +184,7 @@ export default function Page() {
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
-      setUserData((prev) =>
-        prev ? { ...prev, is_blocked: !prev.is_blocked } : prev
-      );
+      setUserData(response.data);
       fetchUserData();
       console.log(response);
     } catch (error) {
@@ -218,10 +214,7 @@ export default function Page() {
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
-      // Optimistic UI: toggle state immediately while we refetch
-      setUserData((prev) =>
-        prev ? { ...prev, is_blocked: !prev.is_blocked } : prev
-      );
+      setUserData(response.data);
       fetchUserData();
       console.log(response);
     } catch (error) {
@@ -240,7 +233,7 @@ export default function Page() {
       )}
 
       {userData && (
-        <div className="flex flex-col gap-4 p-4 rounded-2xl border-2 border-[color:var(--border)] bg-gradient-to-br from-blue-500/5 to-purple-500/5 shadow-xl">
+        <div className="flex flex-col mt-4 gap-4 p-4 rounded-2xl border-2 border-[color:var(--border)] bg-gradient-to-br from-blue-500/5 to-purple-500/5 shadow-xl">
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-xl overflow-hidden border border-[color:var(--border)] bg-black/5">
               <Image
@@ -264,6 +257,9 @@ export default function Page() {
               <div className="text-sm text-muted-foreground truncate">
                 @{userData.username}
               </div>
+              <div className="text-sm text-muted-foreground truncate">
+                Wallet: {userData.primary_wallet.address}
+              </div>
               <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
                 <span>{userData.followers_number} followers</span>
                 <span>•</span>
@@ -276,44 +272,46 @@ export default function Page() {
                 )}
               </div>
             </div>
-          </div>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={userData.is_following ? handleUnFollow : handleFollow}
-              disabled={loading || userData.is_blocked}
-              className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
-                userData.is_following
-                  ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
-                  : "bg-blue-600 hover:bg-blue-500 text-white border-blue-600"
-              } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-            >
-              {userData.is_following
-                ? loading
-                  ? "Unfollowing..."
-                  : "Unfollow"
-                : loading
-                ? "Following..."
-                : "Follow"}
-            </button>
+            <div className="flex flex-wrap gap-3">
+              {!userData.is_blocked && (
+              <button
+                onClick={userData.is_following ? handleUnFollow : handleFollow}
+                disabled={loading || userData.is_blocked}
+                className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
+                  userData.is_following
+                    ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
+                    : "bg-blue-600 hover:bg-blue-500 text-white border-blue-600"
+                } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                {userData.is_following
+                  ? loading
+                    ? "Unfollowing..."
+                    : "Unfollow"
+                  : loading
+                  ? "Following..."
+                  : "Follow"}
+              </button>
+            )}
 
-            <button
-              onClick={userData.is_blocked ? handleUnBlock : handleBlock}
-              disabled={loading}
-              className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
-                userData.is_blocked
-                  ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
-                  : "bg-red-600 hover:bg-red-500 text-white border-red-600"
-              } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-            >
-              {userData.is_blocked
-                ? loading
-                  ? "Unblocking..."
-                  : "Unblock"
-                : loading
-                ? "Blocking..."
-                : "Block"}
-            </button>
+              <button
+                onClick={userData.is_blocked ? handleUnBlock : handleBlock}
+                disabled={loading}
+                className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
+                  userData.is_blocked
+                    ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
+                    : "bg-red-600 hover:bg-red-500 text-white border-red-600"
+                } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                {userData.is_blocked
+                  ? loading
+                    ? "Unblocking..."
+                    : "Unblock"
+                  : loading
+                  ? "Blocking..."
+                  : "Block"}
+              </button>
+            </div>
           </div>
         </div>
       )}

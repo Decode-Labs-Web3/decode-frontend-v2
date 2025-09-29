@@ -9,7 +9,7 @@ import { ethers } from "ethers";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { toastError, toastSuccess, toastInfo } from "@/utils/index.utils";
 
 interface AllWallets {
@@ -26,60 +26,46 @@ export default function WalletsPage() {
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
   const refetchUserData = userContext?.refetchUserData;
+
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
   const [allWallets, setAllWallets] = useState<AllWallets[]>([]);
 
-  useEffect(() => {
-    const handleGetAllWallets = async () => {
-      try {
-        const apiResponse = await fetch("/api/wallet/all-wallet", {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
-          cache: "no-store",
-          signal: AbortSignal.timeout(10000),
-        });
-        if (!apiResponse.ok) {
-          const error = await apiResponse.json();
-          console.error("Get all wallets error:", error);
-          toastError(error.message || `HTTP ${apiResponse.status}`);
-          return;
-        }
-        const response = await apiResponse.json();
-        console.log("all wallets data:", response);
-        setAllWallets(response.data);
-        if (response.data.length === 0) {
-          setAllWallets([
-            {
-              id: "",
-              address: "",
-              user_id: "",
-              name_service: "",
-              is_primary: false,
-              created_at: "",
-              updated_at: "",
-            },
-          ]);
-          toastInfo("No wallets found. Please add a wallet.");
-        } else {
-          setAllWallets(response.data);
-          toastSuccess("Wallets fetched successfully");
-        }
-      } catch (error) {
+  const handleGetAllWallets = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/wallet/all-wallet", {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        const error = await apiResponse.json();
         console.error("Get all wallets error:", error);
-        toastError(
-          error instanceof Error ? error.message : "Get all wallets failed"
-        );
+        toastError(error.message || `HTTP ${apiResponse.status}`);
+        return;
       }
-    };
-    handleGetAllWallets();
+      const response = await apiResponse.json();
+      console.log("all wallets data:", response);
+      setAllWallets(response.data);
+      toastSuccess("Wallets fetched successfully");
+    } catch (error) {
+      console.error("Get all wallets error:", error);
+      toastError(
+        error instanceof Error ? error.message : "Get all wallets failed"
+      );
+    }
   }, []);
 
-  const handleAddWallet = async () => {
+  useEffect(() => {
+    handleGetAllWallets();
+  }, [handleGetAllWallets]);
+
+  const handleAddWallet = useCallback(async () => {
     try {
       await open();
 
@@ -140,6 +126,7 @@ export default function WalletsPage() {
       if (refetchUserData) {
         await refetchUserData();
       }
+      handleGetAllWallets();
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
       // Handle user rejection (code 4001) or ACTION_REJECTED
@@ -154,9 +141,9 @@ export default function WalletsPage() {
       console.error("Add wallet error:", error);
       toastError(error instanceof Error ? error.message : "Add wallet failed");
     }
-  };
+  }, []);
 
-  const handleAddPrimaryWallet = async () => {
+  const handleAddPrimaryWallet = useCallback(async () => {
     try {
       await open();
 
@@ -217,6 +204,7 @@ export default function WalletsPage() {
       if (refetchUserData) {
         await refetchUserData();
       }
+      handleGetAllWallets();
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
       // Handle user rejection (code 4001) or ACTION_REJECTED
@@ -231,11 +219,40 @@ export default function WalletsPage() {
       console.error("Add wallet error:", error);
       toastError(error instanceof Error ? error.message : "Add wallet failed");
     }
-  };
+  }, []);
+
+  const handleRemoveWallet = useCallback(async (address: string) => {
+    try {
+      const apiResponse = await fetch("/api/wallet/unlink-wallet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ address }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      const response = await apiResponse.json();
+      // console.log("Remove wallet response:", response);
+      if (!apiResponse.ok){
+        console.log("Remove wallet error:", response);
+        toastError(response.message || "Remove wallet failed");
+        return;
+      }
+      handleGetAllWallets();
+      toastSuccess("Wallet removed successfully");
+    } catch (error) {
+      console.error("Remove wallet error:", error);
+      toastError(error instanceof Error ? error.message : "Remove wallet failed");
+    }
+  }, []);
 
   return (
     <div className="flex items-start flex-col gap-2">
-      {allWallets.length > 0 && !user?.primary_wallet?.address && (
+
+      {allWallets.length > 0 && !user?.primary_wallet?.is_primary && !user?.primary_wallet?.address && (
         <div className="flex items-start flex-col gap-2">
           <button
             onClick={handleAddPrimaryWallet}
@@ -250,6 +267,7 @@ export default function WalletsPage() {
           </p>
         </div>
       )}
+
       {user?.primary_wallet?.address && (
         <div className="flex items-start flex-col gap-2">
           <h1 className="text-sm text-[color:var(--muted-foreground)]">
@@ -280,7 +298,10 @@ export default function WalletsPage() {
                     <h1 className="text-[color:var(--foreground)]">
                       {wallet.address || "-"}
                     </h1>
-                    <button className="text-sm text-red-600 dark:text-red-400 hover:opacity-80 transition-colors">
+                    <button
+                      onClick={() => handleRemoveWallet(wallet.address)}
+                      className="text-sm text-red-600 dark:text-red-400 hover:opacity-80 transition-colors"
+                    >
                       Remove
                     </button>
                   </div>

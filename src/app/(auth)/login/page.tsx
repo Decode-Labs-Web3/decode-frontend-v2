@@ -95,7 +95,7 @@ export default function Login() {
       ) {
         router.push("/verify/login");
       } else {
-        console.error("Login failed:", response);
+        console.log("Login failed:", response);
         toastError(response?.message || "Login failed");
       }
     } catch (error) {
