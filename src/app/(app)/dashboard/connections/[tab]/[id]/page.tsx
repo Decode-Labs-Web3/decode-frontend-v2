@@ -63,7 +63,7 @@ interface UserData {
   mutual_followers_list: [];
 }
 
-export default function UserData() {
+export default function Page() {
   const { id } = useParams<{ id: string }>();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
