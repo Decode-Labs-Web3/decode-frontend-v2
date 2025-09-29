@@ -164,22 +164,6 @@ export default function DashboardLayout({
         if (msg.type === "connected") {
           console.log("🟢 SSE connection opened");
         }
-        // const line =
-        //     msg.type === "connected"
-        //     ? `✅ [${timestamp}] Connected! sid=${msg.data.sid}`
-        //     : msg.type === "connect_error"
-        //     ? `❌ [${timestamp}] Connection failed: ${msg.data}`
-        //     : msg.type === "disconnect"
-        //     ? `🔌 [${timestamp}] Disconnected: ${msg.data}`
-        //     : msg.type === "user_connected"
-        //     ? `👤 [${timestamp}] User connected event: ${JSON.stringify(
-        //         msg.data
-        //       )}`
-        //     : msg.type === "notification_received"
-        //     ? `🔔 [${timestamp}] Notification received: ${JSON.stringify(
-        //         msg.data
-        //       )}`
-        //     : `⇦ [${timestamp}] ${ev.data}`;
 
         if (msg.type === "notification_received") {
           // msg.data: { event, data: {...}, timestamp, userId }
@@ -227,7 +211,7 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white overflow-hidden">
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
         <App.Navbar />
         <App.Sidebar active="overview" onChange={() => {}} />
         <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
@@ -239,7 +223,7 @@ export default function DashboardLayout({
 
   return (
     <UserInfoContext.Provider value={{ user, refetchUserData }}>
-      <div className="relative min-h-screen bg-black text-white overflow-hidden">
+      <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
         <App.Navbar />
         <App.Sidebar active={active} onChange={handleChange} />
         <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>

@@ -7,10 +7,12 @@ export default function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={`mb-6 sm:mb-8 ${className}`}>
-      <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mb-2">
+      <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold mb-2 text-[color:var(--foreground)]">
         {title}
       </h2>
-      <p className="text-gray-400 text-sm sm:text-base">{description}</p>
+      <p className="text-sm sm:text-base text-[color:var(--muted-foreground)]">
+        {description}
+      </p>
     </div>
   );
 }

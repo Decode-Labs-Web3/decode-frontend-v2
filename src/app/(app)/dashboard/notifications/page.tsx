@@ -172,21 +172,26 @@ export default function NotificationsPage() {
           <div
             key={index}
             id={notification._id}
-            className="flex items-center justify-between p-4 border border-white/10 rounded-lg my-2 bg-white/5"
+            className="flex items-center justify-between p-4 border border-[color:var(--border)] rounded-lg my-2 bg-[color:var(--surface)]"
           >
             <div className="flex items-center gap-3">
               {notification.read ? (
                 <FontAwesomeIcon
                   icon={faCircleCheck}
-                  className="text-green-400"
+                  className="text-green-600 dark:text-green-400"
                 />
               ) : (
-                <FontAwesomeIcon icon={faBell} className="text-yellow-400" />
+                <FontAwesomeIcon
+                  icon={faBell}
+                  className="text-yellow-600 dark:text-yellow-400"
+                />
               )}
 
               <div>
-                <p className="text-sm">{notification.title}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-sm text-[color:var(--foreground)]">
+                  {notification.title}
+                </p>
+                <p className="text-xs text-[color:var(--muted-foreground)]">
                   {notification.createdAt}
                 </p>
               </div>
@@ -200,10 +205,14 @@ export default function NotificationsPage() {
           </div>
         ))}
       {endOfData && (
-        <div className="text-white/60 text-sm mt-2">End of data</div>
+        <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
+          End of data
+        </div>
       )}
       {!endOfData && (
-        <div className="text-white/60 text-sm mt-2">Current page: {page}</div>
+        <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
+          Current page: {page}
+        </div>
       )}
     </div>
   );

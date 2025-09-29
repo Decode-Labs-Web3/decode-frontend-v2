@@ -27,7 +27,9 @@ export default function OverviewPage() {
   const router = useRouter();
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
-  const [notifications, setNotifications] = useState<NotificationReceived[]>([]);
+  const [notifications, setNotifications] = useState<NotificationReceived[]>(
+    []
+  );
 
   useEffect(() => {
     router.refresh();
@@ -49,21 +51,23 @@ export default function OverviewPage() {
     <>
       {/* Profile */}
       {user && (
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/[0.02] to-white/5 backdrop-blur-sm p-8 mb-8 shadow-2xl">
+        <div className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] backdrop-blur-sm p-8 mb-8 shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-1">
+              <h3 className="text-lg font-semibold mb-1 text-[color:var(--foreground)]">
                 Profile Information
               </h3>
-              <p className="text-white font-mono text-sm">User ID: {user.id}</p>
+              <p className="font-mono text-sm text-[color:var(--muted-foreground)]">
+                User ID: {user.id}
+              </p>
             </div>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Avatar Section */}
             <div className="flex flex-col items-center lg:items-start">
-              <div className="w-80 h-80 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-white/20 overflow-hidden shadow-xl">
+              <div className="w-80 h-80 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-xl">
                 <Image
                   src={
                     user.avatar_ipfs_hash
@@ -84,24 +88,28 @@ export default function OverviewPage() {
               {/* Display Name */}
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
-                  <h2 className="text-3xl font-bold text-white">
+                  <h2 className="text-3xl font-bold text-[color:var(--foreground)]">
                     {user.display_name || user.username || "Your name"}
                   </h2>
                   {user?.role && (
-                    <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-300 text-sm font-medium border border-blue-500/30">
+                    <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/10 to-indigo-600/10 text-blue-600/80 dark:text-blue-300 text-sm font-medium border border-blue-500/20">
                       {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </span>
                   )}
                 </div>
-                <p className="text-lg text-gray-300">{user.email}</p>
+                <p className="text-lg text-[color:var(--muted-foreground)]">
+                  {user.email}
+                </p>
               </div>
 
               {/* Bio Section */}
-              <div className="pt-6 border-t border-white/10">
+              <div className="pt-6 border-t border-[color:var(--border)]">
                 <div className="space-y-3">
-                  <h4 className="text-lg font-semibold text-white">About me</h4>
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <p className="text-gray-200 leading-relaxed">
+                  <h4 className="text-lg font-semibold text-[color:var(--foreground)]">
+                    About me
+                  </h4>
+                  <div className="bg-[color:var(--surface)] rounded-xl p-4 border border-[color:var(--border)]">
+                    <p className="leading-relaxed text-[color:var(--foreground)]/90">
                       {user.bio ||
                         "No bio added yet. Visit the Personal page to add a short description about yourself."}
                     </p>
@@ -110,17 +118,21 @@ export default function OverviewPage() {
               </div>
 
               {/* Additional Info */}
-              <div className="pt-6 border-t border-white/10">
+              <div className="pt-6 border-t border-[color:var(--border)]">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <span className="text-sm text-gray-400">Followers</span>
-                    <p className="text-white text-sm">
+                    <span className="text-sm text-[color:var(--muted-foreground)]">
+                      Followers
+                    </span>
+                    <p className="text-sm text-[color:var(--foreground)]">
                       {user.followers_number}
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <span className="text-sm text-gray-400">Following</span>
-                    <p className="text-white text-sm">
+                    <span className="text-sm text-[color:var(--muted-foreground)]">
+                      Following
+                    </span>
+                    <p className="text-sm text-[color:var(--foreground)]">
                       {user.following_number}
                     </p>
                   </div>
@@ -133,22 +145,38 @@ export default function OverviewPage() {
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
           <div className="flex items-center gap-3 mb-3">
-            <FontAwesomeIcon icon={faShieldHalved} className="text-green-400" />
-            <span className="text-sm text-gray-300">Security</span>
+            <FontAwesomeIcon
+              icon={faShieldHalved}
+              className="text-green-600 dark:text-green-400"
+            />
+            <span className="text-sm text-[color:var(--muted-foreground)]">
+              Security
+            </span>
           </div>
-          <p className="text-white font-medium">Protected</p>
-          <p className="text-xs text-gray-400 mt-1">2FA enabled</p>
+          <p className="font-medium text-[color:var(--foreground)]">
+            Protected
+          </p>
+          <p className="text-xs text-[color:var(--muted-foreground)] mt-1">
+            2FA enabled
+          </p>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
           <div className="flex items-center gap-3 mb-3">
-            <FontAwesomeIcon icon={faWallet} className="text-blue-400" />
-            <span className="text-sm text-gray-300">Wallets</span>
+            <FontAwesomeIcon
+              icon={faWallet}
+              className="text-blue-600 dark:text-blue-400"
+            />
+            <span className="text-sm text-[color:var(--muted-foreground)]">
+              Wallets
+            </span>
           </div>
-          <p className="text-white font-medium">Primary wallet</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="font-medium text-[color:var(--foreground)]">
+            Primary wallet
+          </p>
+          <p className="text-xs text-[color:var(--muted-foreground)] mt-1">
             {" "}
             {user?.primary_wallet?.address
               ? user?.primary_wallet?.address.slice(0, 10) +
@@ -158,33 +186,56 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
           <div className="flex items-center gap-3 mb-3">
-            <FontAwesomeIcon icon={faLaptop} className="text-purple-400" />
-            <span className="text-sm text-gray-300">Devices</span>
+            <FontAwesomeIcon
+              icon={faLaptop}
+              className="text-purple-600 dark:text-purple-400"
+            />
+            <span className="text-sm text-[color:var(--muted-foreground)]">
+              Devices
+            </span>
           </div>
-          <p className="text-white font-medium">Current device</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="font-medium text-[color:var(--foreground)]">
+            Current device
+          </p>
+          <p className="text-xs text-[color:var(--muted-foreground)] mt-1">
             {new Date(user?.last_login || "").toLocaleString()}
           </p>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
           <div className="flex items-center gap-3 mb-3">
-            <FontAwesomeIcon icon={faPlug} className="text-cyan-400" />
-            <span className="text-sm text-gray-300">dApps</span>
+            <FontAwesomeIcon
+              icon={faPlug}
+              className="text-cyan-600 dark:text-cyan-400"
+            />
+            <span className="text-sm text-[color:var(--muted-foreground)]">
+              dApps
+            </span>
           </div>
-          <p className="text-white font-medium">5 connected</p>
-          <p className="text-xs text-gray-400 mt-1">Active today</p>
+          <p className="font-medium text-[color:var(--foreground)]">
+            5 connected
+          </p>
+          <p className="text-xs text-[color:var(--muted-foreground)] mt-1">
+            Active today
+          </p>
         </div>
       </div>
 
       {/* Recent Activity */}
       {notifications.length > 0 && (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white">Recent Activity</h3>
-            <Link href="/dashboard/notifications" className="text-sm text-gray-400 hover:text-white">View all</Link>
+            <h3 className="font-semibold text-[color:var(--foreground)]">
+              Recent Activity
+            </h3>
+            <Link
+              href="/dashboard/notifications"
+              className="text-sm text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]"
+            >
+              View all
+            </Link>
           </div>
           <div className="space-y-3">
             {notifications.slice(0, 5).map((notification) => (
@@ -193,27 +244,28 @@ export default function OverviewPage() {
                 className="flex items-center justify-between py-2"
               >
                 <div className="flex justify-between items-center w-full gap-3">
-
                   {notification.read ? (
                     <FontAwesomeIcon
                       icon={faCircleCheck}
-                      className="text-green-400 text-sm"
+                      className="text-green-600 dark:text-green-400 text-sm"
                     />
                   ) : (
                     <FontAwesomeIcon
                       icon={faBell}
-                      className="text-yellow-400 text-sm"
+                      className="text-yellow-600 dark:text-yellow-400 text-sm"
                     />
                   )}
 
                   <div className="flex justify-between w-full gap-3">
                     <div className="flex flex-col gap-1">
-                      <p className="text-sm text-white">{notification.title}</p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-sm text-[color:var(--foreground)]">
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-[color:var(--muted-foreground)]">
                         {notification.message}
                       </p>
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-[color:var(--muted-foreground)]">
                       {notification.createdAt.toLocaleString()}
                     </p>
                   </div>

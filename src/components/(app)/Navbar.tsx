@@ -16,21 +16,43 @@ export default function Navbar() {
 
   const [themeMode, setThemeMode] = useState(false);
 
+  // Initialize theme from storage or system preference
   useEffect(() => {
-    const storedThemeMode = localStorage.getItem("themeMode");
-    if (storedThemeMode) {
-      setThemeMode(JSON.parse(storedThemeMode));
-    } else {
-      setThemeMode(false);
+    try {
+      const storedThemeMode = localStorage.getItem("themeMode");
+      let isDark = false;
+      if (storedThemeMode !== null) {
+        isDark = JSON.parse(storedThemeMode) === true;
+      } else if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        isDark = true;
+      }
+      setThemeMode(isDark);
+      document.documentElement.setAttribute(
+        "data-theme",
+        isDark ? "dark" : "light"
+      );
+    } catch {
+      // ignore
     }
   }, []);
 
   const handleTheme = () => {
-    setThemeMode(prevThemeMode => !prevThemeMode);
-    localStorage.setItem(
-      "themeMode",
-      themeMode.toString()
-    );
+    setThemeMode((prevThemeMode) => {
+      const next = !prevThemeMode;
+      try {
+        localStorage.setItem("themeMode", JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      document.documentElement.setAttribute(
+        "data-theme",
+        next ? "dark" : "light"
+      );
+      return next;
+    });
   };
 
   const handleLogout = async () => {
@@ -52,7 +74,7 @@ export default function Navbar() {
       } else {
         console.log("Logout failed:", data.message);
         // toastError(data.message || "Logout failed");
-        router.push("/")
+        router.push("/");
       }
     } catch (error: unknown) {
       if (
@@ -69,13 +91,25 @@ export default function Navbar() {
     }
   };
 
+  const handleToggleSidebar = () => {
+    try {
+      window.dispatchEvent(new CustomEvent("toggle-sidebar"));
+    } catch {
+      // ignore
+    }
+  };
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-2xl">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[color:var(--border)] bg-[color:var(--navbar-bg)] backdrop-blur-2xl">
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Navbar */}
           <div className="flex items-center gap-3">
-            <div className="bg-white/10 border border-white/20 rounded-lg p-1.5 backdrop-blur-sm">
+            <button
+              onClick={handleToggleSidebar}
+              className="bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-1.5 backdrop-blur-sm md:pointer-events-none"
+              aria-label="Open sidebar"
+            >
               <Image
                 src="/images/tokens/3d_token_nobg.png"
                 width={28}
@@ -84,8 +118,8 @@ export default function Navbar() {
                 className="w-7 h-7"
                 unoptimized
               />
-            </div>
-            <h1 className="text-sm md:text-base font-semibold text-white">
+            </button>
+            <h1 className="text-sm md:text-base font-semibold">
               Decode Protocol
             </h1>
           </div>

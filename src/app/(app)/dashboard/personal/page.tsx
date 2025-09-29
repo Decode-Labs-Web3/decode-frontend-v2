@@ -5,7 +5,14 @@ import { toastSuccess, toastError } from "@/utils/index.utils";
 import { useState, useContext, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
-import { faEnvelope, faCamera, faPen, faXmark, faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEnvelope,
+  faCamera,
+  faPen,
+  faXmark,
+  faCheck,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function PersonalPage() {
   const userContext = useContext(UserInfoContext);
@@ -291,13 +298,13 @@ export default function PersonalPage() {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/[0.02] to-white/5 backdrop-blur-sm p-8 mb-8 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] backdrop-blur-sm p-8 mb-8 shadow-2xl">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1">
+            <h3 className="text-lg font-semibold text-[color:var(--foreground)] mb-1">
               Profile Information
             </h3>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[color:var(--muted-foreground)]">
               Manage your personal details and appearance
             </p>
           </div>
@@ -316,7 +323,7 @@ export default function PersonalPage() {
                 type="button"
                 onClick={() => setEditSection("none")}
                 disabled={false}
-                className="bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200"
+                className="bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)] disabled:opacity-50 text-[color:var(--foreground)] px-6 py-2.5 rounded-xl font-medium transition-all duration-200 border border-[color:var(--border)]"
               >
                 Cancel
               </button>
@@ -337,7 +344,7 @@ export default function PersonalPage() {
           {/* Avatar Section */}
           <div className="flex flex-col items-center lg:items-start">
             <div className="relative group">
-              <div className="w-48 h-48 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-white/20 overflow-hidden shadow-xl">
+              <div className="w-48 h-48 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-xl">
                 <Image
                   src={
                     profileForm.avatar_ipfs_hash
@@ -351,16 +358,19 @@ export default function PersonalPage() {
                   unoptimized
                 />
                 {uploadingAvatar && (
-                  <FontAwesomeIcon icon={faSpinner} className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-spin" />
+                  <FontAwesomeIcon
+                    icon={faSpinner}
+                    className="w-12 h-12 text-[color:var(--muted-foreground)] mx-auto mb-4 animate-spin"
+                  />
                 )}
               </div>
               {editSection === "profile" && (
                 <button
                   type="button"
                   onClick={handleAvatarClick}
-                  className="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center"
+                  className="absolute inset-0 bg-black/40 dark:bg-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center"
                 >
-                  <div className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium">
+                  <div className="bg-white/70 dark:bg-white/20 text-black dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium border border-[color:var(--border)]">
                     <FontAwesomeIcon icon={faCamera} />
                     Change Photo
                   </div>
@@ -378,7 +388,7 @@ export default function PersonalPage() {
               />
             )}
             {editSection === "profile" && (
-              <p className="text-xs text-gray-400 mt-3 text-center lg:text-left">
+              <p className="text-xs text-[color:var(--muted-foreground)] mt-3 text-center lg:text-left">
                 Click to change avatar
               </p>
             )}
@@ -391,11 +401,11 @@ export default function PersonalPage() {
               {editSection !== "profile" ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
-                    <h2 className="text-3xl font-bold text-white">
+                    <h2 className="text-3xl font-bold text-[color:var(--foreground)]">
                       {profileForm.display_name || "Your name"}
                     </h2>
                     {user?.role && (
-                      <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-300 text-sm font-medium border border-blue-500/30">
+                      <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/10 to-indigo-600/10 text-blue-600/80 dark:text-blue-300 text-sm font-medium border border-blue-500/20">
                         {user.role
                           ? user.role.charAt(0).toUpperCase() +
                             user.role.slice(1)
@@ -406,14 +416,14 @@ export default function PersonalPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-gray-300">
+                  <label className="text-sm font-semibold text-[color:var(--muted-foreground)]">
                     Display Name
                   </label>
                   <input
                     id="display_name"
                     value={profileForm.display_name}
                     onChange={handleChangeProfile}
-                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200"
+                    className="w-full bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl px-4 py-3 text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200"
                     placeholder="Enter your display name"
                   />
                 </div>
@@ -421,12 +431,14 @@ export default function PersonalPage() {
             </div>
 
             {/* Bio Section */}
-            <div className="pt-6 border-t border-white/10">
+            <div className="pt-6 border-t border-[color:var(--border)]">
               {editSection !== "profile" ? (
                 <div className="space-y-3">
-                  <h4 className="text-lg font-semibold text-white">About me</h4>
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <p className="text-gray-200 leading-relaxed">
+                  <h4 className="text-lg font-semibold text-[color:var(--foreground)]">
+                    About me
+                  </h4>
+                  <div className="bg-[color:var(--surface)] rounded-xl p-4 border border-[color:var(--border)]">
+                    <p className="text-[color:var(--foreground)]/90 leading-relaxed">
                       {profileForm.bio ||
                         "No bio added yet. Click edit to add a short description about yourself."}
                     </p>
@@ -434,7 +446,7 @@ export default function PersonalPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <label className="text-sm font-semibold text-gray-300">
+                  <label className="text-sm font-semibold text-[color:var(--muted-foreground)]">
                     About me
                   </label>
                   <textarea
@@ -442,7 +454,7 @@ export default function PersonalPage() {
                     value={profileForm.bio}
                     onChange={handleChangeProfile}
                     rows={4}
-                    className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 resize-none"
+                    className="w-full bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl px-4 py-3 text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 resize-none"
                     placeholder="Tell us about yourself..."
                   />
                 </div>
@@ -453,18 +465,22 @@ export default function PersonalPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-white/10 bg-white/5 h-full min-h-[240px] hover:bg-white/[0.06] transition shadow-sm">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] h-full min-h-[240px] hover:bg-[color:var(--surface-muted)] transition shadow-sm">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[color:var(--border)]">
             <div>
-              <h3 className="font-semibold tracking-tight">Username info</h3>
-              <p className="text-xs text-gray-400">Username</p>
+              <h3 className="font-semibold tracking-tight text-[color:var(--foreground)]">
+                Username info
+              </h3>
+              <p className="text-xs text-[color:var(--muted-foreground)]">
+                Username
+              </p>
             </div>
             <button
               type="button"
               onClick={() =>
                 setEditSection(editSection === "username" ? "none" : "username")
               }
-              className="text-xs bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-1"
+              className="text-xs bg-[color:var(--surface-muted)] hover:bg-[color:var(--surface)] border border-[color:var(--border)] px-3 py-1.5 rounded-full flex items-center gap-1 text-[color:var(--foreground)]"
             >
               <FontAwesomeIcon
                 icon={editSection === "username" ? faXmark : faPen}
@@ -476,8 +492,10 @@ export default function PersonalPage() {
             {editSection !== "username" ? (
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Username</p>
-                  <p className="text-white font-medium">
+                  <p className="text-sm text-[color:var(--muted-foreground)]">
+                    Username
+                  </p>
+                  <p className="text-[color:var(--foreground)] font-medium">
                     {accountForm.username || "-"}
                   </p>
                 </div>
@@ -485,7 +503,7 @@ export default function PersonalPage() {
             ) : !loading ? (
               <form onSubmit={handleSubmitUsername} className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-400">
+                  <label className="text-sm text-[color:var(--muted-foreground)]">
                     {" "}
                     Enter username
                   </label>
@@ -494,7 +512,7 @@ export default function PersonalPage() {
                     type="text"
                     value={accountForm.username}
                     onChange={handleChangeProfileFrom}
-                    className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
+                    className="mt-1 w-full bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg px-3 py-2 text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
                     placeholder="Your username"
                   />
                 </div>
@@ -511,7 +529,7 @@ export default function PersonalPage() {
               </form>
             ) : (
               <form onSubmit={handleSendUsernameCode} className="space-y-4">
-                <label className="text-sm text-gray-400">
+                <label className="text-sm text-[color:var(--muted-foreground)]">
                   Enter username code
                 </label>
                 <input
@@ -524,7 +542,7 @@ export default function PersonalPage() {
                   type="text"
                   value={accountForm.username_code}
                   onChange={handleChangeProfileFrom}
-                  className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
+                  className="mt-1 w-full bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg px-3 py-2 text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
                   placeholder="Your username code"
                 />
                 <button
@@ -540,18 +558,22 @@ export default function PersonalPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 h-full min-h-[240px] hover:bg-white/[0.06] transition shadow-sm">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] h-full min-h-[240px] hover:bg-[color:var(--surface-muted)] transition shadow-sm">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[color:var(--border)]">
             <div>
-              <h3 className="font-semibold tracking-tight">Contact info</h3>
-              <p className="text-xs text-gray-400">Email address</p>
+              <h3 className="font-semibold tracking-tight text-[color:var(--foreground)]">
+                Contact info
+              </h3>
+              <p className="text-xs text-[color:var(--muted-foreground)]">
+                Email address
+              </p>
             </div>
             <button
               type="button"
               onClick={() =>
                 setEditSection(editSection === "email" ? "none" : "email")
               }
-              className="text-xs bg-white/10 hover:bg-white/20 border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-1"
+              className="text-xs bg-[color:var(--surface-muted)] hover:bg-[color:var(--surface)] border border-[color:var(--border)] px-3 py-1.5 rounded-full flex items-center gap-1 text-[color:var(--foreground)]"
             >
               <FontAwesomeIcon
                 icon={editSection === "email" ? faXmark : faPen}
@@ -562,12 +584,14 @@ export default function PersonalPage() {
           <div className="p-5 space-y-4">
             {editSection !== "email" ? (
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-green-400">
+                <div className="w-9 h-9 rounded-lg bg-[color:var(--surface-muted)] flex items-center justify-center text-green-600 dark:text-green-400">
                   <FontAwesomeIcon icon={faEnvelope} />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Email</p>
-                  <p className="text-white font-medium">
+                  <p className="text-sm text-[color:var(--muted-foreground)]">
+                    Email
+                  </p>
+                  <p className="text-[color:var(--foreground)] font-medium">
                     {accountForm.email || "-"}
                   </p>
                 </div>
@@ -575,13 +599,15 @@ export default function PersonalPage() {
             ) : (
               <form onSubmit={handleSubmitEmail} className="space-y-4">
                 <div>
-                  <label className="text-sm text-gray-400">Email</label>
+                  <label className="text-sm text-[color:var(--muted-foreground)]">
+                    Email
+                  </label>
                   <input
                     id="email"
                     type="email"
                     value={accountForm.email}
                     onChange={handleChangeProfileFrom}
-                    className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
+                    className="mt-1 w-full bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg px-3 py-2 text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
                     placeholder="you@example.com"
                   />
                 </div>

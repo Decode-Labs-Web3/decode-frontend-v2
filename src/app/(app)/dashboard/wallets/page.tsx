@@ -244,7 +244,7 @@ export default function WalletsPage() {
             <FontAwesomeIcon icon={faPlus} />
             Add primary wallet
           </button>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-[color:var(--muted-foreground)]">
             Please add your primary wallet to your account to activate more
             features.
           </p>
@@ -252,7 +252,7 @@ export default function WalletsPage() {
       )}
       {user?.primary_wallet?.address && (
         <div className="flex items-start flex-col gap-2">
-          <h1 className="text-sm text-gray-400">
+          <h1 className="text-sm text-[color:var(--muted-foreground)]">
             Primary wallet: {user?.primary_wallet?.address}
           </h1>
         </div>
@@ -266,17 +266,21 @@ export default function WalletsPage() {
       </button>
       {allWallets.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-lg font-semibold text-white mb-2">All Wallets</h3>
+          <h3 className="text-lg font-semibold text-[color:var(--foreground)] mb-2">
+            All Wallets
+          </h3>
           <ul className="space-y-2">
             {allWallets.map((wallet) => {
               if (wallet.address !== user?.primary_wallet?.address) {
                 return (
                   <div
                     key={wallet.id || wallet.address}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg px-3 py-2"
                   >
-                    <h1>{wallet.address || "-"}</h1>
-                    <button className="text-sm text-gray-400 hover:text-red-500 transition-colors">
+                    <h1 className="text-[color:var(--foreground)]">
+                      {wallet.address || "-"}
+                    </h1>
+                    <button className="text-sm text-red-600 dark:text-red-400 hover:opacity-80 transition-colors">
                       Remove
                     </button>
                   </div>

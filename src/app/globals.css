@@ -3,7 +3,37 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --w3m-font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --surface: #ffffff;
+  --surface-muted: #f6f7f8;
+  --navbar-bg: rgba(255, 255, 255, 0.8);
+  --border: rgba(0, 0, 0, 0.08);
+  --muted-foreground: #6b7280;
+  --muted-foreground-2: #9ca3af;
+  --w3m-font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif;
+}
+
+/* Explicit theme overrides via data attribute */
+[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #171717;
+  --surface: #ffffff;
+  --surface-muted: #f6f7f8;
+  --navbar-bg: rgba(255, 255, 255, 0.8);
+  --border: rgba(0, 0, 0, 0.08);
+  --muted-foreground: #6b7280;
+  --muted-foreground-2: #9ca3af;
+}
+
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --surface: #111214;
+  --surface-muted: #15171a;
+  --navbar-bg: rgba(0, 0, 0, 0.8);
+  --border: rgba(255, 255, 255, 0.1);
+  --muted-foreground: #9ca3af;
+  --muted-foreground-2: #6b7280;
 }
 
 @theme inline {
@@ -13,10 +43,17 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Fallback to system preference if no data-theme is set */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --surface: #111214;
+    --surface-muted: #15171a;
+    --navbar-bg: rgba(0, 0, 0, 0.8);
+    --border: rgba(255, 255, 255, 0.1);
+    --muted-foreground: #9ca3af;
+    --muted-foreground-2: #6b7280;
   }
 }
 

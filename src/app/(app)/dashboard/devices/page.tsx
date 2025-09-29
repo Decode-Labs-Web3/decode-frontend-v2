@@ -7,14 +7,19 @@ import { useState, useEffect, useCallback } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Fingerprint, Session } from "@/interfaces/index.interfaces";
-import { faLaptop, faMobileScreen, faTablet } from "@fortawesome/free-solid-svg-icons";
+import {
+  faLaptop,
+  faMobileScreen,
+  faTablet,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function DevicesPage() {
   const router = useRouter();
   console.log("Rendering DevicesPage efwfwefwrfkjwrfkrfbrwkwfbwkfb", router);
   const [currentSessionId, setCurrentSessionId] = useState<string>("");
-  const [fingerprintsData, setFingerprintsData] = useState<Fingerprint[] | null>(null);
-
+  const [fingerprintsData, setFingerprintsData] = useState<
+    Fingerprint[] | null
+  >(null);
 
   const getAppLogoSrc = (app: string) => {
     const key = (app || "")
@@ -57,9 +62,16 @@ export default function DevicesPage() {
 
       const response = await apiResponse.json();
 
-      if ( response.success || response.statusCode === 200 || response.message === "Device fingerprint fetched") {
+      if (
+        response.success ||
+        response.statusCode === 200 ||
+        response.message === "Device fingerprint fetched"
+      ) {
         setFingerprintsData(response.data);
-      } else if ( response.statusCode === 400 && response.message === "Missing fingerprint" ) {
+      } else if (
+        response.statusCode === 400 &&
+        response.message === "Missing fingerprint"
+      ) {
         setFingerprintsData(null);
         router.push("/login");
       } else {
@@ -77,7 +89,10 @@ export default function DevicesPage() {
     fetchFingerprints();
   }, [fetchFingerprints]);
 
-  const handleRevokeDevice = async ( fingerprintId: string, sessions: Session[]) => {
+  const handleRevokeDevice = async (
+    fingerprintId: string,
+    sessions: Session[]
+  ) => {
     try {
       const isCurrentDevice = currentSessionId
         ? sessions.some((session) => session._id === currentSessionId)
@@ -100,7 +115,11 @@ export default function DevicesPage() {
       });
 
       const response = await apiResponse.json();
-      if ( response.success || response.statusCode === 200 || response.message === "Device fingerprint revoked") {
+      if (
+        response.success ||
+        response.statusCode === 200 ||
+        response.message === "Device fingerprint revoked"
+      ) {
         if (isCurrentDevice) {
           toastSuccess("Device revoked successfully. You will be logged out.");
           router.push("/");
@@ -142,7 +161,11 @@ export default function DevicesPage() {
 
       const response = await apiResponse.json();
 
-      if ( response.success || response.statusCode === 200 || response.message === "Session revoked") {
+      if (
+        response.success ||
+        response.statusCode === 200 ||
+        response.message === "Session revoked"
+      ) {
         if (isCurrentSession) {
           toastSuccess("Session revoked successfully. You will be logged out.");
           router.push("/");
@@ -163,15 +186,17 @@ export default function DevicesPage() {
   };
 
   return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-        {fingerprintsData && fingerprintsData.map((fingerprint) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+      {fingerprintsData &&
+        fingerprintsData.map((fingerprint) => (
           <div
-            key={fingerprint._id} id={fingerprint._id}
-            className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6"
+            key={fingerprint._id}
+            id={fingerprint._id}
+            className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-4 sm:p-6"
           >
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-[color:var(--surface-muted)] flex items-center justify-center flex-shrink-0">
                   <FontAwesomeIcon
                     icon={
                       fingerprint.device === "iOS" ||
@@ -181,20 +206,23 @@ export default function DevicesPage() {
                         ? faTablet
                         : faLaptop
                     }
-                    className="text-gray-300 text-sm"
+                    className="text-[color:var(--muted-foreground)] text-sm"
                   />
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold text-white">
-                  <p className="text-xs sm:text-sm font-medium text-white mb-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <h3 className="text-base sm:text-lg font-semibold text-[color:var(--foreground)]">
+                  <p className="text-xs sm:text-sm font-medium text-[color:var(--foreground)] mb-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                     <span className="truncate">{fingerprint.device}</span>
-                    <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-gray-400"></span>
+                    <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-[color:var(--muted-foreground)]"></span>
                     <span className="truncate">{fingerprint.browser}</span>
                   </p>
                 </h3>
               </div>
               <button
                 onClick={() =>
-                  handleRevokeDevice(fingerprint._id, fingerprint.sessions || [])
+                  handleRevokeDevice(
+                    fingerprint._id,
+                    fingerprint.sessions || []
+                  )
                 }
                 className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors w-full sm:w-auto"
               >
@@ -203,48 +231,51 @@ export default function DevicesPage() {
             </div>
 
             <div className="space-y-2 sm:space-y-3">
-              {fingerprint.sessions.length > 0 && fingerprint.sessions.map((session: Session) => (
-                <div
-                  key={session._id}
-                  className="bg-white/5 border border-white/10 rounded-lg p-3 sm:p-4 hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      <Image
-                        src={getAppLogoSrc(session.app)}
-                        alt={`${session.app} logo`}
-                        width={32}
-                        height={32}
-                        className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-white truncate">
-                        {session.app.charAt(0).toUpperCase() +
-                          session.app.slice(1)}
-                      </h3>
-                      {session._id === currentSessionId && (
-                      <p className="text-lg text-green-400">*</p>
-                      )}
+              {fingerprint.sessions.length > 0 &&
+                fingerprint.sessions.map((session: Session) => (
+                  <div
+                    key={session._id}
+                    className="bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-3 sm:p-4 hover:bg-[color:var(--surface)] transition-colors"
+                  >
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[color:var(--surface)] border border-[color:var(--border)] flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <Image
+                          src={getAppLogoSrc(session.app)}
+                          alt={`${session.app} logo`}
+                          width={32}
+                          height={32}
+                          className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+                          unoptimized
+                        />
                       </div>
-                      <p className="text-xs text-gray-400 truncate">
-                        {new Date(session.last_used_at).toLocaleString()}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-[color:var(--foreground)] truncate">
+                            {session.app.charAt(0).toUpperCase() +
+                              session.app.slice(1)}
+                          </h3>
+                          {session._id === currentSessionId && (
+                            <p className="text-lg text-green-600 dark:text-green-400">
+                              *
+                            </p>
+                          )}
+                        </div>
+                        <p className="text-xs text-[color:var(--muted-foreground)] truncate">
+                          {new Date(session.last_used_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleRevokeSession(session._id)}
+                        className="text-xs text-red-600 dark:text-red-400 hover:opacity-80 font-medium transition-colors flex-shrink-0 px-2 py-1 rounded"
+                      >
+                        Revoke
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleRevokeSession(session._id)}
-                      className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors flex-shrink-0 px-2 py-1 rounded hover:bg-red-400/10"
-                    >
-                      Revoke
-                    </button>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         ))}
-      </div>
+    </div>
   );
 }
