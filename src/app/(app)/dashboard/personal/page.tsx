@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { useState, useContext, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,6 +16,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function PersonalPage() {
+  const router = useRouter();
   const userContext = useContext(UserInfoContext);
   const user = userContext?.user;
   const refetchUserData = userContext?.refetchUserData;
@@ -293,6 +295,30 @@ export default function PersonalPage() {
     } finally {
       setLoading(false);
       setEditSection("none");
+    }
+  };
+
+  const deleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const apiResponse = await fetch("/api/users/deactivate", {
+        method: "DELETE",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      if (response.success) {
+        toastSuccess("Account deactivated successfully, it will be permanently deleted after 1 month");
+        router.push("/");
+      } else {
+        toastError(response.message || "Account deactivation failed");
+      }
+    } catch (error) {
+      console.error("Account deactivation request error:", error);
+      toastError("Account deactivation failed. Please try again.");
     }
   };
 
@@ -626,6 +652,13 @@ export default function PersonalPage() {
           </div>
         </div>
       </div>
+        <button
+          type="button"
+          onClick={deleteAccount}
+          className="bg-red-500 rounded-xl w-full text-white py-2 mt-4 disabled:opacity-50"
+        >
+          Delete Account
+        </button>
     </>
   );
 }

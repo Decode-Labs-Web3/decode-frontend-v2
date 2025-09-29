@@ -88,11 +88,14 @@ export default function WalletsPage() {
         signal: AbortSignal.timeout(10000),
       });
 
-      if (!challengeRes.ok) throw new Error(`HTTP ${challengeRes.status}`);
+      if (!challengeRes.ok) console.log("challengeRes:", challengeRes);
       const challengeJson = await challengeRes.json();
       const messageToSign =
         challengeJson?.data?.nonceMessage || challengeJson?.data?.message;
-      if (!messageToSign) throw new Error("Missing link nonce message");
+      if (!messageToSign) {
+        toastError("Missing link nonce message");
+        return;
+      }
 
       const provider = new ethers.BrowserProvider(
         walletProvider as ethers.Eip1193Provider
@@ -236,7 +239,7 @@ export default function WalletsPage() {
 
       const response = await apiResponse.json();
       // console.log("Remove wallet response:", response);
-      if (!apiResponse.ok){
+      if (!apiResponse.ok) {
         console.log("Remove wallet error:", response);
         toastError(response.message || "Remove wallet failed");
         return;
@@ -245,70 +248,113 @@ export default function WalletsPage() {
       toastSuccess("Wallet removed successfully");
     } catch (error) {
       console.error("Remove wallet error:", error);
-      toastError(error instanceof Error ? error.message : "Remove wallet failed");
+      toastError(
+        error instanceof Error ? error.message : "Remove wallet failed"
+      );
     }
   }, []);
 
   return (
-    <div className="flex items-start flex-col gap-2">
-
-      {allWallets.length > 0 && !user?.primary_wallet?.is_primary && !user?.primary_wallet?.address && (
-        <div className="flex items-start flex-col gap-2">
-          <button
-            onClick={handleAddPrimaryWallet}
-            className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
-          >
-            <FontAwesomeIcon icon={faPlus} />
-            Add primary wallet
-          </button>
+    <div className="flex w-full flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <h2 className="text-xl font-semibold text-[color:var(--foreground)]">
+            Wallets
+          </h2>
           <p className="text-sm text-[color:var(--muted-foreground)]">
-            Please add your primary wallet to your account to activate more
-            features.
+            Link multiple wallets and set a primary wallet for your account.
           </p>
         </div>
-      )}
+        <button
+          onClick={handleAddWallet}
+          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
+        >
+          <FontAwesomeIcon icon={faPlus} />
+          Add wallets
+        </button>
+      </div>
+
+      {allWallets.length > 0 &&
+        !user?.primary_wallet?.is_primary &&
+        !user?.primary_wallet?.address && (
+          <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-col">
+                <p className="text-sm font-medium text-[color:var(--foreground)]">
+                  No primary wallet set
+                </p>
+                <p className="text-sm text-[color:var(--muted-foreground)]">
+                  Add your primary wallet to unlock more features.
+                </p>
+              </div>
+              <button
+                onClick={handleAddPrimaryWallet}
+                className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
+              >
+                <FontAwesomeIcon icon={faPlus} />
+                Add primary wallet
+              </button>
+            </div>
+          </div>
+        )}
 
       {user?.primary_wallet?.address && (
-        <div className="flex items-start flex-col gap-2">
-          <h1 className="text-sm text-[color:var(--muted-foreground)]">
-            Primary wallet: {user?.primary_wallet?.address}
-          </h1>
+        <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-col">
+              <p className="text-xs uppercase tracking-wide text-[color:var(--muted-foreground)]">
+                Primary wallet
+              </p>
+              <h1 className="text-sm font-medium text-[color:var(--foreground)] truncate max-w-[70vw] md:max-w-[40vw]">
+                {user?.primary_wallet?.address}
+              </h1>
+            </div>
+          </div>
         </div>
       )}
-      <button
-        onClick={handleAddWallet}
-        className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
-      >
-        <FontAwesomeIcon icon={faPlus} />
-        Add wallets
-      </button>
-      {allWallets.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold text-[color:var(--foreground)] mb-2">
-            All Wallets
-          </h3>
-          <ul className="space-y-2">
+
+      {allWallets.length > 0 ? (
+        <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-base font-semibold text-[color:var(--foreground)]">
+              All wallets
+            </h3>
+            <span className="text-xs rounded-md border border-[color:var(--border)] px-2 py-0.5 text-[color:var(--muted-foreground)]">
+              {allWallets.length}
+            </span>
+          </div>
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {allWallets.map((wallet) => {
               if (wallet.address !== user?.primary_wallet?.address) {
                 return (
-                  <div
+                  <li
                     key={wallet.id || wallet.address}
-                    className="flex items-center gap-2 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg px-3 py-2"
+                    className="group flex items-center justify-between gap-3 rounded-md border border-[color:var(--border)] bg-[color:var(--background)] px-3 py-2 hover:bg-[color:var(--surface)]"
                   >
-                    <h1 className="text-[color:var(--foreground)]">
+                    <span className="text-[color:var(--foreground)] font-mono text-sm truncate">
                       {wallet.address || "-"}
-                    </h1>
+                    </span>
                     <button
                       onClick={() => handleRemoveWallet(wallet.address)}
-                      className="text-sm text-red-600 dark:text-red-400 hover:opacity-80 transition-colors"
+                      className="text-xs px-2 py-1 rounded-md border border-red-200/30 text-red-600 dark:text-red-400 hover:bg-red-50/70 dark:hover:bg-red-900/20 transition-colors"
                     >
                       Remove
                     </button>
-                  </div>
+                  </li>
                 );
               }
             })}
           </ul>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-8 text-center">
+          <p className="text-sm text-[color:var(--muted-foreground)]">
+            No wallets linked yet. Click
+            <span className="mx-1 inline-flex items-center gap-1 rounded-md border border-[color:var(--border)] px-2 py-0.5 text-[color:var(--foreground)]">
+              <FontAwesomeIcon icon={faPlus} /> Add wallets
+            </span>
+            to link your first wallet.
+          </p>
         </div>
       )}
     </div>

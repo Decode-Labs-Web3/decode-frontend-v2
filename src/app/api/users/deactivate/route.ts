@@ -7,24 +7,13 @@ import {
   generateRequestId,
 } from "@/utils/index.utils";
 
-export async function POST(request: NextRequest) {
+export async function DELETE(request: NextRequest) {
   const requestId = generateRequestId();
   const pathname = apiPathName(request);
   const denied = guardInternal(request);
   if (denied) return denied;
 
   try {
-    const body = await request.json();
-    const { address } = body;
-    if (!address) {
-      return NextResponse.json(
-        { success: false, statusCode: 400, message: "Missing address" },
-        { status: 400 }
-      );
-    }
-
-    console.log("Link challenge address:", address.toLowerCase());
-
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
     if (!accessToken) {
@@ -38,16 +27,14 @@ export async function POST(request: NextRequest) {
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendRes = await fetch(
-      `${process.env.BACKEND_BASE_URL}/wallets/link/challenge`,
+      `${process.env.BACKEND_BASE_URL}/users/account/deactivate`,
       {
-        method: "POST",
+        method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
           "X-Fingerprint-Hashed": fingerprint_hashed,
           "X-Request-Id": requestId,
         },
-        body: JSON.stringify({ address }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
@@ -55,12 +42,12 @@ export async function POST(request: NextRequest) {
 
     const response = await backendRes.json().catch(() => ({}));
     if (!backendRes.ok) {
-      console.log("this is api/wallet/link-challenge response", response);
+      console.log("this is api/users/deactivate response", response);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 400,
-          message: response?.message || "Link challenge failed",
+          message: response?.message || "Account deactivation failed",
         },
         { status: backendRes.status || 400 }
       );
@@ -70,7 +57,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Link challenge generated",
+        message: response.message || "Account deactivated successfully, it will be permanently deleted after 1 month",
         data: response.data,
       },
       { status: 200 }
@@ -81,7 +68,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         statusCode: 500,
-        message: error instanceof Error ? error.message : "Network error",
+        message: error instanceof Error ? error.message : "Account deactivation failed",
       },
       { status: 500 }
     );

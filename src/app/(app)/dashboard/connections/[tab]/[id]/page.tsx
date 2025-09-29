@@ -275,24 +275,26 @@ export default function Page() {
 
             <div className="flex flex-wrap gap-3">
               {!userData.is_blocked && (
-              <button
-                onClick={userData.is_following ? handleUnFollow : handleFollow}
-                disabled={loading || userData.is_blocked}
-                className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
-                  userData.is_following
-                    ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
-                    : "bg-blue-600 hover:bg-blue-500 text-white border-blue-600"
-                } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                {userData.is_following
-                  ? loading
-                    ? "Unfollowing..."
-                    : "Unfollow"
-                  : loading
-                  ? "Following..."
-                  : "Follow"}
-              </button>
-            )}
+                <button
+                  onClick={
+                    userData.is_following ? handleUnFollow : handleFollow
+                  }
+                  disabled={loading || userData.is_blocked}
+                  className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
+                    userData.is_following
+                      ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
+                      : "bg-blue-600 hover:bg-blue-500 text-white border-blue-600"
+                  } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+                >
+                  {userData.is_following
+                    ? loading
+                      ? "Unfollowing..."
+                      : "Unfollow"
+                    : loading
+                    ? "Following..."
+                    : "Follow"}
+                </button>
+              )}
 
               <button
                 onClick={userData.is_blocked ? handleUnBlock : handleBlock}
