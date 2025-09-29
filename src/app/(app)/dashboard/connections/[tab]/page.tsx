@@ -107,16 +107,21 @@ export default function Page() {
         description={`Your ${tab}`}
       />{" "}
       {!loading && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
+          {userFollow.length === 0 && (
+            <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
+              No connections found
+            </div>
+          )}
           {userFollow.length > 0 &&
             userFollow.map((user) => (
               <div
                 key={user.user_id}
                 id={user.user_id}
-                className="flex items-center justify-between mb-2 w-100 px-2 bg-gray-800 p-2 rounded-2xl"
+                className="flex items-center justify-between w-full px-3 py-2 rounded-2xl bg-[color:var(--surface)] border border-[color:var(--border)] hover-card"
               >
                 <div className="flex flex-row gap-3 min-w-0">
-                  <div className="w-18 h-18 rounded-2xl border-2 border-white/20 overflow-hidden shadow-xl">
+                  <div className="w-14 h-14 rounded-xl border-2 border-[color:var(--border)] overflow-hidden shadow-sm">
                     <Image
                       src={
                         user.avatar_ipfs_hash
@@ -124,30 +129,36 @@ export default function Page() {
                           : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                       }
                       alt={"Avatar"}
-                      width={10}
-                      height={10}
+                      width={56}
+                      height={56}
                       className="w-full h-full object-cover"
                       unoptimized
                     />
                   </div>
-                  <div className="flex flex-col">
-                    <h3>{user.username}</h3>
-                    <p>{user.display_name}</p>
+                  <div className="flex flex-col min-w-0">
+                    <h3 className="text-[color:var(--foreground)] truncate font-medium">
+                      {user.username}
+                    </h3>
+                    <p className="text-sm text-[color:var(--muted-foreground)] truncate">
+                      {user.display_name}
+                    </p>
                   </div>
                 </div>
                 <Link
                   href={`/dashboard/connections/${tab}/${user.user_id}`}
-                  className="bg-blue-500 p-2"
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
                 >
                   View
                 </Link>
+                {endOfData && (
+                  <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
+                    End of data
+                  </div>
+                )}
               </div>
             ))}
-          {endOfData && (
-            <div className="text-white/60 text-sm mt-2">End of data</div>
-          )}
           {!endOfData && (
-            <div className="text-white/60 text-sm mt-2">
+            <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
               Current page: {page}
             </div>
           )}

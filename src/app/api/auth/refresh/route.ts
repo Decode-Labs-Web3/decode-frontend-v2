@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (!backendRes.ok) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 401,
@@ -39,6 +39,39 @@ export async function POST(req: NextRequest) {
         },
         { status: backendRes.status || 401 }
       );
+
+      res.cookies.set("accessToken", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 0,
+      });
+
+      res.cookies.set("refreshToken", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 0,
+      });
+
+      res.cookies.set("sessionId", "", {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 0,
+      });
+
+      res.cookies.set("accessExp", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 0,
+      });
+      return res;
     }
 
     const response = await backendRes.json();
@@ -54,7 +87,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("Refresh token error:", error);
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
         success: false,
         statusCode: 500,
@@ -63,6 +96,40 @@ export async function POST(req: NextRequest) {
       },
       { status: 500 }
     );
+
+    res.cookies.set("accessToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+
+    res.cookies.set("refreshToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+
+    res.cookies.set("sessionId", "", {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+
+    res.cookies.set("accessExp", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+    
+    return res;
   } finally {
     console.info(`${pathname}: $requestId}`);
   }

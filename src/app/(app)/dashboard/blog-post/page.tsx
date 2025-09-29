@@ -5,7 +5,12 @@ import Auth from "@/components/(auth)";
 import { useState, useEffect } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faImage, faUpload, faTimes, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import {
+  faImage,
+  faUpload,
+  faTimes,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 
 const categories = [
   { value: "decode", label: "Decode" },
@@ -182,10 +187,10 @@ export default function BlogPostPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Image Upload */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
             Featured Image
           </label>
-          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-gray-500 transition-colors">
+          <div className="border-2 border-dashed border-[color:var(--border)] rounded-lg p-6 text-center hover:border-[color:var(--foreground)]/30 transition-colors bg-[color:var(--surface)]">
             {imagePreview ? (
               <div className="relative">
                 <Image
@@ -196,17 +201,20 @@ export default function BlogPostPage() {
                   className="max-h-64 mx-auto rounded-lg object-contain"
                 />
                 {uploadingImage && (
-                  <FontAwesomeIcon icon={faSpinner} className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-spin" />
+                  <FontAwesomeIcon
+                    icon={faSpinner}
+                    className="w-12 h-12 text-[color:var(--muted-foreground)] mx-auto mb-4 animate-spin"
+                  />
                 )}
                 {formData.post_ipfs_hash && !uploadingImage && (
-                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                  <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded text-xs">
                     IPFS ✓
                   </div>
                 )}
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
                 >
                   <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
                 </button>
@@ -215,9 +223,11 @@ export default function BlogPostPage() {
               <div>
                 <FontAwesomeIcon
                   icon={faImage}
-                  className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  className="w-12 h-12 text-[color:var(--muted-foreground)] mx-auto mb-4"
                 />
-                <p className="text-gray-400 mb-2">Click to upload an image</p>
+                <p className="text-[color:var(--muted-foreground)] mb-2">
+                  Click to upload an image
+                </p>
                 <input
                   type="file"
                   accept="image/*"
@@ -239,15 +249,15 @@ export default function BlogPostPage() {
 
         {/* Category Dropdown */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
-            Category <span className="text-red-400">*</span>
+          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
+            Category <span className="text-red-500">*</span>
           </label>
           <select
             name="category"
             value={formData.category}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg text-[color:var(--foreground)] focus:ring-2 focus:ring-blue-500 focus:border-blue-500/60"
           >
             <option value="">Select a category</option>
             {categories.map((category) => (
@@ -260,7 +270,7 @@ export default function BlogPostPage() {
 
         {/* Keywords Field */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
             Keywords
           </label>
           <input
@@ -269,17 +279,17 @@ export default function BlogPostPage() {
             value={formData.keywords}
             onChange={handleChange}
             placeholder="Enter keywords separated by commas (e.g., blockchain, web3, crypto)"
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:ring-2 focus:ring-blue-500 focus:border-blue-500/60"
           />
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-[color:var(--muted-foreground)]">
             Separate multiple keywords with commas for better discoverability
           </p>
         </div>
 
         {/* Title Field */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
-            Title <span className="text-red-400">*</span>
+          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
+            Title <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -288,14 +298,14 @@ export default function BlogPostPage() {
             onChange={handleChange}
             required
             placeholder="Enter your blog post title"
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:ring-2 focus:ring-blue-500 focus:border-blue-500/60"
           />
         </div>
 
         {/* Content Field */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
-            Content <span className="text-red-400">*</span>
+          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
+            Content <span className="text-red-500">*</span>
           </label>
           <textarea
             name="content"
@@ -304,7 +314,7 @@ export default function BlogPostPage() {
             required
             rows={12}
             placeholder="Write your blog post content here..."
-            className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+            className="w-full px-4 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:ring-2 focus:ring-blue-500 focus:border-blue-500/60 resize-vertical"
           />
         </div>
 

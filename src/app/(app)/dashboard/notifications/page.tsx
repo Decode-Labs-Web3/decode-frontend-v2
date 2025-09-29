@@ -172,7 +172,7 @@ export default function NotificationsPage() {
           <div
             key={index}
             id={notification._id}
-            className="flex items-center justify-between p-4 border border-[color:var(--border)] rounded-lg my-2 bg-[color:var(--surface)]"
+            className="flex items-center justify-between p-4 border border-[color:var(--border)] rounded-lg my-2 bg-[color:var(--surface)] hover-card"
           >
             <div className="flex items-center gap-3">
               {notification.read ? (

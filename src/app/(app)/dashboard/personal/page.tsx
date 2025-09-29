@@ -298,7 +298,7 @@ export default function PersonalPage() {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] backdrop-blur-sm p-8 mb-8 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] backdrop-blur-sm p-8 mb-8 shadow-2xl hover-card">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h3 className="text-lg font-semibold text-[color:var(--foreground)] mb-1">
@@ -344,7 +344,7 @@ export default function PersonalPage() {
           {/* Avatar Section */}
           <div className="flex flex-col items-center lg:items-start">
             <div className="relative group">
-              <div className="w-48 h-48 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-xl">
+              <div className="w-48 h-48 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-xl hover-card">
                 <Image
                   src={
                     profileForm.avatar_ipfs_hash
@@ -437,7 +437,7 @@ export default function PersonalPage() {
                   <h4 className="text-lg font-semibold text-[color:var(--foreground)]">
                     About me
                   </h4>
-                  <div className="bg-[color:var(--surface)] rounded-xl p-4 border border-[color:var(--border)]">
+                  <div className="bg-[color:var(--surface)] rounded-xl p-4 border border-[color:var(--border)] hover-card">
                     <p className="text-[color:var(--foreground)]/90 leading-relaxed">
                       {profileForm.bio ||
                         "No bio added yet. Click edit to add a short description about yourself."}
@@ -465,7 +465,7 @@ export default function PersonalPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] h-full min-h-[240px] hover:bg-[color:var(--surface-muted)] transition shadow-sm">
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] h-full min-h-[240px] hover:bg-[color:var(--surface-muted)] transition shadow-sm hover-card">
           <div className="flex items-center justify-between px-5 py-4 border-b border-[color:var(--border)]">
             <div>
               <h3 className="font-semibold tracking-tight text-[color:var(--foreground)]">
@@ -558,7 +558,7 @@ export default function PersonalPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] h-full min-h-[240px] hover:bg-[color:var(--surface-muted)] transition shadow-sm">
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] h-full min-h-[240px] hover:bg-[color:var(--surface-muted)] transition shadow-sm hover-card">
           <div className="flex items-center justify-between px-5 py-4 border-b border-[color:var(--border)]">
             <div>
               <h3 className="font-semibold tracking-tight text-[color:var(--foreground)]">

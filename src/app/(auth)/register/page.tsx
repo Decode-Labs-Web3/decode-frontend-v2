@@ -134,6 +134,31 @@ export default function Register() {
     }
   };
 
+  const { barBg, barPct } = useMemo(() => {
+    const pw = registerData.password || "";
+    const hasLetter = /[A-Za-z]/.test(pw);
+    const hasDigit = /\d/.test(pw);
+    const hasSpecial = /[^A-Za-z0-9]/.test(pw);
+    const longEnough = pw.length >= 8;
+
+    let level: "weak" | "fair" | "strong" = "weak";
+    if (hasLetter && hasDigit && hasSpecial && longEnough) level = "strong";
+    else if (hasLetter && hasDigit && hasSpecial) level = "fair";
+    else if (hasLetter && hasDigit) level = "weak";
+    else level = "weak";
+
+    const bg =
+      level === "strong"
+        ? "bg-green-500"
+        : level === "fair"
+        ? "bg-yellow-500"
+        : "bg-red-500";
+
+    const pct = !pw ? 0 : level === "strong" ? 100 : level === "fair" ? 60 : 30;
+
+    return { barBg: bg, barPct: pct };
+  }, [registerData.password]);
+
   const passwordChecks = useMemo(() => {
     const password = registerData.password ?? "";
     return {
@@ -176,6 +201,16 @@ export default function Register() {
             onChange={handleChange}
             placeholder="Enter password"
           />
+
+          {/* Password strength color + length */}
+          <div className="mb-2" aria-hidden="true">
+            <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
+              <div
+                className={`h-full ${barBg} transition-all duration-300 ease-out`}
+                style={{ width: `${barPct}%` }}
+              />
+            </div>
+          </div>
 
           <div className="mb-5">
             {!passwordChecks.number ? (

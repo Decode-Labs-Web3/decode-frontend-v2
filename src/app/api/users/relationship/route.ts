@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/relationship/user/${id}`,
+      `${process.env.BACKEND_BASE_URL}/users/profile/${id}`,
       {
         method: "GET",
         headers: {
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       status: true,
       statusCode: response.statusCode,
-      message: response.message,
+      message: response.message || "Profile fetched successfully",
       data: response.data
     },{status: response.statusCode || 200})
   } catch (error){

@@ -11,7 +11,7 @@ import {
 export default function SecurityPage() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-5">
+      <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-5 hover-card">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-lg bg-green-500/15 text-green-600 dark:text-green-400 flex items-center justify-center">
             <FontAwesomeIcon icon={faShieldHalved} />
@@ -25,7 +25,7 @@ export default function SecurityPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center justify-between bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-4">
+        <div className="flex items-center justify-between bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-4 hover-card">
           <div className="flex items-center gap-3">
             <FontAwesomeIcon
               icon={faMobileScreen}
@@ -46,7 +46,7 @@ export default function SecurityPage() {
         </div>
       </div>
 
-      <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-5">
+      <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-5 hover-card">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <FontAwesomeIcon icon={faLock} />
@@ -60,7 +60,7 @@ export default function SecurityPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center justify-between bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-4">
+        <div className="flex items-center justify-between bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-4 hover-card">
           <p className="text-sm text-[color:var(--foreground)]">
             Last changed: 2 months ago
           </p>
@@ -70,7 +70,7 @@ export default function SecurityPage() {
         </div>
       </div>
 
-      <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-5 lg:col-span-2">
+      <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-xl p-5 lg:col-span-2 hover-card">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-lg bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
             <FontAwesomeIcon icon={faEnvelope} />
@@ -84,7 +84,7 @@ export default function SecurityPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center justify-between bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-4">
+        <div className="flex items-center justify-between bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-4 hover-card">
           <p className="text-sm text-[color:var(--foreground)]">
             john.doe@example.com
           </p>

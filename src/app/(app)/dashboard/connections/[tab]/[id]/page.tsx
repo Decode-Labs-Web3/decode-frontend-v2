@@ -5,38 +5,73 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import Loading from "@/components/(loading)";
+
+// interface UserData {
+//   followers_number: number;
+//   avatar_ipfs_hash: string;
+//   role: string;
+//   user_id: string;
+//   display_name: string;
+//   username: string;
+//   following_number: number;
+//   is_following: boolean;
+//   is_follower: boolean;
+//   is_blocked: boolean;
+//   is_blocked_by: boolean;
+//   mutual_followers_list: Follower[];
+//   mutual_followers_number: number;
+// }
+
+// interface Follower {
+//   followers_number: number;
+//   avatar_ipfs_hash: string;
+//   role: string;
+//   user_id: string;
+//   display_name: string;
+//   username: string;
+//   following_number: number;
+// }
 
 interface UserData {
-  followers_number: number;
-  avatar_ipfs_hash: string;
-  role: string;
-  user_id: string;
-  display_name: string;
-  username: string;
-  following_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_list: Follower[];
-  mutual_followers_number: number;
-}
-
-interface Follower {
-  followers_number: number;
-  avatar_ipfs_hash: string;
-  role: string;
-  user_id: string;
-  display_name: string;
-  username: string;
-  following_number: number;
+  "_id": string;
+  "username": string;
+  "display_name": string;
+  "bio": string;
+  "avatar_ipfs_hash": string;
+  "role": "user",
+  "last_login": string;
+  "__v": number;
+  "is_active": boolean;
+  "last_account_deactivation": string;
+  "primary_wallet": {
+    "_id": string;
+    "address": string;
+    "user_id": string;
+    "name_service": null,
+    "is_primary": boolean,
+    "createdAt": string;
+    "updatedAt": string;
+    "__v": number
+  },
+  "following_number": number,
+  "followers_number": number,
+  "is_following": boolean,
+  "is_follower": boolean,
+  "is_blocked": boolean,
+  "is_blocked_by": boolean,
+  "mutual_followers_number": number,
+  "mutual_followers_list": []
 }
 
 export default function UserData() {
   const { id, tab } = useParams<{ id: string; tab: string }>();
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(false);
+  console.log( "This is user data",userData);
 
   const fetchUserData = useCallback(async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/relationship", {
         method: "POST",
@@ -56,19 +91,22 @@ export default function UserData() {
         return;
       }
       setUserData(response.data);
-      toastSuccess(response?.message || "User data fetched successfully");
+      toastSuccess(response?.message || "Profile fetched successfully");
       console.log(response);
     } catch (error) {
       console.log(error);
       toastError("error");
+    } finally {
+      setLoading(false);
     }
   }, [id]);
 
   useEffect(() => {
     fetchUserData();
-  },[fetchUserData]);
+  }, [fetchUserData]);
 
   const handleFollow = async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/follow-and-unfollow", {
         method: "POST",
@@ -82,19 +120,25 @@ export default function UserData() {
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        console.error(response.message);
+        console.log(response.message);
         toastError(response.message || `API error follow`);
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
+      setUserData((prev) =>
+        prev ? { ...prev, is_following: !prev.is_following } : prev
+      );
       fetchUserData();
       console.log(response);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUnFollow = async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/follow-and-unfollow", {
         method: "DELETE",
@@ -109,18 +153,22 @@ export default function UserData() {
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
         console.error(response.message);
-        toastError( response.message || `API error unfollow fail`);
+        toastError(response.message || `API error unfollow fail`);
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
+      setUserData(response.data);
       fetchUserData();
       console.log(response);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleBlock = async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/block-and-unblock", {
         method: "POST",
@@ -135,18 +183,24 @@ export default function UserData() {
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
         console.error(response.message);
-        toastError( response.message || `API error block fail`);
+        toastError(response.message || `API error block fail`);
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
+      setUserData((prev) =>
+        prev ? { ...prev, is_blocked: !prev.is_blocked } : prev
+      );
       fetchUserData();
       console.log(response);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUnBlock = async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/block-and-unblock", {
         method: "DELETE",
@@ -161,157 +215,36 @@ export default function UserData() {
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
         console.error(response.message);
-        toastError( response.message || `API error unblock fail`);
+        toastError(response.message || `API error unblock fail`);
         return;
       }
       toastSuccess(response?.message || "Follow/unfollow action successful");
+      // Optimistic UI: toggle state immediately while we refetch
+      setUserData((prev) =>
+        prev ? { ...prev, is_blocked: !prev.is_blocked } : prev
+      );
       fetchUserData();
       console.log(response);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    userData && (
+    <>
+    {loading && (
       <div>
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/[0.02] to-white/5 backdrop-blur-sm p-8 m-8 shadow-2xl">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-1">
-                Profile Information
-              </h3>
-              <p className="text-white font-mono text-sm">
-                User ID: {userData.user_id}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Avatar Section */}
-            <div className="flex flex-col items-center lg:items-start">
-              <div className="w-40 h-40 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border-2 border-white/20 overflow-hidden shadow-xl">
-                <Image
-                  src={
-                    userData.avatar_ipfs_hash
-                      ? `https://gateway.pinata.cloud/ipfs/${userData.avatar_ipfs_hash}`
-                      : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                  }
-                  alt={userData.username || "Avatar"}
-                  width={320}
-                  height={320}
-                  className="w-full h-full object-cover"
-                  unoptimized
-                />
-              </div>
-            </div>
-
-            {/* Profile Info Section */}
-            <div className="flex-1 space-y-6">
-              {/* Display Name */}
-              <div className="flex flex-row justify-between px-2">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-3xl font-bold text-white">
-                    {userData.display_name || userData.username || "Your name"}
-                  </h2>
-                  {userData?.role && (
-                    <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-300 text-sm font-medium border border-blue-500/30">
-                      {userData.role.charAt(0).toUpperCase() +
-                        userData.role.slice(1)}
-                    </span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {userData.is_blocked ? (
-                    <button
-                      onClick={handleUnBlock}
-                      className="bg-red-500 p-2 rounded-xl"
-                    >
-                      UnBlock
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleBlock}
-                      className="bg-red-500 p-2 rounded-xl"
-                    >
-                      Block
-                    </button>
-                  )}
-                  {userData.is_following ? (
-                    <button
-                      onClick={handleUnFollow}
-                      className="bg-blue-500 p-2 rounded-xl"
-                    >
-                      Unfollow
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleFollow}
-                      className="bg-blue-500 p-2 rounded-xl"
-                    >
-                      Follow
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Additional Info */}
-              <div className="pt-6 border-t border-white/10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <span className="text-sm text-gray-400">Followers</span>
-                    <p className="text-white text-sm">
-                      {userData.followers_number}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <span className="text-sm text-gray-400">Following</span>
-                    <p className="text-white text-sm">
-                      {userData.following_number}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {userData.mutual_followers_list.length > 0 &&
-          userData.mutual_followers_list.map((user) => (
-            <div
-              key={user.user_id}
-              id={user.user_id}
-              className="flex items-center justify-between mb-2 w-100 px-2 bg-gray-800 p-2 rounded-2xl"
-            >
-              <div className="flex flex-row gap-3 min-w-0">
-                <div className="w-18 h-18 rounded-2xl border-2 border-white/20 overflow-hidden shadow-xl">
-                  <Image
-                    src={
-                      user.avatar_ipfs_hash
-                        ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                        : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                    }
-                    alt={"Avatar"}
-                    width={10}
-                    height={10}
-                    className="w-full h-full object-cover"
-                    unoptimized
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <h3>{user.username}</h3>
-                  <p>{user.display_name}</p>
-                </div>
-              </div>
-              <Link
-                href={`/dashboard/connections/${tab}/${user.user_id}`}
-                className="bg-blue-500 p-2 rounded-xl"
-              >
-                View
-              </Link>
-            </div>
-          ))}
+        <Loading.OverviewCard />
       </div>
-    )
-  );
+    )}
+
+    {userData && (
+      <div>
+        <h1>{userData.display_name}</h1>
+      </div>
+    )}
+    </>
+  )
 }

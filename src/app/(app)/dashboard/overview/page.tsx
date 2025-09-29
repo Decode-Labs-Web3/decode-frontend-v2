@@ -51,7 +51,7 @@ export default function OverviewPage() {
     <>
       {/* Profile */}
       {user && (
-        <div className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] backdrop-blur-sm p-8 mb-8 shadow-2xl">
+        <div className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] backdrop-blur-sm p-8 mb-8 shadow-2xl hover-card">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -108,7 +108,7 @@ export default function OverviewPage() {
                   <h4 className="text-lg font-semibold text-[color:var(--foreground)]">
                     About me
                   </h4>
-                  <div className="bg-[color:var(--surface)] rounded-xl p-4 border border-[color:var(--border)]">
+                  <div className="bg-[color:var(--surface)] rounded-xl p-4 border border-[color:var(--border)] hover-card">
                     <p className="leading-relaxed text-[color:var(--foreground)]/90">
                       {user.bio ||
                         "No bio added yet. Visit the Personal page to add a short description about yourself."}
@@ -145,7 +145,7 @@ export default function OverviewPage() {
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4 hover-card">
           <div className="flex items-center gap-3 mb-3">
             <FontAwesomeIcon
               icon={faShieldHalved}
@@ -163,7 +163,7 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4 hover-card">
           <div className="flex items-center gap-3 mb-3">
             <FontAwesomeIcon
               icon={faWallet}
@@ -186,7 +186,7 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4 hover-card">
           <div className="flex items-center gap-3 mb-3">
             <FontAwesomeIcon
               icon={faLaptop}
@@ -204,7 +204,7 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4 hover-card">
           <div className="flex items-center gap-3 mb-3">
             <FontAwesomeIcon
               icon={faPlug}
@@ -225,7 +225,7 @@ export default function OverviewPage() {
 
       {/* Recent Activity */}
       {notifications.length > 0 && (
-        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4">
+        <div className="bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg p-4 hover-card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-[color:var(--foreground)]">
               Recent Activity
