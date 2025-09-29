@@ -144,7 +144,14 @@ export default function WalletsPage() {
       console.error("Add wallet error:", error);
       toastError(error instanceof Error ? error.message : "Add wallet failed");
     }
-  }, []);
+  }, [
+    open,
+    isConnected,
+    walletProvider,
+    address,
+    refetchUserData,
+    handleGetAllWallets,
+  ]);
 
   const handleAddPrimaryWallet = useCallback(async () => {
     try {
@@ -222,37 +229,47 @@ export default function WalletsPage() {
       console.error("Add wallet error:", error);
       toastError(error instanceof Error ? error.message : "Add wallet failed");
     }
-  }, []);
+  }, [
+    open,
+    isConnected,
+    walletProvider,
+    address,
+    refetchUserData,
+    handleGetAllWallets,
+  ]);
 
-  const handleRemoveWallet = useCallback(async (address: string) => {
-    try {
-      const apiResponse = await fetch("/api/wallet/unlink-wallet", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
-        body: JSON.stringify({ address }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
+  const handleRemoveWallet = useCallback(
+    async (address: string) => {
+      try {
+        const apiResponse = await fetch("/api/wallet/unlink-wallet", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Frontend-Internal-Request": "true",
+          },
+          body: JSON.stringify({ address }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
 
-      const response = await apiResponse.json();
-      // console.log("Remove wallet response:", response);
-      if (!apiResponse.ok) {
-        console.log("Remove wallet error:", response);
-        toastError(response.message || "Remove wallet failed");
-        return;
+        const response = await apiResponse.json();
+        // console.log("Remove wallet response:", response);
+        if (!apiResponse.ok) {
+          console.log("Remove wallet error:", response);
+          toastError(response.message || "Remove wallet failed");
+          return;
+        }
+        handleGetAllWallets();
+        toastSuccess("Wallet removed successfully");
+      } catch (error) {
+        console.error("Remove wallet error:", error);
+        toastError(
+          error instanceof Error ? error.message : "Remove wallet failed"
+        );
       }
-      handleGetAllWallets();
-      toastSuccess("Wallet removed successfully");
-    } catch (error) {
-      console.error("Remove wallet error:", error);
-      toastError(
-        error instanceof Error ? error.message : "Remove wallet failed"
-      );
-    }
-  }, []);
+    },
+    [handleGetAllWallets]
+  );
 
   return (
     <div className="flex w-full flex-col gap-4">
