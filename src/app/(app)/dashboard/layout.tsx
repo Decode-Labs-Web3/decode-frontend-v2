@@ -5,7 +5,7 @@ import Loading from "@/components/(loading)";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { UserProfile } from "@/interfaces/index.interfaces";
-import { toastInfo, toastError } from "@/utils/index.utils";
+import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 
 interface NotificationReceived {
@@ -33,8 +33,10 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
   const [active, setActive] = useState<string>("overview");
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [isDeactivated, setIsDeactivated] = useState(false);
 
   const refetchUserData = async () => {
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/overview", {
         method: "GET",
@@ -46,8 +48,21 @@ export default function DashboardLayout({
         signal: AbortSignal.timeout(10000),
       });
 
-      const responseData = await apiResponse.json();
+      if (!apiResponse.ok) {
+        toastError("Failed to refresh user data");
+        router.push("/");
+        return;
+      }
 
+      const responseData = await apiResponse.json();
+      if (
+        responseData.statusCode === 403 &&
+        responseData.message === "Your account is deactivated"
+      ) {
+        setIsDeactivated(true);
+        toastError("Account deactivated, please choose the modal");
+        return;
+      }
       if (responseData.success && responseData.data) {
         const userData: UserProfile = {
           last_username_change: responseData.data.last_username_change,
@@ -105,6 +120,22 @@ export default function DashboardLayout({
         });
 
         const responseData = await apiResponse.json();
+        // const fetchUser = async () => {
+        //   try {
+        //     const apiResponse = await fetch("/api/users/overview");
+        //     const responseJson = await apiResponse.json();
+        //     if (responseJson?.statusCode === 403) {
+        //     }
+        //   } catch (error) {}
+        // };
+        if (
+          responseData.statusCode === 403 &&
+          responseData.message === "Your account is deactivated"
+        ) {
+          setIsDeactivated(true);
+          toastError("Account deactivated, please choose the modal");
+          return;
+        }
 
         const userData: UserProfile = {
           last_username_change: responseData.data.last_username_change,
@@ -208,6 +239,102 @@ export default function DashboardLayout({
       es.close();
     };
   }, []);
+
+  const handleReactivateAccount = async (status: boolean) => {
+    try {
+      const apiResponse = await fetch("/api/users/reactivate", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ status }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+
+      if (status === false) {
+        setIsDeactivated(false);
+        router.push("/");
+        router.refresh();
+        return;
+      }
+
+      if (response.success) {
+        toastSuccess("Account reactivated successfully");
+        setIsDeactivated(false);
+        router.refresh();
+      } else {
+        toastError(response.message || "Account reactivation failed");
+        router.refresh();
+        return;
+      }
+    } catch (error) {
+      console.error("Account reactivation request error:", error);
+      toastError("Account reactivation failed. Please try again.");
+      router.refresh();
+      return;
+    }
+  };
+
+  if (isDeactivated) {
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div
+          className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
+          onClick={() => handleReactivateAccount(false)}
+        />
+        <div className="relative z-10 w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-xl">
+          <div className="px-5 py-4 border-b border-[color:var(--border)]">
+            <h3 className="text-base font-semibold text-[color:var(--foreground)]">
+              Confirm account deactivation
+            </h3>
+          </div>
+          {/*
+          <div className="p-4 border-b">
+            <div className="text-sm">deactivate?</div>
+          </div>
+          */}
+          <div className="px-5 py-4 space-y-2">
+            <p className="text-sm text-[color:var(--foreground)]">
+              Are you sure you want to deactivate your account?
+            </p>
+            <p className="text-sm text-[color:var(--muted-foreground)]">
+              Account deactivated successfully, it will be permanently deleted
+              after 1 month.
+            </p>
+          </div>
+          <div className="px-5 py-4 border-t border-[color:var(--border)] flex items-center justify-end gap-3">
+            {/*
+            <div className="flex gap-2 p-4">
+              <button className="px-3 py-1.5 border rounded">back</button>
+              <button className="px-3 py-1.5 bg-red-600 text-white rounded">reactivate</button>
+            </div>
+            */}
+            <button
+              type="button"
+              onClick={() => handleReactivateAccount(false)}
+              className="px-4 py-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] text-sm hover:bg-[color:var(--surface)] transition-colors"
+            >
+              Return to login
+            </button>
+            <button
+              type="button"
+              onClick={() => handleReactivateAccount(true)}
+              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors"
+            >
+              Reactivate account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

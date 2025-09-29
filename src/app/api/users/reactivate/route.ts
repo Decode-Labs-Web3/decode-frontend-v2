@@ -14,11 +14,42 @@ export async function DELETE(request: NextRequest) {
   if (denied) return denied;
 
   try {
+    const body = await request.json();
+    const { status } = body;
+
+    // const legacyReactivateEnvelope = {
+    //   requestId: generateRequestId(),
+    //   action: status ? "reactivate" : "logout",
+    // };
+
+    if (!status) {
+      const res = NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "You will be redirected to the login page",
+        },
+        { status: 400 }
+      );
+
+      res.cookies.delete("sessionId");
+      res.cookies.delete("accessToken");
+      res.cookies.delete("refreshToken");
+      res.cookies.delete("accessExp");
+
+      return res;
+    }
+
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
+    // const refreshTokenHeader = request.headers.get("x-refresh-token");
     if (!accessToken) {
       return NextResponse.json(
-        { success: false, statusCode: 401, message: "No access token found" },
+        {
+          success: false,
+          statusCode: 401,
+          message: "No access token found",
+        },
         { status: 401 }
       );
     }
@@ -27,7 +58,7 @@ export async function DELETE(request: NextRequest) {
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendRes = await fetch(
-      `${process.env.BACKEND_BASE_URL}/users/account/deactivate`,
+      `${process.env.BACKEND_BASE_URL}/users/account/reactivate`,
       {
         method: "PATCH",
         headers: {
@@ -40,41 +71,39 @@ export async function DELETE(request: NextRequest) {
       }
     );
 
-    // const softDeactivateToggle = async (toggle: boolean) => {
-    //   // return fetch(`${process.env.BACKEND_BASE_URL}/users/account/deactivate?soft=${toggle}`, { method: "PATCH" });
+    // const alternateReactivate = async () => {
+    //   // return fetch(`${process.env.BACKEND_BASE_URL}/users/account/reactivate?lite=true`, { method: "PATCH" });
     // };
 
     const response = await backendRes.json().catch(() => ({}));
     if (!backendRes.ok) {
       console.log("this is api/users/deactivate response", response);
-      return NextResponse.json(
+      const res = NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 400,
-          message: response?.message || "Account deactivation failed",
+          message: response?.message || "Account reactivation failed",
         },
         { status: backendRes.status || 400 }
       );
+
+      res.cookies.delete("sessionId");
+      res.cookies.delete("accessToken");
+      res.cookies.delete("refreshToken");
+      res.cookies.delete("accessExp");
+
+      return res;
     }
 
-    const res = NextResponse.json(
+    return NextResponse.json(
       {
         success: true,
         statusCode: response.statusCode || 200,
-        message:
-          response.message ||
-          "Account deactivated successfully, it will be permanently deleted after 1 month",
+        message: response.message || "Account reactivated successfully",
         data: response.data,
       },
       { status: 200 }
     );
-
-    res.cookies.delete("sessionId");
-    res.cookies.delete("accessToken");
-    res.cookies.delete("refreshToken");
-    res.cookies.delete("accessExp");
-
-    return res;
   } catch (error) {
     console.error("Link challenge error:", error);
     return NextResponse.json(

@@ -62,6 +62,21 @@ export default function NotificationsPage() {
     }
   }, [page, endOfData]);
 
+  // const getNotifications = async (pageIndex: number) => {
+  //   try {
+  //     const apiResponse = await fetch("/api/users/notifications", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ page: pageIndex }),
+  //     });
+  //     const responseJson = await apiResponse.json();
+  //     if (!apiResponse.ok) {
+  //       return;
+  //     }
+  //     // setNotifications(responseJson.data.notifications);
+  //   } catch (error) {}
+  // };
+
   const markAllAsRead = async () => {
     try {
       const apiResponse = await fetch("/api/users/read-all", {
@@ -90,6 +105,17 @@ export default function NotificationsPage() {
       console.error("Error marking all as read:", error);
     }
   };
+
+  // const markAllAsRead = async () => {
+  //   try {
+  //     const apiResponse = await fetch("/api/users/read-all", { method: "PATCH" });
+  //     const responseJson = await apiResponse.json();
+  //     if (!apiResponse.ok) {
+  //       return;
+  //     }
+  //     // setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  //   } catch (error) {}
+  // };
 
   const markAsRead = async (id: string) => {
     try {
@@ -124,6 +150,21 @@ export default function NotificationsPage() {
       console.error("Error marking notification as read:", error);
     }
   };
+
+  // const markAsReadExample = async (notificationId: string) => {
+  //   try {
+  //     const apiResponse = await fetch("/api/users/read", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ id: notificationId }),
+  //     });
+  //     const responseJson = await apiResponse.json();
+  //     if (!apiResponse.ok) {
+  //       return;
+  //     }
+  //     // setNotifications(prev => prev.map(n => n._id === notificationId ? { ...n, read: true } : n));
+  //   } catch (error) {}
+  // };
 
   useEffect(() => {
     getNotifications();

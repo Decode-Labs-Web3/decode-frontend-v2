@@ -40,37 +40,11 @@ export async function POST(req: NextRequest) {
         { status: backendRes.status || 401 }
       );
 
-      res.cookies.set("accessToken", "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-      });
+      res.cookies.delete("accessToken");
+      res.cookies.delete("refreshToken");
+      res.cookies.delete("sessionId");
+      res.cookies.delete("accessExp");
 
-      res.cookies.set("refreshToken", "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-      });
-
-      res.cookies.set("sessionId", "", {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-      });
-
-      res.cookies.set("accessExp", "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-      });
       return res;
     }
 
@@ -97,38 +71,11 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
 
-    res.cookies.set("accessToken", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0,
-    });
+    res.cookies.delete("accessToken");
+    res.cookies.delete("refreshToken");
+    res.cookies.delete("sessionId");
+    res.cookies.delete("accessExp");
 
-    res.cookies.set("refreshToken", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0,
-    });
-
-    res.cookies.set("sessionId", "", {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0,
-    });
-
-    res.cookies.set("accessExp", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0,
-    });
-    
     return res;
   } finally {
     console.info(`${pathname}: $requestId}`);

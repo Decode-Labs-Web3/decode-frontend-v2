@@ -21,6 +21,7 @@ export default function PersonalPage() {
   const user = userContext?.user;
   const refetchUserData = userContext?.refetchUserData;
   const [loading, setLoading] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [profileForm, setProfileForm] = useState({
     avatar_ipfs_hash: "",
@@ -311,8 +312,10 @@ export default function PersonalPage() {
       });
       const response = await apiResponse.json();
       if (response.success) {
-        toastSuccess("Account deactivated successfully, it will be permanently deleted after 1 month");
-        router.push("/");
+        toastSuccess(
+          "Account deactivated successfully, it will be permanently deleted after 1 month"
+        );
+        router.refresh();
       } else {
         toastError(response.message || "Account deactivation failed");
       }
@@ -325,6 +328,21 @@ export default function PersonalPage() {
   return (
     <>
       <div className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] backdrop-blur-sm p-8 mb-8 shadow-2xl hover-card">
+        {/*
+        <div className="border p-4 rounded-lg mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold">profile</h3>
+            <button className="px-3 py-1.5 text-sm border rounded">edit</button>
+          </div>
+          <div className="flex gap-4">
+            <div className="w-24 h-24 bg-gray-200 rounded" />
+            <div className="flex-1">
+              <div className="text-lg font-medium">display name</div>
+              <div className="text-sm text-muted-foreground">bio...</div>
+            </div>
+          </div>
+        </div>
+        */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h3 className="text-lg font-semibold text-[color:var(--foreground)] mb-1">
@@ -652,13 +670,72 @@ export default function PersonalPage() {
           </div>
         </div>
       </div>
-        <button
-          type="button"
-          onClick={deleteAccount}
-          className="bg-red-500 rounded-xl w-full text-white py-2 mt-4 disabled:opacity-50"
+      <button
+        type="button"
+        onClick={() => setIsDeleteModalOpen(true)}
+        className="bg-red-500 rounded-xl w-full text-white py-2 mt-4 disabled:opacity-50"
+      >
+        Delete Account
+      </button>
+
+      {isDeleteModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          Delete Account
-        </button>
+          <div
+            className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsDeleteModalOpen(false)}
+          />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-xl">
+            <div className="px-5 py-4 border-b border-[color:var(--border)]">
+              <h3 className="text-base font-semibold text-[color:var(--foreground)]">
+                Confirm account deactivation
+              </h3>
+            </div>
+            {/*
+            <div className="p-4 border-b">
+              <div className="text-sm">deactivate account?</div>
+            </div>
+            */}
+            <div className="px-5 py-4 space-y-2">
+              <p className="text-sm text-[color:var(--foreground)]">
+                Are you sure you want to deactivate your account?
+              </p>
+              <p className="text-sm text-[color:var(--muted-foreground)]">
+                Account deactivated successfully, it will be permanently deleted
+                after 1 month.
+              </p>
+            </div>
+            <div className="px-5 py-4 border-t border-[color:var(--border)] flex items-center justify-end gap-3">
+              {/*
+              <div className="flex gap-2 p-4">
+                <button className="px-3 py-1.5 border rounded">cancel</button>
+                <button className="px-3 py-1.5 bg-red-600 text-white rounded">delete</button>
+              </div>
+              */}
+              <button
+                type="button"
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] text-sm hover:bg-[color:var(--surface)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  setIsDeleteModalOpen(false);
+                  deleteAccount(e as unknown as React.FormEvent);
+                }}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors"
+              >
+                Delete account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

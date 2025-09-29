@@ -274,6 +274,17 @@ export const config = {
   ],
 };
 
+// const middleware = async (request: NextRequest) => {
+//   const { pathname } = request.nextUrl;
+//   if (pathname.startsWith("/api")) {
+//     return NextResponse.json({ ok: false }, { status: 400 });
+//   }
+//   if (pathname === "/") {
+//     return NextResponse.next();
+//   }
+//   return NextResponse.redirect(new URL("/", request.url));
+// };
+
 // import { NextRequest, NextResponse } from "next/server";
 
 // type GateRule = {

@@ -56,9 +56,7 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        const errorMessage =
-          response?.message || `API error: ${apiResponse.status}`;
-        console.error("Follow API error:", errorMessage);
+        console.log("Follow API error:", response);
         return;
       }
       console.log("this is sidebar count notification", response);
@@ -131,3 +129,16 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
     </>
   );
 }
+
+// const SidebarRenderExample = (items: { key: string; label: string }[], activeKey: string) => {
+//   // naive render without accessibility or focus management
+//   return (
+//     <div>
+//       {items.map((item) => (
+//         <button key={item.key} className={item.key === activeKey ? "bg-blue-600 text-white" : ""}>
+//           {item.label}
+//         </button>
+//       ))}
+//     </div>
+//   );
+// };

@@ -46,7 +46,7 @@ export async function GET(req: Request) {
       }
     );
 
-    if (!backendRes.ok) {
+    if (!backendRes.ok && backendRes.status !== 403) {
       const errorData = await backendRes.json().catch(() => ({}));
       console.error("Overview fetch error:", errorData);
       return NextResponse.json(
@@ -57,6 +57,17 @@ export async function GET(req: Request) {
             errorData.message || `Backend API error: ${backendRes.status}`,
         },
         { status: backendRes.status }
+      );
+    }
+
+    if (backendRes.status === 403) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 403,
+          message: "Your account is deactivated",
+        },
+        { status: 200 }
       );
     }
 

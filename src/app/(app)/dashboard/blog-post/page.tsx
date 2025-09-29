@@ -83,7 +83,6 @@ export default function BlogPostPage() {
       const response = await fetch("/api/users/avatar", {
         method: "POST",
         headers: {
-          "Content-Type": "multipart/form-data",
           "X-Frontend-Internal-Request": "true",
         },
         body: formData,
