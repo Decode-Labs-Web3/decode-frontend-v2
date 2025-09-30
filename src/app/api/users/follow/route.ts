@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/relationship/follow/${tab}/me?page=${page}&limit=10`,
+      `${process.env.BACKEND_BASE_URL}/relationship/follow/${tab}/me?page=${page}&limit=15`,
       {
         method: "GET",
         headers: {
@@ -55,8 +55,7 @@ export async function POST(req: Request) {
         {
           success: false,
           statusCode: backendResponse.status || 400,
-          message:
-            errorData.message || `Backend API error: ${pathname}`,
+          message: errorData.message || `Backend API error: ${pathname}`,
         },
         { status: backendResponse.status || 400 }
       );

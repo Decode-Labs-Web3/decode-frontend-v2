@@ -673,7 +673,7 @@ export default function PersonalPage() {
       <button
         type="button"
         onClick={() => setIsDeleteModalOpen(true)}
-        className="bg-red-500 rounded-xl w-full text-white py-2 mt-4 disabled:opacity-50"
+        className="bg-red-500 rounded-xl w-full hover-card text-white py-2 mt-4 disabled:opacity-50"
       >
         Delete Account
       </button>

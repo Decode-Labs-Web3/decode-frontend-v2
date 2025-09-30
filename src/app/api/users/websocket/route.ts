@@ -47,12 +47,17 @@ export async function GET(req: NextRequest) {
         controller.enqueue(new TextEncoder().encode("retry: 3000\n\n"));
 
         try {
-          console.log(`Connecting to: ${process.env.NOTIFICATIONS_SIO_URL}/notifications`);
-          socket = createClient(`${process.env.NOTIFICATIONS_SIO_URL}/notifications`, {
-            auth: { token },
-            path: "/socket.io",
-            timeout: 20000,
-          });
+          console.log(
+            `Connecting to: ${process.env.NOTIFICATIONS_SIO_URL}/notifications`
+          );
+          socket = createClient(
+            `${process.env.NOTIFICATIONS_SIO_URL}/notifications`,
+            {
+              auth: { token },
+              path: "/socket.io",
+              timeout: 20000,
+            }
+          );
 
           socket.on("connect", () => {
             sse(controller, {
@@ -91,7 +96,7 @@ export async function GET(req: NextRequest) {
             try {
               controller.close();
             } catch (error) {
-              console.error("Error closing controller:", error);
+              console.log("Error closing controller:", error);
             }
           };
 

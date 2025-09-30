@@ -55,6 +55,8 @@ export async function POST(req: Request) {
       }
     );
 
+    // console.log("this is backendResponse for login", backendResponse);
+
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
       console.error(
@@ -72,6 +74,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
+    // console.log("this is response from login", response);
 
     if (
       response.success &&
