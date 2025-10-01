@@ -207,7 +207,7 @@ export default function NotificationsPage() {
       >
         Mark all as read
       </button>
-      {loading && <Loading.AuthCard />}
+      {loading && <Loading.NotificationCard />}
       {!loading &&
         notifications.map((notification, index) => (
           <div

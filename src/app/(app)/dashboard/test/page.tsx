@@ -1,118 +1,137 @@
 "use client";
 
-type User = {
-  name: string;
-  username: string;
-  bio: string;
-  avatar: string;
+import { useEffect, useMemo, useState, useCallback } from "react";
+import {
+  ResponsiveContainer,
+  LineChart, Line,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+} from "recharts";
+import { format, parseISO } from "date-fns";
+import { toastSuccess, toastError } from "@/utils/index.utils";
+
+type SnapshotData = {
+  _id: string;
+  user_id: string;
+  followers_number: number;
+  snapshot_at: string; // ISO
 };
 
-const fakeUser: User = {
-  name: "Alice Nguyen",
-  username: "alice_dev",
-  bio: "Frontend @ Decode • thích Web3, UI/UX, và cà phê sữa đá.",
-  avatar:
-    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=256&auto=format&fit=crop",
+type ApiResponse = {
+  success: boolean;
+  message?: string;
+  data: SnapshotData[];
 };
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+type ChartRow = {
+  day: string;       // "YYYY-MM-DD"
+  followers: number; // tổng followers tại snapshot
+  dateISO: string;   // dùng cho tooltip
+};
 
-function useHoverDelay(openDelay = 250, closeDelay = 120) {
-  const [open, setOpen] = useState(false);
-  const tOpen = useRef<number | null>(null);
-  const tClose = useRef<number | null>(null);
+export default function Page() {
+  const [rows, setRows] = useState<SnapshotData[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const clearAll = () => {
-    if (tOpen.current) { window.clearTimeout(tOpen.current); tOpen.current = null; }
-    if (tClose.current) { window.clearTimeout(tClose.current); tClose.current = null; }
-  };
+  const fetchSnapShot = useCallback(async () => {
+    setLoading(true);
+    try {
+      const apiResponse = await fetch("/api/users/snapshot", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-cache",
+        signal: AbortSignal.timeout?.(10000),
+      });
 
-  const onEnter = () => { clearAll(); tOpen.current = window.setTimeout(() => setOpen(true), openDelay); };
-  const onLeave = () => { clearAll(); tClose.current = window.setTimeout(() => setOpen(false), closeDelay); };
+      const response: ApiResponse = await apiResponse.json();
 
-  useEffect(() => clearAll, []);
+      if (!apiResponse.ok || !response?.success) {
+        toastError(response?.message || "API error");
+        return;
+      }
 
-  return { open, onEnter, onLeave, setOpen };
-}
+      setRows(response.data || []);
+      toastSuccess(response?.message || "Followers snapshot data last month fetched successfully");
+    } catch (e: any) {
+      console.error(e);
+      toastError(e?.message || "Fetch error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
+  useEffect(() => {
+    fetchSnapShot();
+  }, [fetchSnapShot]);
 
-export default function HoverDemoPage() {
-  const hover = useHoverDelay(250, 120);
+  // Chuẩn hoá: sort và lấy snapshot cuối của mỗi ngày
+  const data: ChartRow[] = useMemo(() => {
+    if (!rows.length) return [];
+    const sorted = [...rows].sort(
+      (a, b) => new Date(a.snapshot_at).getTime() - new Date(b.snapshot_at).getTime()
+    );
+    const byDay = new Map<string, SnapshotData>();
+    for (const s of sorted) {
+      const key = s.snapshot_at.slice(0, 10); // "YYYY-MM-DD"
+      byDay.set(key, s); // cuối cùng trong ngày
+    }
+    const out = Array.from(byDay.values()).map((s) => ({
+      day: s.snapshot_at.slice(0, 10),
+      followers: s.followers_number,
+      dateISO: s.snapshot_at,
+    }));
+    out.sort((a, b) => a.day.localeCompare(b.day));
+    return out;
+  }, [rows]);
+
 
   return (
-    <div className="min-h-[70vh] grid place-items-center bg-neutral-950 text-neutral-100 p-6">
-      <div
-        className="relative"
-        onMouseEnter={hover.onEnter}
-        onMouseLeave={hover.onLeave}
-      >
-        {/* trigger: avatar */}
-        <Image
-          src={fakeUser.avatar}
-          alt="avatar"
-          width={112}
-          height={112}
-          className="w-28 h-28 rounded-2xl object-cover ring-1 ring-white/10 shadow-xl cursor-pointer"
-        />
+    <main className="p-6">
+      <div className="rounded-2xl border border-[color:var(--border)] p-4">
+        <h3 className="text-sm font-semibold mb-3">Trend followers (Line)</h3>
 
-        {/* hover card */}
-        {hover.open && (
-          <div
-            className="absolute z-50 left-1/2 -translate-x-1/2 top-[calc(100%+10px)]
-                       w-80 rounded-2xl border border-white/10 bg-neutral-900/95
-                       shadow-2xl backdrop-blur p-4"
-            onMouseEnter={hover.onEnter}
-            onMouseLeave={hover.onLeave}
-          >
-            {/* mũi tên nhỏ */}
-            <div
-              className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3
-                         rotate-45 bg-neutral-900/95 border-l border-t border-white/10"
-            />
+        {loading && (
+          <div className="rounded-xl border border-[color:var(--border)] p-4 text-sm text-[color:var(--muted-foreground)]">
+            Đang tải biểu đồ…
+          </div>
+        )}
 
-            <div className="flex gap-3">
-              <Image
-                src={fakeUser.avatar}
-                alt="avatar"
-                width={48}
-                height={48}
-                className="w-12 h-12 rounded-lg object-cover ring-1 ring-white/10"
-              />
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold truncate">
-                    {fakeUser.name}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 ring-1 ring-blue-400/20">
-                    Pro
-                  </span>
-                </div>
-                <div className="text-sm text-neutral-400">
-                  @{fakeUser.username}
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-neutral-200 line-clamp-3">
-                  {fakeUser.bio}
-                </p>
+        {!loading && !data.length && (
+          <div className="rounded-xl border border-dashed border-[color:var(--border)] p-6 text-sm text-[color:var(--muted-foreground)]">
+            Chưa có dữ liệu 30 ngày gần đây
+          </div>
+        )}
 
-                <div className="mt-3 flex gap-2">
-                  <button className="px-3 py-1.5 text-sm rounded-lg ring-1 ring-white/15 hover:bg-white/5 transition">
-                    Follow
-                  </button>
-                  <button className="px-3 py-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-500 transition">
-                    View profile
-                  </button>
-                </div>
-              </div>
-            </div>
+        {!loading && data.length > 0 && (
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="day"
+                  tickFormatter={(d: string) => {
+                    const [y, m, dd] = d.split("-");
+                    return `${dd}/${m}`;
+                  }}
+                  minTickGap={20}
+                />
+                <YAxis allowDecimals={false} domain={["dataMin-1", "dataMax+1"]} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="followers"
+                  name="Followers"
+                  dot={{ r: 2 }}
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         )}
       </div>
-
-      {/* chú thích nhỏ */}
-      <p className="absolute bottom-4 text-xs text-neutral-400">
-        Hover vào avatar để thấy card (có delay mở/đóng).
-      </p>
-    </div>
+    </main>
   );
 }

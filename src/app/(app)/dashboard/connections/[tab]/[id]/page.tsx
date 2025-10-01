@@ -5,8 +5,19 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { useHoverDelay } from "@/hooks/index.hooks";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
+import { format, parseISO } from "date-fns";
 // interface UserData {
 //   followers_number: number;
 //   avatar_ipfs_hash: string;
@@ -74,11 +85,26 @@ interface MutualFollower {
   following_number: number;
 }
 
+interface SnapshotData {
+  _id: string;
+  user_id: string;
+  followers_number: number;
+  snapshot_at: string;
+}
+
+interface ChartRow {
+  day: string;
+  followers: number;
+  dateISO: string;
+}
+
 export default function Page() {
   const { id } = useParams<{ id: string }>();
   const hover = useHoverDelay(250, 120);
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<SnapshotData[]>([]);
+  const [userData, setUserData] = useState<UserData | null>(null);
+
   console.log("This is user data", userData);
 
   const fetchUserData = useCallback(async () => {
@@ -241,6 +267,79 @@ export default function Page() {
   //   image.src = avatarUrl;
   // };
 
+  const fetchSnapShot = useCallback(async () => {
+    setLoading(true);
+    try {
+      const apiResponse = await fetch("/api/users/snapshot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ id }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout?.(10000),
+      });
+
+      const response = await apiResponse.json();
+
+      if (!apiResponse.ok || !response?.success) {
+        toastError(response?.message || "API error");
+        return;
+      }
+
+      setRows(response.data || []);
+      toastSuccess(
+        response?.message ||
+          "Followers snapshot data last month fetched successfully"
+      );
+    } catch (error) {
+      console.error(error);
+      toastError("Fetch error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSnapShot();
+  }, [fetchSnapShot]);
+
+  const data: ChartRow[] = useMemo(() => {
+    if (!rows.length) return [];
+    const sorted = [...rows].sort(
+      (a, b) =>
+        new Date(a.snapshot_at).getTime() - new Date(b.snapshot_at).getTime()
+    );
+    const byDay = new Map<string, SnapshotData>();
+    for (const s of sorted) {
+      const key = s.snapshot_at.slice(0, 10); // "YYYY-MM-DD"
+      byDay.set(key, s); // cuối cùng trong ngày
+    }
+    const out = Array.from(byDay.values()).map((s) => ({
+      day: s.snapshot_at.slice(0, 10),
+      followers: s.followers_number,
+      dateISO: s.snapshot_at,
+    }));
+    out.sort((a, b) => a.day.localeCompare(b.day));
+    return out;
+  }, [rows]);
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const p = payload[0]?.payload;
+    return (
+      <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 shadow-xl">
+        <div className="text-xs text-[color:var(--muted-foreground)]">
+          {format(parseISO(p.dateISO), "dd/MM/yyyy HH:mm")}
+        </div>
+        <div className="text-sm font-medium text-[color:var(--foreground)]">
+          Followers: {p.followers}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       {loading && (
@@ -338,6 +437,43 @@ export default function Page() {
               </div>
             </div>
           </div>
+
+          {!loading && !data.length && (
+            <div className="rounded-xl border border-dashed border-[color:var(--border)] p-6 text-sm text-[color:var(--muted-foreground)]">
+              Chưa có dữ liệu 30 ngày gần đây
+            </div>
+          )}
+
+          {!loading && data.length > 0 && (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="day"
+                    tickFormatter={(d: string) => {
+                      const [y, m, dd] = d.split("-");
+                      return `${dd}/${m}`;
+                    }}
+                    minTickGap={20}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    domain={["dataMin-1", "dataMax+1"]}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="followers"
+                    name="Followers"
+                    dot={{ r: 2 }}
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
 
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-base font-semibold text-[color:var(--foreground)]">
