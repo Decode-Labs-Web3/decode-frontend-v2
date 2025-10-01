@@ -5,7 +5,6 @@ import Logo from "./Logo";
 import PasswordField from "./PasswordField";
 import SubmitButton from "./SubmitButton";
 import TextField from "./TextField";
-import VerificationCodeInput from "./VerificationCodeInput";
 
 const Auth = {
   AuthCard,
@@ -15,7 +14,6 @@ const Auth = {
   PasswordField,
   SubmitButton,
   TextField,
-  VerificationCodeInput,
 };
 
 export default Auth;

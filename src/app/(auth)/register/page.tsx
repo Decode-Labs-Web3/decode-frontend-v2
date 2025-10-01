@@ -121,7 +121,7 @@ export default function Register() {
           sameSite: "Lax",
         });
 
-        router.push("/verify/register");
+        router.push("/verify-register");
         return;
       }
       toastSuccess("Account created successfully!");

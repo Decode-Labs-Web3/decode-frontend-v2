@@ -93,7 +93,7 @@ export default function Login() {
         response.message ===
           "Device fingerprint not trusted, send email verification"
       ) {
-        router.push("/verify/login");
+        router.push("/verify-login");
       } else {
         console.log("Login failed:", response);
         toastError(response?.message || "Login failed");

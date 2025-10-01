@@ -55,7 +55,7 @@ export default function ForgotPassword() {
 
       if (response.success) {
         toastSuccess("Reset link sent successfully!");
-        router.push("/verify/forgot");
+        router.push("/verify-forgot");
       } else {
         console.error("Forgot password failed:", response);
         toastError(
