@@ -121,20 +121,24 @@ export default function OverviewPage() {
               <div className="pt-6 border-t border-[color:var(--border)]">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <span className="text-sm text-[color:var(--muted-foreground)]">
-                      Followers
-                    </span>
-                    <p className="text-sm text-[color:var(--foreground)]">
-                      {user.followers_number}
-                    </p>
+                    <Link href="/dashboard/connections/followers">
+                      <span className="text-sm text-[color:var(--muted-foreground)]">
+                        Followers
+                      </span>
+                      <p className="text-sm text-[color:var(--foreground)]">
+                        {user.followers_number}
+                      </p>
+                    </Link>
                   </div>
                   <div className="space-y-2">
-                    <span className="text-sm text-[color:var(--muted-foreground)]">
-                      Following
-                    </span>
-                    <p className="text-sm text-[color:var(--foreground)]">
-                      {user.following_number}
-                    </p>
+                    <Link href="/dashboard/connections/followings">
+                      <span className="text-sm text-[color:var(--muted-foreground)]">
+                        Following
+                      </span>
+                      <p className="text-sm text-[color:var(--foreground)]">
+                        {user.following_number}
+                      </p>
+                    </Link>
                   </div>
                 </div>
               </div>

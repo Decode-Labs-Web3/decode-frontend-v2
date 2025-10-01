@@ -56,11 +56,11 @@ export default function VerifyPage() {
             break;
           case "login":
             if (data.requiresRelogin) {
-              toastSuccess("Device verified! Please log in again.");
-              router.push("/login");
+              toastSuccess("Device verified! You will be login.");
+              router.push("/dashboard");
             } else {
-              toastSuccess("Device verified successfully!");
-              router.push("/login");
+              toastSuccess("Device not verified!");
+              router.push("/");
               router.refresh();
             }
             break;

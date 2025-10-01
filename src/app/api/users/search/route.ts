@@ -29,15 +29,15 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { email_or_username } = body;
+    const { name } = body;
 
-    console.log('this is email or username ',email_or_username)
+    console.log('this is email or username ',name)
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/users/search?email_or_username=${email_or_username}&page=0&limit=10`,
+      `${process.env.BACKEND_BASE_URL}/users/search?email_or_username=${name}&page=0&limit=10`,
       {
         method: "GET",
         headers: {

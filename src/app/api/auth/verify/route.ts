@@ -10,9 +10,15 @@ const VERIFY_ENDPOINTS = {
 
 const SUCCESS_MESSAGES = {
   register: "User created successfully",
-  login: "Device fingerprint verified",
+  login: "Login successful",
   forgot: "Password code verified",
 };
+
+function isoToMaxAgeSeconds(expiresAtISO: string): number {
+  const now = Date.now();
+  const expMs = Date.parse(expiresAtISO);
+  return Math.max(0, Math.floor((expMs - now) / 1000));
+}
 
 export async function POST(req: Request) {
   const requestId = generateRequestId()
@@ -84,6 +90,47 @@ export async function POST(req: Request) {
         type,
         requiresRelogin: type === "login",
       });
+
+      const accessExpISO = response.data.expires_at as string;
+      const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
+      const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
+      console.log("this is accessMaxAge", accessMaxAge);
+      console.log("this is accessExpSec", accessExpSec);
+      console.log(`this is login ${pathname}`, response.data);
+
+      if (type === "login") {
+        res.cookies.set("sessionId", response.data._id, {
+          httpOnly: false,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: accessMaxAge,
+        });
+
+        res.cookies.set("accessToken", response.data.access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: accessMaxAge,
+        });
+
+        res.cookies.set("accessExp", String(accessExpSec), {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: accessMaxAge,
+        });
+
+        res.cookies.set("refreshToken", response.data.session_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: 60 * 60 * 24 * 7,
+        });
+      }
 
       if (type === "forgot") {
         res.cookies.set("forgot_code", code, {

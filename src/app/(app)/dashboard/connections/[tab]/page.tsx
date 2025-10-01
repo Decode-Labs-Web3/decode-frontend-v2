@@ -294,7 +294,7 @@ export default function Page() {
           )}
         </div>
       )}
-      {loading && <Loading.AuthCard />}
+      {loading && <Loading.NotificationCard />}
     </main>
   );
 }

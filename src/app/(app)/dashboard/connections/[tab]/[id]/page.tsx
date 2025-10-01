@@ -297,9 +297,10 @@ export default function Page() {
       console.error(error);
       toastError("Fetch error");
     } finally {
+      // setLoading(true);
       setLoading(false);
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     fetchSnapShot();
@@ -313,8 +314,8 @@ export default function Page() {
     );
     const byDay = new Map<string, SnapshotData>();
     for (const s of sorted) {
-      const key = s.snapshot_at.slice(0, 10); // "YYYY-MM-DD"
-      byDay.set(key, s); // cuối cùng trong ngày
+      const key = s.snapshot_at.slice(0, 10);
+      byDay.set(key, s);
     }
     const out = Array.from(byDay.values()).map((s) => ({
       day: s.snapshot_at.slice(0, 10),
@@ -325,9 +326,16 @@ export default function Page() {
     return out;
   }, [rows]);
 
-  const CustomTooltip = ({ active, payload }) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ payload?: ChartRow }>;
+  }) => {
     if (!active || !payload?.length) return null;
-    const p = payload[0]?.payload;
+    const p = payload[0]?.payload as ChartRow | undefined;
+    if (!p) return null;
     return (
       <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 shadow-xl">
         <div className="text-xs text-[color:var(--muted-foreground)]">
@@ -344,7 +352,7 @@ export default function Page() {
     <>
       {loading && (
         <div>
-          <Loading.OverviewCard />
+          <Loading.ConnectionCard />
         </div>
       )}
 
@@ -440,7 +448,7 @@ export default function Page() {
 
           {!loading && !data.length && (
             <div className="rounded-xl border border-dashed border-[color:var(--border)] p-6 text-sm text-[color:var(--muted-foreground)]">
-              Chưa có dữ liệu 30 ngày gần đây
+              No data found in 30 days
             </div>
           )}
 
@@ -452,7 +460,9 @@ export default function Page() {
                   <XAxis
                     dataKey="day"
                     tickFormatter={(d: string) => {
-                      const [y, m, dd] = d.split("-");
+                      const parts = d.split("-");
+                      const dd = parts[2];
+                      const m = parts[1];
                       return `${dd}/${m}`;
                     }}
                     minTickGap={20}

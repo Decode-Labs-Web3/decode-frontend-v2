@@ -39,7 +39,7 @@ interface Follower {
 
 export default function ConnectionsIndex() {
   const searchParams = useSearchParams();
-  const query = searchParams.get("email_or_username") ?? "";
+  const query = searchParams.get("name") ?? "";
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<UserData[]>([]);
   console.log("search:", searchResults);
@@ -60,7 +60,7 @@ export default function ConnectionsIndex() {
             "Content-Type": "application/json",
             "X-Frontend-Internal-Request": "true",
           },
-          body: JSON.stringify({ email_or_username: queryToSearch }),
+          body: JSON.stringify({ name: queryToSearch }),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),
         });
@@ -94,8 +94,8 @@ export default function ConnectionsIndex() {
         <input
           className="flex-1 w-full bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-3 text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
           type="text"
-          name="email_or_username"
-          placeholder="Enter email or username..."
+          name="name"
+          placeholder="Enter name of user..."
           defaultValue={query}
         />
         <button
