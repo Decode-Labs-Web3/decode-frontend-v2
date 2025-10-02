@@ -89,6 +89,18 @@ export default function Login() {
         router.push("/dashboard");
       } else if (
         response.success &&
+        response.statusCode === 200 &&
+        response.message === "Please verify OTP to login"
+      ) {
+        router.push("/verify-otp");
+      }else if (
+        response.success &&
+        response.statusCode === 200 &&
+        response.message === "Please verify OTP to verify device fingerprint"
+      ) {
+        router.push("/verify-fingerprint");
+      }  else if (
+        response.success &&
         response.statusCode === 400 &&
         response.message ===
           "Device fingerprint not trusted, send email verification"

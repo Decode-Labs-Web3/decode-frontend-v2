@@ -39,6 +39,16 @@ const GATE_RULES: GateRule[] = [
     exact: false,
   },
   {
+    prefix: "/verify-otp",
+    cookie: "gate-key-for-verify-otp",
+    exact: false,
+  },
+  {
+    prefix: "/verify-fingerprint",
+    cookie: "gate-key-for-verify-fingerprint",
+    exact: false,
+  },
+  {
     prefix: "/change-password",
     cookie: "gate-key-for-change-password",
     exact: false,

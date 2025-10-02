@@ -5,12 +5,6 @@ import {
   apiPathName,
 } from "@/utils/index.utils";
 
-function isoToMaxAgeSeconds(expiresAtISO: string): number {
-  const now = Date.now();
-  const expMs = Date.parse(expiresAtISO);
-  return Math.max(0, Math.floor((expMs - now) / 1000));
-}
-
 export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);

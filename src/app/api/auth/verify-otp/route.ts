@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   guardInternal,
   apiPathName,
 } from "@/utils/index.utils";
+import { cookies } from "next/headers";
 
 function isoToMaxAgeSeconds(expiresAtISO: string): number {
   const now = Date.now();
@@ -20,36 +20,49 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { email_or_username, password } = body;
+    const { otp } = body;
 
-    if (!email_or_username || !password) {
+    // console.log("this is otp form", otp)
+
+    if (!otp) {
       return NextResponse.json(
-        { success: false, message: "Email/username and password are required" },
+        {
+          success: false,
+          statusCode: 400,
+          message: "Code are required"
+        },
         { status: 400 }
       );
     }
 
-    const userAgent = req.headers.get("user-agent") || "";
-    const fingerprintResult = await fingerprintService(userAgent);
-    const { fingerprint_hashed, device, browser } = fingerprintResult;
+    const cookieStore = await cookies();
+    const login_session_token = cookieStore.get("login_session_token")?.value;
 
-    const requestBody = {
-      email_or_username,
-      password,
-      fingerprint_hashed,
-      browser,
-      device,
-    };
+    if (!login_session_token) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 401,
+          message: "No access token found",
+        },
+        { status: 401 }
+      );
+    }
+
+    const resquestBody = {
+      login_session_token,
+      otp
+    }
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/auth/login`,
+      `${process.env.BACKEND_BASE_URL}/auth/2fa/login`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-Request-Id": requestId,
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(resquestBody),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
@@ -60,16 +73,16 @@ export async function POST(req: Request) {
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
       console.error(
-        "/api/auth/login backend error:",
+        "/api/auth/verify-login backend error:",
         error || backendResponse.statusText
       );
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 401,
-          message: error?.message || "Login failed",
+          statusCode: backendResponse.status || 400,
+          message: error?.message || "Invalid email verification otp",
         },
-        { status: backendResponse.status || 401 }
+        { status: backendResponse.status || 400 }
       );
     }
 
@@ -124,94 +137,6 @@ export async function POST(req: Request) {
         sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
-      });
-
-      return res;
-    }
-
-    if (
-      response.success &&
-      response.statusCode === 200 &&
-      response.message === "Please verify OTP to login"
-    ) {
-      const res = NextResponse.json({
-        success: true,
-        statusCode: response.statusCode || 200,
-        message: response.message || "Please verify OTP to login",
-      });
-
-      res.cookies.set("login_session_token", response.data.login_session_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 5,
-      });
-
-      res.cookies.set("gate-key-for-verify-otp", "true", {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 5,
-      });
-
-      return res;
-    }
-
-    if (
-      response.success &&
-      response.statusCode === 200 &&
-      response.message === "Please verify OTP to verify device fingerprint"
-    ) {
-      const res = NextResponse.json({
-        success: true,
-        statusCode: response.statusCode || 200,
-        message: response.message || "Please verify OTP to verify device fingerprint",
-      });
-
-      res.cookies.set("verify_device_fingerprint_session_token", response.data.verify_device_fingerprint_session_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 5,
-      });
-
-      res.cookies.set("gate-key-for-verify-fingerprint", "true", {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 5,
-      });
-
-      return res;
-    }
-
-    if (
-      response.success &&
-      response.statusCode === 400 &&
-      response.message ===
-        "Device fingerprint not trusted, send email verification"
-    ) {
-      const res = NextResponse.json(
-        {
-          success: true,
-          statusCode: response.statusCode || 400,
-          message:
-            response.message ||
-            "Device fingerprint not trusted, send email verification",
-        },
-        { status: 200 }
-      );
-
-      res.cookies.set("gate-key-for-verify-login", "true", {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 5,
       });
 
       return res;

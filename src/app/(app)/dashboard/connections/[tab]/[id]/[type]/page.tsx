@@ -75,7 +75,7 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  }, [id, type]);
+  }, [id, type, endOfData, page]);
 
   useEffect(() => {
     fetchUserData();
