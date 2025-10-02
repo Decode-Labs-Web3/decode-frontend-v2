@@ -5,8 +5,8 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { useHoverDelay } from "@/hooks/index.hooks";
-import { useState, useEffect, useCallback, useMemo } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -99,7 +99,7 @@ interface ChartRow {
 }
 
 export default function Page() {
-  const { id } = useParams<{ id: string }>();
+  const { tab, id } = useParams<{ id: string, tab: string }>();
   const hover = useHoverDelay(250, 120);
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<SnapshotData[]>([]);
@@ -390,9 +390,13 @@ export default function Page() {
                   Wallet: {userData.primary_wallet.address}
                 </div>
                 <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
-                  <span>{userData.followers_number} followers</span>
+                  <Link href={`/dashboard/connections/${tab}/${id}/followers`}>
+                    <span>{userData.followers_number} followers</span>
+                  </Link>
                   <span>•</span>
-                  <span>{userData.following_number} following</span>
+                  <Link href={`/dashboard/connections/${tab}/${id}/followings`}>
+                    <span>{userData.following_number} following</span>
+                  </Link>
                   {typeof userData.mutual_followers_number === "number" && (
                     <>
                       <span>•</span>
