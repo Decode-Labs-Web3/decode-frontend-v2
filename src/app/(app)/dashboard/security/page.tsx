@@ -24,7 +24,7 @@ export default function SecurityPage() {
   const [code, setCode] = useState("");
   const sixDigits = /^\d{6}$/.test(code);
 
-  console.log("This is code from 2fa: ", code);
+  // console.log("This is code from 2fa: ", code);
 
   const handleStatus = useCallback(async () => {
     setLoading(true);
@@ -495,7 +495,31 @@ export default function SecurityPage() {
               <div className="space-y-6">
                 <div className="flex justify-center">
                   <div className="rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-6 shadow-lg">
-                    <QRCode value={otpData.qr_code_url} size={280} />
+                    {/* <QRCode value={otpData.qr_code_url} size={280} /> */}
+                    <QRCode
+                      value={(() => {
+                        const issuer = "Decode Protal";
+                        const raw = (
+                          otpData?.otp_secret
+                        )
+                          .replace(/\s+/g, "")
+                          .toUpperCase();
+                        const padded =
+                          raw + "=".repeat((8 - (raw.length % 8)) % 8);
+                        if (!/^[A-Z2-7]+=*$/.test(padded))
+                          return "invalid-secret";
+
+                        const label = encodeURIComponent(issuer);
+
+                        return `otpauth://totp/${label}?secret=${padded}&issuer=${encodeURIComponent(
+                          issuer
+                        )}`;
+                      })()}
+                      size={280}
+                      bgColor="#ffffff"
+                      fgColor="#000000"
+                      style={{ background: "#ffffff", padding: 12 }}
+                    />
                   </div>
                 </div>
 
