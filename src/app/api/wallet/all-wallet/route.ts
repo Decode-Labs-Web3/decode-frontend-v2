@@ -65,7 +65,7 @@ export async function GET(req: Request) {
       { status: data.statusCode || 200 }
     );
   } catch (error) {
-    console.error("Overview API error:", error);
+    console.error("All wallet API error:", error);
     return NextResponse.json(
       {
         success: false,

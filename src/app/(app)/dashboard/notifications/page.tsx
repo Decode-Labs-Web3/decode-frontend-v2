@@ -203,7 +203,7 @@ export default function NotificationsPage() {
     <div className="flex flex-col justify-start gap-2">
       <button
         onClick={() => markAllAsRead()}
-        className="bg-blue-500 p-2 rounded-lg text-white w-40"
+        className="bg-blue-700 p-2 rounded-lg text-white w-40"
       >
         Mark all as read
       </button>
@@ -239,7 +239,7 @@ export default function NotificationsPage() {
             </div>
             <button
               onClick={() => markAsRead(notification._id)}
-              className="bg-blue-500 p-2 rounded-lg text-white w-20"
+              className="bg-blue-700 p-2 rounded-lg text-white w-20"
             >
               Read
             </button>

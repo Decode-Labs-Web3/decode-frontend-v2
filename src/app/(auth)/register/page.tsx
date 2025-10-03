@@ -13,9 +13,9 @@ import {
 } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faX } from "@fortawesome/free-solid-svg-icons";
-import InterestDropdown, {
-  type Interest,
-} from "@/components/(auth)/InterestDropdown";
+// import InterestDropdown, {
+//   type Interest,
+// } from "@/components/(auth)/InterestDropdown";
 
 export default function Register() {
   const router = useRouter();
@@ -26,9 +26,9 @@ export default function Register() {
     confirmPassword: "",
   });
 
-  const [interests, setInterests] = useState<Interest[]>([]);
+  // const [interests, setInterests] = useState<Interest[]>([]);
 
-  console.log("This is register page", interests)
+  // console.log("This is register page", interests)
 
   useEffect(() => {
     const value = getCookie("email_or_username");
@@ -202,7 +202,7 @@ export default function Register() {
             onChange={handleChange}
           />
 
-          <InterestDropdown value={interests} onChange={setInterests} />
+          {/* <InterestDropdown value={interests} onChange={setInterests} /> */}
 
           <Auth.PasswordField
             id="password"

@@ -64,7 +64,7 @@ export default function Page() {
         toastError("API error");
         return;
       }
-      console.log("This is [tab] [id] [type]",response)
+      console.log("This is [tab] [id] [type]", response);
       setUserFollow((prev) => [...prev, ...response.data.users]);
       setEndOfData(response.data.meta.is_last_page);
       toastSuccess(response?.message || "Profile fetched successfully");
@@ -262,7 +262,7 @@ export default function Page() {
             </div>
             <Link
               href={`/dashboard/connections/followings/${user.user_id}`}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+              className="bg-blue-700 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
             >
               View
             </Link>

@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       { status: data.statusCode || 200 }
     );
   } catch (error) {
-    console.error("Overview API error:", error);
+    console.error("Snapshot API error:", error);
     return NextResponse.json(
       {
         success: false,

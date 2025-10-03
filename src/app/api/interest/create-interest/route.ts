@@ -28,16 +28,16 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { otp } = body;
+    const { interest } = body;
 
 
-    // console.log("OTP code from enable route",otp)
+    console.log("Interest list form create interest route", interest)
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/auth/2fa/enable`,
+      `${process.env.BACKEND_BASE_URL}/relationship/interest/create`,
       {
         method: "POST",
         headers: {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
           "X-Fingerprint-Hashed": fingerprint_hashed,
           "X-Request-Id": requestId,
         },
-        body: JSON.stringify({ otp }),
+        body: JSON.stringify({ interest }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
@@ -67,14 +67,14 @@ export async function POST(req: Request) {
 
     const response = await backendResponse.json();
 
-    // console.log("2FA Enanabled route backend response", backendResponse)
-    // console.log("2FA Enanabled route response", response)
+    console.log("Create interest route backend response", backendResponse)
+    console.log("Create interest route response", response)
 
     return NextResponse.json(
       {
         success: response.sucess || true,
         statusCode: response.statusCode || 200,
-        message: response.message || "OTP enabled successfully",
+        message: response.message || "User interests created successfully",
         data: response.data || [],
       },
       { status: 200 }

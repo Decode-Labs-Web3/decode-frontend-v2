@@ -163,104 +163,103 @@ export default function Page() {
                         <div className="flex flex-col">
                           {/* image section */}
                           <div className="flex flex-row gap-4">
-                          <div className="w-25 h-25 rounded-xl overflow-hidden border border-[color:var(--border)] flex-shrink-0">
-                            <Image
-                              src={
-                                user.avatar_ipfs_hash
-                                  ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                                  : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                              }
-                              alt={"Avatar"}
-                              width={64}
-                              height={64}
-                              className="w-full h-full object-cover"
-                              unoptimized
-                            />
-                          </div>
+                            <div className="w-25 h-25 rounded-xl overflow-hidden border border-[color:var(--border)] flex-shrink-0">
+                              <Image
+                                src={
+                                  user.avatar_ipfs_hash
+                                    ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
+                                    : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                }
+                                alt={"Avatar"}
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                              />
+                            </div>
 
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-[color:var(--foreground)] truncate">
-                                {user.display_name}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-[color:var(--foreground)] truncate">
+                                  {user.display_name}
+                                </p>
+                                {user.role && (
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color:var(--surface)] border border-[color:var(--border)] text-[color:var(--muted-foreground)] whitespace-nowrap">
+                                    {user.role}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-[color:var(--muted-foreground)] truncate">
+                                @{user.username}
                               </p>
-                              {user.role && (
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color:var(--surface)] border border-[color:var(--border)] text-[color:var(--muted-foreground)] whitespace-nowrap">
-                                  {user.role}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-[color:var(--muted-foreground)] truncate">
-                              @{user.username}
-                            </p>
 
-                            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                              <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                                <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                                  Following
-                                </p>
-                                <p className="text-sm font-medium text-[color:var(--foreground)]">
-                                  {user.following_number}
-                                </p>
-                              </div>
-                              <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                                <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                                  Followers
-                                </p>
-                                <p className="text-sm font-medium text-[color:var(--foreground)]">
-                                  {user.followers_number}
-                                </p>
-                              </div>
-                              <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                                <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                                  Mutual
-                                </p>
-                                <p className="text-sm font-medium text-[color:var(--foreground)]">
-                                  {user.mutual_followers_number}
-                                </p>
-                              </div>
-                            </div>
-
-                          </div>
-                          </div>
-                            {/* mutual followers compact row */}
-                            {user.mutual_followers_number > 0 && (
-                              <div className="mt-3 flex items-center gap-2 min-w-0">
-                                <div className="flex -space-x-2">
-                                  {user.mutual_followers_list
-                                    .slice(0, 3)
-                                    .map((mutualFollower) => (
-                                      <Image
-                                        key={mutualFollower.user_id}
-                                        src={
-                                          mutualFollower.avatar_ipfs_hash
-                                            ? `https://gateway.pinata.cloud/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                            : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                                        }
-                                        alt={"Avatar"}
-                                        width={20}
-                                        height={20}
-                                        className="h-5 w-5 rounded-full border border-[color:var(--border)] object-cover bg-[color:var(--surface)]"
-                                        unoptimized
-                                      />
-                                    ))}
+                              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                                <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
+                                  <p className="text-[10px] text-[color:var(--muted-foreground)]">
+                                    Following
+                                  </p>
+                                  <p className="text-sm font-medium text-[color:var(--foreground)]">
+                                    {user.following_number}
+                                  </p>
                                 </div>
-                                <p className="text-xs text-[color:var(--muted-foreground)] truncate">
-                                  Followed by{" "}
-                                  {user.mutual_followers_list
-                                    .slice(0, 2)
-                                    .map((m) => m.display_name)
-                                    .join(", ")}
-                                  {user.mutual_followers_number - 2 > 0 &&
-                                    ` and ${
-                                      user.mutual_followers_number - 2
-                                    } other${
-                                      user.mutual_followers_number - 2 > 1
-                                        ? "s"
-                                        : ""
-                                    }`}
-                                </p>
+                                <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
+                                  <p className="text-[10px] text-[color:var(--muted-foreground)]">
+                                    Followers
+                                  </p>
+                                  <p className="text-sm font-medium text-[color:var(--foreground)]">
+                                    {user.followers_number}
+                                  </p>
+                                </div>
+                                <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
+                                  <p className="text-[10px] text-[color:var(--muted-foreground)]">
+                                    Mutual
+                                  </p>
+                                  <p className="text-sm font-medium text-[color:var(--foreground)]">
+                                    {user.mutual_followers_number}
+                                  </p>
+                                </div>
                               </div>
-                            )}
+                            </div>
+                          </div>
+                          {/* mutual followers compact row */}
+                          {user.mutual_followers_number > 0 && (
+                            <div className="mt-3 flex items-center gap-2 min-w-0">
+                              <div className="flex -space-x-2">
+                                {user.mutual_followers_list
+                                  .slice(0, 3)
+                                  .map((mutualFollower) => (
+                                    <Image
+                                      key={mutualFollower.user_id}
+                                      src={
+                                        mutualFollower.avatar_ipfs_hash
+                                          ? `https://gateway.pinata.cloud/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                          : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                      }
+                                      alt={"Avatar"}
+                                      width={20}
+                                      height={20}
+                                      className="h-5 w-5 rounded-full border border-[color:var(--border)] object-cover bg-[color:var(--surface)]"
+                                      unoptimized
+                                    />
+                                  ))}
+                              </div>
+                              <p className="text-xs text-[color:var(--muted-foreground)] truncate">
+                                Followed by{" "}
+                                {user.mutual_followers_list
+                                  .slice(0, 2)
+                                  .map((m) => m.display_name)
+                                  .join(", ")}
+                                {user.mutual_followers_number - 2 > 0 &&
+                                  ` and ${
+                                    user.mutual_followers_number - 2
+                                  } other${
+                                    user.mutual_followers_number - 2 > 1
+                                      ? "s"
+                                      : ""
+                                  }`}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -276,7 +275,7 @@ export default function Page() {
                 </div>
                 <Link
                   href={`/dashboard/connections/${tab}/${user.user_id}`}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+                  className="bg-blue-700 hover:bg-blue-700 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
                 >
                   View
                 </Link>

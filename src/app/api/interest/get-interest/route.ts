@@ -33,9 +33,9 @@ export async function GET(req: Request) {
     const { fingerprint_hashed } = fingerprintResult;
 
     const backendRes = await fetch(
-      `${process.env.BACKEND_BASE_URL}/auth/2fa/disable`,
+      `${process.env.BACKEND_BASE_URL}/relationship/interest/list`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "X-Fingerprint-Hashed": fingerprint_hashed,
@@ -46,11 +46,9 @@ export async function GET(req: Request) {
       }
     );
 
-    // console.log(`this is backend response from ${pathname}`,  backendRes)
-
-    if (!backendRes.ok) {
+    if (!backendRes.ok && backendRes.status !== 404) {
       const errorData = await backendRes.json().catch(() => ({}));
-      console.error("2FA status fetch error:", errorData);
+      console.error("Overview fetch error:", errorData);
       return NextResponse.json(
         {
           success: false,
@@ -62,30 +60,30 @@ export async function GET(req: Request) {
       );
     }
 
-    // if (backendRes.status === 404) {
-    //   return NextResponse.json(
-    //     {
-    //       success: false,
-    //       statusCode: 404,
-    //       message: "OTP not found",
-    //     },
-    //     { status: 200 }
-    //   );
-    // }
+    if (backendRes.status === 404) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 404,
+          message: "User interests not found",
+        },
+        { status: 200 }
+      );
+    }
 
-    const response = await backendRes.json();
-    console.log("2FA data:", response);
+    const data = await backendRes.json();
+    console.log("User interests fetched:", data);
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
-        message: response.message || "OTP disabled successfully",
-        data: response.data,
+        statusCode: data.statusCode || 200,
+        message: data.message || "User interests fetched successfully",
+        data: data.data,
       },
-      { status: 200 }
+      { status: data.statusCode || 200 }
     );
   } catch (error) {
-    console.error("2FA API error:", error);
+    console.error("Get Interest API error:", error);
     return NextResponse.json(
       {
         success: false,

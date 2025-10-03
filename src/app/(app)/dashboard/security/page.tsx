@@ -402,7 +402,7 @@ export default function SecurityPage() {
                 </p>
               </div>
 
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col justify-center space-x-4 gap-4">
                 <span
                   className={`text-sm font-medium ${
                     enabled
@@ -498,7 +498,7 @@ export default function SecurityPage() {
                     {/* <QRCode value={otpData.qr_code_url} size={280} /> */}
                     <QRCode
                       value={(() => {
-                        const issuer = "Decode Protal";
+                        const issuer = "Decode Portal";
                         const raw = (
                           otpData?.otp_secret
                         )

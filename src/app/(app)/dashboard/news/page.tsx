@@ -112,7 +112,7 @@ export default function NewsPage() {
                   unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0" />
-                <span className="absolute left-3 top-3 text-xs px-2 py-1 rounded-md bg-blue-500/80 text-white capitalize">
+                <span className="absolute left-3 top-3 text-xs px-2 py-1 rounded-md bg-blue-700/80 text-white capitalize">
                   {post.category}
                 </span>
               </div>

@@ -33,6 +33,8 @@ export async function POST(req: Request) {
     const fingerprintResult = await fingerprintService(userAgent);
     const { fingerprint_hashed, device, browser } = fingerprintResult;
 
+    console.log("fingerprint_hashed", fingerprint_hashed)
+
     const requestBody = {
       email_or_username,
       password,

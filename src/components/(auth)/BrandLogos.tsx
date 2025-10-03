@@ -7,8 +7,8 @@ export default function BrandLogos() {
   return (
     <div className="mt-8 text-center">
       <div className="flex justify-center space-x-2 mt-2">
-        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+        <div className="w-2 h-2 bg-blue-700 rounded-full"></div>
+        <div className="w-2 h-2 bg-blue-700 rounded-full"></div>
         <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
       </div>
 
@@ -68,7 +68,7 @@ export default function BrandLogos() {
           Privacy Policy
         </Link>
       </p>
-      
+
       {/* Footer */}
       <div className="text-center mt-12">
         <p className="text-gray-400 text-sm">

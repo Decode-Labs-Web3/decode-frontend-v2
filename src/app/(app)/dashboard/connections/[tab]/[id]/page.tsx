@@ -55,7 +55,7 @@ interface UserData {
   __v: number;
   is_active: boolean;
   last_account_deactivation: string;
-  primary_wallet: {
+  primary_wallet?: {
     _id: string;
     address: string;
     user_id: string;
@@ -99,7 +99,7 @@ interface ChartRow {
 }
 
 export default function Page() {
-  const { tab, id } = useParams<{ id: string, tab: string }>();
+  const { tab, id } = useParams<{ id: string; tab: string }>();
   const hover = useHoverDelay(250, 120);
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<SnapshotData[]>([]);
@@ -387,7 +387,7 @@ export default function Page() {
                   @{userData.username}
                 </div>
                 <div className="text-sm text-muted-foreground truncate">
-                  Wallet: {userData.primary_wallet.address}
+                  Wallet: {userData.primary_wallet?.address}
                 </div>
                 <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
                   <Link href={`/dashboard/connections/${tab}/${id}/followers`}>
@@ -416,7 +416,7 @@ export default function Page() {
                     className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
                       userData.is_following
                         ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
-                        : "bg-blue-600 hover:bg-blue-500 text-white border-blue-600"
+                        : "bg-blue-700 hover:bg-blue-700 text-white border-blue-600"
                     } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
                   >
                     {userData.is_following

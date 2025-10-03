@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import InterestModal, { type Interest } from "@/components/(app)/Interest";
 
 interface UserData {
   _id: string;
@@ -37,12 +38,35 @@ interface Follower {
   following_number: number;
 }
 
+interface UserSuggestion {
+  user_id: string;
+  username: string;
+  role: string;
+  display_name: string;
+  avatar_ipfs_hash: string;
+  following_number: number;
+  followers_number: number;
+  shared_interests_count: number;
+  shared_interests: string[];
+  is_following: boolean;
+  is_follower: boolean;
+  is_blocked: boolean;
+  is_blocked_by: boolean;
+  mutual_followers_list: Follower[];
+  mutual_followers_number: number;
+}
+
 export default function ConnectionsIndex() {
   const searchParams = useSearchParams();
   const query = searchParams.get("name") ?? "";
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<UserData[]>([]);
-  console.log("search:", searchResults);
+  // console.log("search:", searchResults);
+  const [interests, setInterests] = useState<Interest[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [userSuggest, setUserSuggest] = useState<UserSuggestion[]>([]);
+
+  console.log("userSuggest:", userSuggest);
 
   const handleSearch = useCallback(
     async (searchQuery?: string) => {
@@ -88,6 +112,106 @@ export default function ConnectionsIndex() {
     handleSearch();
   }, [handleSearch]);
 
+  const handleSameInterest = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/interest/same-interest", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      // console.log("apiResponse",apiResponse);
+      if (!apiResponse.ok) {
+        console.error(response);
+        // setModalOpen(true)
+        toastError("Failed to fetch interests");
+        return;
+      }
+      console.log("Response from suggest",response.data.users);
+      setUserSuggest(response.data.users);
+    } catch (error) {
+      console.error("Fetch interests error:", error);
+      toastError("Failed to fetch interests");
+    }
+  }, []);
+
+  const handleGetInterest = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/interest/get-interest", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      // console.log("apiResponse",apiResponse);
+      if (!apiResponse.ok) {
+        console.error(response);
+        // setModalOpen(true)
+        toastError("Failed to fetch interests");
+        return;
+      }
+      if (
+        response.statusCode === 404 &&
+        response.message === "User interests not found"
+      ) {
+        setModalOpen(true);
+        return;
+      }
+      if (response.message === "User interests fetched successfully") {
+        setModalOpen(false);
+        handleSameInterest();
+        return;
+      }
+    } catch (error) {
+      console.error("Fetch interests error:", error);
+      toastError("Failed to fetch interests");
+    }
+  }, []);
+
+  useEffect(() => {
+    handleGetInterest();
+  }, [handleGetInterest]);
+
+  const handleInterest = async () => {
+    setModalOpen(true);
+    try {
+      const apiResponse = await fetch("/api/interest/create-interest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ interest: interests }),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      console.log("apiResponse", apiResponse);
+      if (!apiResponse.ok) {
+        console.error(response);
+        // setModalOpen(true)
+        toastError("Failed to create interests");
+        return;
+      }
+      if (response.message === "User interests created successfully") {
+        setModalOpen(false);
+        handleSameInterest();
+        return;
+      }
+    } catch (error) {
+      console.error("Fetch interests error:", error);
+      toastError("Failed to fetch interests");
+    } finally {
+      setModalOpen(false);
+    }
+  };
+
   return (
     <main className="p-6 space-y-6 max-w-4xl mx-auto">
       <form className="flex flex-col sm:flex-row gap-4 items-center bg-[color:var(--surface)] p-6 rounded-xl shadow-lg border border-[color:var(--border)]">
@@ -100,7 +224,7 @@ export default function ConnectionsIndex() {
         />
         <button
           type="submit"
-          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition"
+          className="w-full sm:w-auto bg-blue-700 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition"
           disabled={loading}
         >
           {loading ? "Searching..." : "Search"}
@@ -140,7 +264,7 @@ export default function ConnectionsIndex() {
                       {user.display_name || user.username}
                     </span>
                     {user.is_following && (
-                      <span className="bg-blue-500/15 text-blue-600 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
+                      <span className="bg-blue-700/15 text-blue-600 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
                         Following
                       </span>
                     )}
@@ -161,7 +285,7 @@ export default function ConnectionsIndex() {
               <div className="flex flex-col items-end gap-2 ml-4">
                 <Link
                   href={`/dashboard/connections/followings/${user._id}`}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                  className="bg-blue-700 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                 >
                   View Profile
                 </Link>
@@ -181,15 +305,92 @@ export default function ConnectionsIndex() {
         </div>
       )}
 
-      {!loading && !query && (
-        <div className="text-center py-12">
-          <div className="text-[color:var(--muted-foreground)] text-lg mb-2">
-            Search for users
+      {modalOpen && (
+        <InterestModal
+          value={interests}
+          onChangeAction={setInterests}
+          onCloseAction={interests.length >= 3 ? handleInterest : undefined}
+        />
+      )}
+
+      {searchResults.length === 0 && !loading && userSuggest.length > 0 && (
+        <div>
+          <h2 className="text-[color:var(--foreground)] text-xl font-semibold mb-4">
+            User Suggestions
+          </h2>
+
+            {userSuggest.map((user) => (
+              <div
+                key={user.user_id}
+                className="flex items-center justify-between bg-[color:var(--surface)] p-6 rounded-2xl shadow-lg hover:shadow-xl hover:bg-[color:var(--surface-muted)] transition-all duration-200 border border-[color:var(--border)]"
+              >
+                <div className="flex items-center gap-4 min-w-0 flex-1">
+                  <div className="relative w-16 h-16 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-lg flex-shrink-0">
+                    <Image
+                      src={
+                        user.avatar_ipfs_hash
+                          ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
+                          : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      }
+                      alt={user.username || "Avatar"}
+                      width={64}
+                      height={64}
+                      className="w-full h-full"
+                      unoptimized
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-[color:var(--foreground)] truncate text-lg">
+                        {user.display_name || user.username}
+                      </span>
+                      {user.is_following && (
+                        <span className="bg-blue-700/15 text-blue-600 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
+                          Following
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm text-[color:var(--muted-foreground)] truncate">
+                      @{user.username}
+                    </span>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs text-green-600">
+                        {user.shared_interests_count} shared interests
+                      </span>
+                      <span className="text-xs text-[color:var(--muted-foreground)]">
+                        {user.followers_number} followers
+                      </span>
+                    </div>
+                    {user.shared_interests.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {user.shared_interests.slice(0, 3).map((interest) => (
+                          <span
+                            key={interest}
+                            className="bg-blue-500/10 text-blue-600 text-xs px-2 py-1 rounded-full"
+                          >
+                            {interest.replace(/_/g, " ")}
+                          </span>
+                        ))}
+                        {user.shared_interests.length > 3 && (
+                          <span className="text-xs text-[color:var(--muted-foreground)]">
+                            +{user.shared_interests.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2 ml-4">
+                  <Link
+                    href={`/dashboard/connections/followings/${user.user_id}`}
+                    className="bg-blue-700 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                  >
+                    View Profile
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
-          <p className="text-[color:var(--muted-foreground)] text-sm">
-            Enter an email or username to find connections
-          </p>
-        </div>
       )}
     </main>
   );

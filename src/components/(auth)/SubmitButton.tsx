@@ -11,7 +11,7 @@ export default function SubmitButton({
     "w-full text-white font-semibold py-3 px-4 rounded-lg mb-6 transition-all shadow-lg flex items-center justify-center gap-2";
 
   const variantClasses = {
-    primary: "bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400",
+    primary: "bg-blue-700 hover:bg-blue-700 disabled:bg-blue-700",
     secondary: "bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400",
   };
 

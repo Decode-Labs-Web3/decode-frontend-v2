@@ -135,7 +135,7 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
 //   return (
 //     <div>
 //       {items.map((item) => (
-//         <button key={item.key} className={item.key === activeKey ? "bg-blue-600 text-white" : ""}>
+//         <button key={item.key} className={item.key === activeKey ? "bg-blue-700 text-white" : ""}>
 //           {item.label}
 //         </button>
 //       ))}

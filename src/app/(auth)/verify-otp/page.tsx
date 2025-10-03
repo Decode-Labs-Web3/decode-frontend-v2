@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
-import { toastSuccess, toastError } from "@/utils/index.utils"
+import { toastSuccess, toastError } from "@/utils/index.utils";
 
 export default function VerifyPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +20,7 @@ export default function VerifyPage() {
     e.preventDefault();
     const trimmed = code.trim();
     if (trimmed.length < 6 || trimmed.length > 6) {
-      toastError("Code length is 6")
+      toastError("Code length is 6");
       return;
     }
 
@@ -32,19 +32,19 @@ export default function VerifyPage() {
           "Content-Type": "application/json",
           "X-Frontend-Internal-Request": "true",
         },
-        body: JSON.stringify({otp: code}),
+        body: JSON.stringify({ otp: code }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
       const response = await apiResponse.json();
       if (!apiResponse.ok) {
-        console.log(response.message)
-        toastError(response.message)
+        console.log(response.message);
+        toastError(response.message);
       }
-      router.push("/dashboard")
-      toastSuccess("Redirect to Dashbroad")
+      router.push("/dashboard");
+      toastSuccess("Redirect to Dashbroad");
     } catch (err) {
-      toastError('Maybe the server error can not verify right now ')
+      toastError("Maybe the server error can not verify right now ");
       console.error(err);
     } finally {
       setLoading(false);
@@ -74,7 +74,9 @@ export default function VerifyPage() {
             disabled={isInvalid || loading}
             aria-busy={loading}
             className={`w-full rounded-md p-2 transition ${
-              isInvalid || loading ? "bg-blue-600/50 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"
+              isInvalid || loading
+                ? "bg-blue-700/50 cursor-not-allowed"
+                : "bg-blue-700 hover:bg-blue-700"
             }`}
           >
             {loading ? "Verifying..." : "Verify Code"}

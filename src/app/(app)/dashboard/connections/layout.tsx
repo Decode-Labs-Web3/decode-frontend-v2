@@ -38,7 +38,7 @@ export default function ConnectionsLayout({
                 className={
                   "group relative px-4 py-2 rounded-lg transition-colors " +
                   (isActive
-                    ? "bg-blue-600 text-white shadow-sm"
+                    ? "bg-blue-700 text-white shadow-sm"
                     : "text-black hover:text-white hover:bg-blue-300 dark:text-gray-300 dark:hover:text-white")
                 }
               >

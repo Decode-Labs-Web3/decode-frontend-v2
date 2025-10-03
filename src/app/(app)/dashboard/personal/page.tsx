@@ -716,7 +716,7 @@ export default function PersonalPage() {
                   <button
                     type="submit"
                     disabled={false}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
+                    className="bg-blue-700 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
                   >
                     <FontAwesomeIcon icon={faCheck} />
                     Save
@@ -744,7 +744,7 @@ export default function PersonalPage() {
                 <button
                   type="submit"
                   disabled={false}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
+                  className="bg-blue-700 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
                 >
                   <FontAwesomeIcon icon={faCheck} />
                   Save
@@ -811,7 +811,7 @@ export default function PersonalPage() {
                   <button
                     type="submit"
                     disabled={false}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
+                    className="bg-blue-700 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 px-4 rounded-full transition-colors flex items-center gap-2"
                   >
                     <FontAwesomeIcon icon={faCheck} />
                     Save
