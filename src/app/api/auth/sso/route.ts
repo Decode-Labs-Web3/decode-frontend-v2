@@ -1,19 +1,23 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
-import { generateRequestId, guardInternal, apiPathName} from "@/utils/index.utils"
+import {
+  generateRequestId,
+  guardInternal,
+  apiPathName,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
-  const requestId = generateRequestId()
-  const pathname = apiPathName(req)
-  const denied = guardInternal(req)
-  if(denied) return denied
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
-    if(!accessToken) {
+    if (!accessToken) {
       return NextResponse.json(
         {
           success: false,
@@ -38,20 +42,25 @@ export async function POST(req: Request) {
       fingerprint_hashed,
     };
 
+    console.log(requestBody);
+
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/auth/sso/create`,
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          "X-Fingerprint-Hashed": fingerprint_hashed,
           "Content-Type": "application/json",
-          "X-Request-Id": requestId
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
     );
+
+    console.log("backendRes", backendRes);
 
     if (!backendRes.ok) {
       const err = await backendRes.json().catch(() => null);
@@ -65,11 +74,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const response = await backendRes.json();
+    console.log(response);
+
     return NextResponse.json(
       {
         success: true,
         statusCode: 200,
         message: "SSO token created",
+        data: response.data
       },
       { status: 200 }
     );
