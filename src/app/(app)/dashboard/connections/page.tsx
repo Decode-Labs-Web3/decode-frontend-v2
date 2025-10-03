@@ -178,6 +178,10 @@ export default function ConnectionsIndex() {
     handleGetInterest();
   }, [handleGetInterest]);
 
+  useEffect(() => {
+    handleSameInterest()
+  },[handleSameInterest])
+
   const handleInterest = async () => {
     setModalOpen(true);
     try {

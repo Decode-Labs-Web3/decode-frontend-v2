@@ -1,0 +1,100 @@
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { fingerprintService } from "@/services/index.services";
+import { generateRequestId, guardInternal, apiPathName} from "@/utils/index.utils"
+
+export async function POST(req: Request) {
+  const requestId = generateRequestId()
+  const pathname = apiPathName(req)
+  const denied = guardInternal(req)
+  if(denied) return denied
+
+  try {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("accessToken")?.value;
+
+    if(!accessToken) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 401,
+          message: "No access token found",
+        },
+        { status: 401 }
+      );
+    }
+
+    const userAgent = req.headers.get("user-agent") || "";
+    const fingerprintResult = await fingerprintService(userAgent);
+    const { fingerprint_hashed } = fingerprintResult;
+
+    const body = await req.json();
+    const { app } = body;
+
+    console.log("this is app from sso", app);
+
+    const requestBody = {
+      app,
+      fingerprint_hashed,
+    };
+
+    const backendRes = await fetch(
+      `${process.env.BACKEND_BASE_URL}/auth/sso/create`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          "X-Request-Id": requestId
+        },
+        body: JSON.stringify(requestBody),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+
+    if (!backendRes.ok) {
+      const err = await backendRes.json().catch(() => null);
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: backendRes.status || 401,
+          message: err?.message || "SSO failed",
+        },
+        { status: backendRes.status || 401 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        statusCode: 200,
+        message: "SSO token created",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("/api/auth/sso handler error:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        statusCode: 500,
+        message: "Failed to sso",
+      },
+      { status: 500 }
+    );
+  } finally {
+    console.info(`${pathname}: ${requestId}`);
+  }
+}
+
+export async function GET() {
+  return NextResponse.json(
+    {
+      success: false,
+      statusCode: 405,
+      message: "Method Not Allowed",
+    },
+    { status: 405 }
+  );
+}

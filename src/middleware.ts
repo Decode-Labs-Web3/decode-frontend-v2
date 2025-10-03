@@ -155,6 +155,7 @@ export async function middleware(request: NextRequest) {
   if (
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
+    pathname.startsWith("/sso") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/fonts") ||
     pathname.startsWith("/public") ||
