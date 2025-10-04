@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { toastError } from "@/utils/toast.utils";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,7 +10,7 @@ import {
   faCircleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
-export default function Authorize() {
+function AuthorizeContent() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
@@ -53,7 +53,6 @@ export default function Authorize() {
       ssoUrl.searchParams.set("state", state);
 
       router.push(ssoUrl.toString());
-
     } catch (error) {
       console.error(error);
       toastError("SSO server error");
@@ -125,5 +124,36 @@ export default function Authorize() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function Authorize() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <div className="bg-gray-800/50 border border-gray-700 rounded-2xl p-8 text-center space-y-6">
+              <div className="w-16 h-16 mx-auto bg-blue-600 rounded-full flex items-center justify-center">
+                <FontAwesomeIcon
+                  icon={faShieldHalved}
+                  className="w-24 h-24 text-white"
+                />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-2">
+                  Loading...
+                </h1>
+                <p className="text-gray-400 text-sm">
+                  Please wait while we prepare the authorization
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <AuthorizeContent />
+    </Suspense>
   );
 }
