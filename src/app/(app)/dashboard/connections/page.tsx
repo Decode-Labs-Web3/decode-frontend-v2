@@ -66,7 +66,7 @@ export default function ConnectionsIndex() {
   const [modalOpen, setModalOpen] = useState(false);
   const [userSuggest, setUserSuggest] = useState<UserSuggestion[]>([]);
 
-  console.log("userSuggest:", userSuggest);
+  // console.log("userSuggest:", userSuggest);
 
   const handleSearch = useCallback(
     async (searchQuery?: string) => {
@@ -172,7 +172,7 @@ export default function ConnectionsIndex() {
       console.error("Fetch interests error:", error);
       toastError("Failed to fetch interests");
     }
-  }, []);
+  }, [handleSameInterest]);
 
   useEffect(() => {
     handleGetInterest();

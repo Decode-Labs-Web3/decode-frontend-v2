@@ -267,27 +267,27 @@ export default function PersonalPage() {
 
   const handleSubmitUsername = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(false);
-    const updateUsername = async () => {
-      const apiResponse = await fetch("/api/users/username-change", {
-        method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
-        cache: "no-store",
-        signal: AbortSignal.timeout(20000),
-      });
+    // setLoading(false);
+    // const updateUsername = async () => {
+    //   const apiResponse = await fetch("/api/users/username-change", {
+    //     method: "GET",
+    //     headers: {
+    //       "X-Frontend-Internal-Request": "true",
+    //     },
+    //     cache: "no-store",
+    //     signal: AbortSignal.timeout(20000),
+    //   });
 
-      const response = await apiResponse.json();
+    //   const response = await apiResponse.json();
 
-      if (response.success && response.message === "Email verification sent") {
-        setLoading(true);
-      } else {
-        setLoading(false);
-        toastError(response.message || "Username update failed");
-      }
-    };
-    await updateUsername();
+    //   if (response.success && response.message === "Email verification sent") {
+    //     setLoading(true);
+    //   } else {
+    //     setLoading(false);
+    //     toastError(response.message || "Username update failed");
+    //   }
+    // };
+    // await updateUsername();
     console.log(accountForm);
   };
 

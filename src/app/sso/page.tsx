@@ -48,18 +48,12 @@ export default function Authorize() {
         return;
       }
 
-      const sso_token: string = response.data;
-      // console.log("edewdwedwedwed", sso_token)
+      const ssoUrl = new URL(redirect_uri);
+      ssoUrl.searchParams.set("sso_token", response.data);
+      ssoUrl.searchParams.set("state", state);
 
-      const url = new URL(redirect_uri);
-      url.searchParams.set("sso_token", sso_token);
-      url.searchParams.set("state", state);
+      router.push(ssoUrl.toString());
 
-      if (url.origin === window.location.origin) {
-        router.replace(url.pathname + url.search);
-      } else {
-        window.location.replace(url.toString());
-      }
     } catch (error) {
       console.error(error);
       toastError("SSO server error");
