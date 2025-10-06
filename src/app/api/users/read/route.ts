@@ -17,10 +17,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { id } = body;
 
-    console.log(`this is ${pathname}`, id)
+    // console.log(`this is ${pathname}`, id)
 
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(

@@ -35,8 +35,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const cookieStore = await cookies();
-    const verify_device_fingerprint_session_token = cookieStore.get("verify_device_fingerprint_session_token")?.value;
+    // const cookieStore = await cookies();
+    // const verify_device_fingerprint_session_token = cookieStore.get("verify_device_fingerprint_session_token")?.value;
+    const verify_device_fingerprint_session_token = (await cookies()).get("verify_device_fingerprint_session_token")?.value
 
     if (!verify_device_fingerprint_session_token) {
       return NextResponse.json(

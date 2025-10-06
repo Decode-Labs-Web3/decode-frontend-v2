@@ -14,8 +14,9 @@ export async function POST(req: Request) {
   if (denied) return denied;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -28,10 +29,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const body = await req.json()
+    const body = await req.json();
     const { id } = body;
 
-    console.log("this is id from snapshot", id)
+    console.log("this is id from snapshot", id);
 
     const userAgent = req.headers.get("user-agent") || "";
     const fingerprintResult = await fingerprintService(userAgent);
@@ -71,7 +72,9 @@ export async function POST(req: Request) {
       {
         success: true,
         statusCode: data.statusCode || 200,
-        message: data.message || "Followers snapshot data last month fetched successfully",
+        message:
+          data.message ||
+          "Followers snapshot data last month fetched successfully",
         data: data.data,
       },
       { status: data.statusCode || 200 }

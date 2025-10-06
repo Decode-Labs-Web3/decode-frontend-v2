@@ -9,8 +9,10 @@ export async function POST(req: Request) {
   if(denied) return denied
 
   try {
-    const cookieStore = await cookies();
-    const refreshToken = cookieStore.get("refreshToken")?.value;
+    // const cookieStore = await cookies();
+    // const refreshToken = cookieStore.get("refreshToken")?.value;
+    const refreshToken = (await cookies()).get("accessToken")?.value
+
     const requestBody = {
       session_token: refreshToken,
     };

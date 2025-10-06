@@ -9,10 +9,9 @@ export async function POST(req: Request) {
   if (denied) return denied;
 
   try {
-    const body = await req.json();
-    const { new_password } = body;
-    const cookieStore = await cookies();
-    const code = cookieStore.get("forgot_code")?.value;
+    // const cookieStore = await cookies();
+    // const code = cookieStore.get("forgot_code")?.value;
+    const code = (await cookies()).get("forgot_code")?.value
 
     if (!code) {
       return NextResponse.json(
@@ -24,6 +23,9 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    const body = await req.json();
+    const { new_password } = body;
 
     if (!new_password) {
       return NextResponse.json(

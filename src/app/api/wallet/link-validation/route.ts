@@ -27,11 +27,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
+
     if (!accessToken) {
       return NextResponse.json(
-        { success: false, statusCode: 401, message: "No access token found" },
+        {
+          success: false,
+          statusCode: 401,
+          message: "No access token found",
+        },
         { status: 401 }
       );
     }

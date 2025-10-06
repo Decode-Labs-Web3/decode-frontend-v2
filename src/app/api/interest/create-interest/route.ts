@@ -14,8 +14,10 @@ export async function POST(req: Request) {
   if (denied) return denied;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
+
     if (!accessToken) {
       return NextResponse.json(
         {
@@ -30,8 +32,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { interest } = body;
 
-
-    console.log("Interest list form create interest route", interest)
+    console.log("Interest list form create interest route", interest);
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
@@ -67,8 +68,8 @@ export async function POST(req: Request) {
 
     const response = await backendResponse.json();
 
-    console.log("Create interest route backend response", backendResponse)
-    console.log("Create interest route response", response)
+    console.log("Create interest route backend response", backendResponse);
+    console.log("Create interest route response", response);
 
     return NextResponse.json(
       {

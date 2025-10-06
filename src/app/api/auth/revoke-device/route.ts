@@ -28,9 +28,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const cookieStore = await cookies();
-    const sessionId = cookieStore.get("sessionId")?.value;
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const sessionId = cookieStore.get("sessionId")?.value;
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const sessionId = (await cookies()).get("sessionId")?.value
+    const accessToken = (await cookies()).get("accessToken")?.value
 
     if (!sessionId) {
       return NextResponse.json(

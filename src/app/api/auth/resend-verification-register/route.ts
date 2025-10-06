@@ -8,8 +8,9 @@ export async function POST(req: Request) {
   const denied = guardInternal(req)
   if (denied) return denied
   try {
-    const cookieStore = cookies();
-    const reg = (await cookieStore).get("registration_data")?.value;
+    // const cookieStore = cookies();
+    // const reg = (await cookieStore).get("registration_data")?.value;
+    const reg = (await cookies()).get("registration_data")?.value
 
     if (!reg) {
       return NextResponse.json(

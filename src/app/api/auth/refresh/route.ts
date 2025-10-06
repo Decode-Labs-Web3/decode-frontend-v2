@@ -8,8 +8,10 @@ export async function POST(req: NextRequest) {
   const denied = guardInternal(req)
   if (denied) return denied
   try {
-    const cookieStore = await cookies();
-    const refreshToken = cookieStore.get("refreshToken")?.value;
+    // const cookieStore = await cookies();
+    // const refreshToken = cookieStore.get("refreshToken")?.value;
+    const refreshToken = (await cookies()).get("refreshToken")?.value
+
     if (!refreshToken) {
       return NextResponse.json(
         { error: "Refresh token not found" },

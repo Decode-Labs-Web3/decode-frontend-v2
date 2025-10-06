@@ -40,9 +40,10 @@ export async function DELETE(request: NextRequest) {
       return res;
     }
 
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-    // const refreshTokenHeader = request.headers.get("x-refresh-token");
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
+
     if (!accessToken) {
       return NextResponse.json(
         {

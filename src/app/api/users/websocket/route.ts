@@ -23,9 +23,11 @@ function sse(controller: ReadableStreamDefaultController, evt: OutEvent) {
 
 export async function GET(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-    console.log("this is access token from notification route ", accessToken);
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
+
+    // console.log("this is access token from notification route ", accessToken);
 
     if (!accessToken) {
       return NextResponse.json(

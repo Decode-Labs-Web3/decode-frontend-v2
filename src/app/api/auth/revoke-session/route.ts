@@ -17,9 +17,12 @@ export async function POST(req: Request) {
     const { sessionId } = body;
     console.log("Request body Revoke API:", body);
 
-    const cookieStore = await cookies();
-    const deviceId = cookieStore.get("sessionId")?.value;
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const deviceId = cookieStore.get("sessionId")?.value;
+    // const accessToken = cookieStore.get("accessToken")?.value;
+
+    const deviceId = (await cookies()).get("deviceId")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!sessionId || !deviceId) {
       return NextResponse.json(
@@ -94,27 +97,10 @@ export async function POST(req: Request) {
         { status: 200 }
       );
 
-      cookieStore.set("sessionId", "", {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-      });
-      cookieStore.set("accessToken", "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-      });
-      cookieStore.set("refreshToken", "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-      });
+      res.cookies.delete("sessionId")
+      res.cookies.delete("accessToken")
+      res.cookies.delete("refreshToken")
+
       return res;
     }
 

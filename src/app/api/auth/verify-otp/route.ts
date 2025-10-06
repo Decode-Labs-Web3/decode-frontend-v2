@@ -35,8 +35,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const cookieStore = await cookies();
-    const login_session_token = cookieStore.get("login_session_token")?.value;
+    // const cookieStore = await cookies();
+    // const login_session_token = cookieStore.get("login_session_token")?.value;
+    const login_session_token = (await cookies()).get("login_session_token")?.value
 
     if (!login_session_token) {
       return NextResponse.json(

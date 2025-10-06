@@ -14,8 +14,9 @@ export async function POST(req: Request) {
   if (denied) return denied;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -36,9 +37,9 @@ export async function POST(req: Request) {
 
     const requestBody = {
       user_id_to: id,
-    }
+    };
 
-    console.log('this is backend response ', requestBody)
+    console.log("this is backend response ", requestBody);
 
     const backendResponse = await fetch(
       `${process.env.BACKEND_BASE_URL}/relationship/block/blocking`,
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
           "X-Fingerprint-Hashed": fingerprint_hashed,
-          "X-Request-Id": requestId
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-cache",
@@ -56,35 +57,42 @@ export async function POST(req: Request) {
       }
     );
 
-
-    if(!backendResponse.ok){
+    if (!backendResponse.ok) {
       const errorMessage = await backendResponse.json().catch(() => ({}));
-      console.log('this is follow and unfollow ', errorMessage)
-      return NextResponse.json({
-        status: false,
-        statusCode: backendResponse.status || 400,
-        message: errorMessage.message || `Backend API error: ${pathname}`
-      },{status: backendResponse.status})
+      console.log("this is follow and unfollow ", errorMessage);
+      return NextResponse.json(
+        {
+          status: false,
+          statusCode: backendResponse.status || 400,
+          message: errorMessage.message || `Backend API error: ${pathname}`,
+        },
+        { status: backendResponse.status }
+      );
     }
     const response = await backendResponse.json();
-    return NextResponse.json({
-      status: true,
-      statusCode: 200,
-      message: response.message || "Block action successful",
-      data: response.data || null
-    },{status: 200})
-  } catch (error){
-    console.log(error)
-    return NextResponse.json({
-      status: false,
-      statusCode: 500,
-      message: "Internal Server Error"
-    },{status: 500})
-  } finally{
+    return NextResponse.json(
+      {
+        status: true,
+        statusCode: 200,
+        message: response.message || "Block action successful",
+        data: response.data || null,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      {
+        status: false,
+        statusCode: 500,
+        message: "Internal Server Error",
+      },
+      { status: 500 }
+    );
+  } finally {
     console.log(`${pathname}: ${requestId}`);
   }
 }
-
 
 export async function DELETE(req: Request) {
   const requestId = generateRequestId();
@@ -93,8 +101,9 @@ export async function DELETE(req: Request) {
   if (denied) return denied;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(

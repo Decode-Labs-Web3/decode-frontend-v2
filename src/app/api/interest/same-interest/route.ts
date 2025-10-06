@@ -14,8 +14,9 @@ export async function GET(req: Request) {
   if (denied) return denied;
 
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    // const cookieStore = await cookies();
+    // const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -77,7 +78,8 @@ export async function GET(req: Request) {
       {
         success: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Interest-based suggestions fetched successfully",
+        message:
+          response.message || "Interest-based suggestions fetched successfully",
         data: response.data,
       },
       { status: response.statusCode || 200 }
