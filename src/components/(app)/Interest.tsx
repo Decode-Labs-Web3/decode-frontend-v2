@@ -84,6 +84,15 @@ export default function InterestModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="interest-dialog-title"
+      tabIndex={-1}
+      ref={(element:HTMLDivElement) => {
+        element?.focus()
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape"){
+          onCloseAction?.();
+        }
+      }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
     >
       <div className="absolute inset-0 bg-black/60" />

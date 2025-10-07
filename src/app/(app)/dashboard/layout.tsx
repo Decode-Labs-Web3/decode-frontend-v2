@@ -282,7 +282,13 @@ export default function DashboardLayout({
     return (
       <div
         role="dialog"
-        aria-modal="true"
+        tabIndex={-1}
+        ref={(el: HTMLDivElement | null) => el?.focus()}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            handleReactivateAccount(false);
+          }
+        }}
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
         <div

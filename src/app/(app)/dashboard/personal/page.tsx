@@ -833,7 +833,15 @@ export default function PersonalPage() {
       {isDeleteModalOpen && (
         <div
           role="dialog"
-          aria-modal="true"
+          tabIndex={-1}
+          ref={(element: HTMLDivElement) => {
+            element?.focus();
+          }}
+          onKeyDown={(event)=> {
+            if (event.key === "Escape") {
+              setIsDeleteModalOpen(false);
+            }
+          }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
           <div

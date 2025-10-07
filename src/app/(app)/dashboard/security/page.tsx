@@ -452,6 +452,15 @@ export default function SecurityPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="qr-modal-title"
+            tabIndex={-1}
+            ref={(element: HTMLDivElement) => {
+              element?.focus()
+            }}
+            onKeyDown ={(event)=> {
+              if (event.key === "Escape"){
+                setModalOpen(false);
+              }
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
             <div
@@ -581,6 +590,15 @@ export default function SecurityPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="code-modal-title"
+            tabIndex={-1}
+            ref={(element: HTMLDivElement) => {
+              element?.focus()
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Escape"){
+                handleCancel();
+              }
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
             <div
