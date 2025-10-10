@@ -25,11 +25,9 @@ interface NotificationReceived {
 
 export default function OverviewPage() {
   const router = useRouter();
-  const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
+  const { userInfo } = useUserInfoContext() || {};
 
-  const [notifications, setNotifications] = useState<NotificationReceived[]>(
-    []
-  );
+  const [notifications, setNotifications] = useState<NotificationReceived[]>([]);
 
   useEffect(() => {
     router.refresh();
@@ -70,13 +68,13 @@ export default function OverviewPage() {
               <div className="w-80 h-80 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-xl">
                 <Image
                   src={
-                    userInfo.avatar_ipfs_hash
+                    userInfo?.avatar_ipfs_hash
                       ? `http://35.247.142.76:8080/ipfs/${userInfo.avatar_ipfs_hash}`
                       : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt={"Avatar"}
-                  width={320}
-                  height={320}
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover"
                   unoptimized
                 />

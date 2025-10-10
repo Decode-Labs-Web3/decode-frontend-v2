@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import SnapshotChart from "@/components/(app)/SnapshotChart";
 import { toastSuccess, toastError } from "@/utils/index.utils";
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useUserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import {
   faEnvelope,
   faCamera,
@@ -13,38 +15,11 @@ import {
   faCheck,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts";
-import { format, parseISO } from "date-fns";
-import { userInfoContext } from "@/contexts/UserInfoContext.contexts";
-
-interface SnapshotData {
-  _id: string;
-  user_id: string;
-  followers_number: number;
-  snapshot_at: string;
-}
-
-interface ChartRow {
-  day: string;
-  followers: number;
-  dateISO: string;
-}
 
 export default function PersonalPage() {
   const router = useRouter();
-  const user = userInfoContext();
-  const refetchUserData = userInfoContext();
+  const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
   const [loading, setLoading] = useState(false);
-  const [rows, setRows] = useState<SnapshotData[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [profileForm, setProfileForm] = useState({
@@ -68,13 +43,13 @@ export default function PersonalPage() {
 
   // Update form when user context changes
   useEffect(() => {
-    if (user) {
+    if (userInfo) {
       const userForm = {
-        username: user.username || "",
-        email: user.email || "",
-        avatar_ipfs_hash: user.avatar_ipfs_hash || "",
-        display_name: user.display_name || "",
-        bio: user.bio || "",
+        username: userInfo.username || "",
+        email: userInfo.email || "",
+        avatar_ipfs_hash: userInfo.avatar_ipfs_hash || "",
+        display_name: userInfo.display_name || "",
+        bio: userInfo.bio || "",
       };
 
       setProfileForm({
@@ -89,7 +64,7 @@ export default function PersonalPage() {
         email: userForm.email,
       }));
     }
-  }, [user]);
+  }, [userInfo]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -182,9 +157,9 @@ export default function PersonalPage() {
           body: JSON.stringify({
             current: profileForm,
             original: {
-              avatar_ipfs_hash: user?.avatar_ipfs_hash || "",
-              display_name: user?.display_name || "",
-              bio: user?.bio || "",
+              avatar_ipfs_hash: userInfo?.avatar_ipfs_hash || "",
+              display_name: userInfo?.display_name || "",
+              bio: userInfo?.bio || "",
             },
           }),
           cache: "no-store",
@@ -225,16 +200,12 @@ export default function PersonalPage() {
           });
 
           if (hasSuccess && !hasErrors) {
-            if (refetchUserData) {
-              await refetchUserData();
-            }
+            fetchUserInfo?.();
             setEditSection("none");
           }
         } else if (response.success) {
           toastSuccess("Profile updated successfully");
-          if (refetchUserData) {
-            await refetchUserData();
-          }
+          fetchUserInfo?.();
           setEditSection("none");
         }
       } catch (error) {
@@ -307,9 +278,7 @@ export default function PersonalPage() {
         response.success &&
         response.message === "Username changed successfully"
       ) {
-        if (refetchUserData) {
-          await refetchUserData();
-        }
+        fetchUserInfo?.();
         toastSuccess(response.message || "Username code sent successfully");
       } else {
         toastError(response.message || "Username code send failed");
@@ -347,87 +316,6 @@ export default function PersonalPage() {
       console.error("Account deactivation request error:", error);
       toastError("Account deactivation failed. Please try again.");
     }
-  };
-
-  const fetchSnapShot = useCallback(async () => {
-    setLoading(true);
-    try {
-      const apiResponse = await fetch("/api/users/snapshot", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
-        body: JSON.stringify({ id: user?.id }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout?.(10000),
-      });
-
-      const response = await apiResponse.json();
-
-      if (!apiResponse.ok || !response?.success) {
-        toastError(response?.message || "API error");
-        return;
-      }
-
-      setRows(response.data || []);
-      toastSuccess(
-        response?.message ||
-          "Followers snapshot data last month fetched successfully"
-      );
-    } catch (error) {
-      console.error(error);
-      toastError("Fetch error");
-    } finally {
-      // setLoading(true);
-      setLoading(false);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    fetchSnapShot();
-  }, [fetchSnapShot]);
-
-  const data: ChartRow[] = useMemo(() => {
-    if (!rows.length) return [];
-    const sorted = [...rows].sort(
-      (a, b) =>
-        new Date(a.snapshot_at).getTime() - new Date(b.snapshot_at).getTime()
-    );
-    const byDay = new Map<string, SnapshotData>();
-    for (const s of sorted) {
-      const key = s.snapshot_at.slice(0, 10);
-      byDay.set(key, s);
-    }
-    const out = Array.from(byDay.values()).map((s) => ({
-      day: s.snapshot_at.slice(0, 10),
-      followers: s.followers_number,
-      dateISO: s.snapshot_at,
-    }));
-    out.sort((a, b) => a.day.localeCompare(b.day));
-    return out;
-  }, [rows]);
-
-  const CustomTooltip = ({
-    active,
-    payload,
-  }: {
-    active?: boolean;
-    payload?: Array<{ payload?: ChartRow }>;
-  }) => {
-    if (!active || !payload?.length) return null;
-    const p = payload[0]?.payload as ChartRow | undefined;
-    if (!p) return null;
-    return (
-      <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 shadow-xl">
-        <div className="text-xs text-[color:var(--muted-foreground)]">
-          {format(parseISO(p.dateISO), "dd/MM/yyyy HH:mm")}
-        </div>
-        <div className="text-sm font-medium text-[color:var(--foreground)]">
-          Followers: {p.followers}
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -501,8 +389,8 @@ export default function PersonalPage() {
                       : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt={"Avatar"}
-                  width={192}
-                  height={192}
+                  width={48}
+                  height={48}
                   className="w-full h-full object-cover"
                   unoptimized
                 />
@@ -553,11 +441,11 @@ export default function PersonalPage() {
                     <h2 className="text-3xl font-bold text-[color:var(--foreground)]">
                       {profileForm.display_name || "Your name"}
                     </h2>
-                    {user?.role && (
+                    {userInfo?.role && (
                       <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/10 to-indigo-600/10 text-blue-600/80 dark:text-blue-300 text-sm font-medium border border-blue-500/20">
-                        {user.role
-                          ? user.role.charAt(0).toUpperCase() +
-                            user.role.slice(1)
+                        {userInfo.role
+                          ? userInfo.role.charAt(0).toUpperCase() +
+                            userInfo.role.slice(1)
                           : "User"}
                       </span>
                     )}
@@ -613,43 +501,10 @@ export default function PersonalPage() {
         </div>
       </div>
 
-      {!loading && !data.length && (
-        <div className="rounded-xl border border-dashed border-[color:var(--border)] p-6 text-sm text-[color:var(--muted-foreground)]">
-          No data found in 30 days
-        </div>
-      )}
-
-      {!loading && data.length > 0 && (
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="day"
-                tickFormatter={(d: string) => {
-                  const parts = d.split("-");
-                  const dd = parts[2];
-                  const m = parts[1];
-                  return `${dd}/${m}`;
-                }}
-                minTickGap={20}
-              />
-              <YAxis
-                allowDecimals={false}
-                domain={["dataMin-1", "dataMax+1"]}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="followers"
-                name="Followers"
-                dot={{ r: 2 }}
-                strokeWidth={2}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      {userInfo?._id && (
+        <>
+          <SnapshotChart userId={userInfo?._id} />
+        </>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
