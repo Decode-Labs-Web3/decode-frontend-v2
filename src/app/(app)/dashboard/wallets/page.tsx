@@ -8,29 +8,17 @@ import {
 import { ethers } from "ethers";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useUserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { useCallback, useEffect, useState } from "react";
 import { toastError, toastSuccess, toastInfo } from "@/utils/index.utils";
-
-interface AllWallets {
-  id: string;
-  address: string;
-  user_id: string;
-  name_service: string;
-  is_primary: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { Wallet } from "@/interfaces/user.interfaces";
 
 export default function WalletsPage() {
-  const userContext = useContext(UserInfoContext);
-  const user = userContext?.user;
-  const refetchUserData = userContext?.refetchUserData;
-
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
-  const [allWallets, setAllWallets] = useState<AllWallets[]>([]);
+  const [allWallets, setAllWallets] = useState<Wallet[]>([]);
+  const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
 
   const handleGetAllWallets = useCallback(async () => {
     try {
@@ -126,9 +114,7 @@ export default function WalletsPage() {
       } catch (error) {
         console.error("Close modal error:", error);
       }
-      if (refetchUserData) {
-        await refetchUserData();
-      }
+      fetchUserInfo?.()
       handleGetAllWallets();
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
@@ -149,7 +135,7 @@ export default function WalletsPage() {
     isConnected,
     walletProvider,
     address,
-    refetchUserData,
+    fetchUserInfo,
     handleGetAllWallets,
   ]);
 
@@ -211,9 +197,7 @@ export default function WalletsPage() {
       } catch (error) {
         console.error("Close modal error:", error);
       }
-      if (refetchUserData) {
-        await refetchUserData();
-      }
+      fetchUserInfo?.()
       handleGetAllWallets();
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
@@ -234,7 +218,7 @@ export default function WalletsPage() {
     isConnected,
     walletProvider,
     address,
-    refetchUserData,
+    fetchUserInfo,
     handleGetAllWallets,
   ]);
 
@@ -292,8 +276,8 @@ export default function WalletsPage() {
       </div>
 
       {allWallets.length > 0 &&
-        !user?.primary_wallet?.is_primary &&
-        !user?.primary_wallet?.address && (
+        !userInfo?.primary_wallet?.is_primary &&
+        !userInfo?.primary_wallet?.address && (
           <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col">
@@ -315,7 +299,7 @@ export default function WalletsPage() {
           </div>
         )}
 
-      {user?.primary_wallet?.address && (
+      {userInfo?.primary_wallet?.address && (
         <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex flex-col">
@@ -323,7 +307,7 @@ export default function WalletsPage() {
                 Primary wallet
               </p>
               <h1 className="text-sm font-medium text-[color:var(--foreground)] truncate max-w-[70vw] md:max-w-[40vw]">
-                {user?.primary_wallet?.address}
+                {userInfo?.primary_wallet?.address}
               </h1>
             </div>
           </div>
@@ -342,10 +326,10 @@ export default function WalletsPage() {
           </div>
           <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {allWallets.map((wallet) => {
-              if (wallet.address !== user?.primary_wallet?.address) {
+              if (wallet.address !== userInfo?.primary_wallet?.address) {
                 return (
                   <li
-                    key={wallet.id || wallet.address}
+                    key={wallet._id}
                     className="group flex items-center justify-between gap-3 rounded-md border border-[color:var(--border)] bg-[color:var(--background)] px-3 py-2 hover:bg-[color:var(--surface)]"
                   >
                     <span className="text-[color:var(--foreground)] font-mono text-sm truncate">

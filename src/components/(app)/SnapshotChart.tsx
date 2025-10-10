@@ -66,8 +66,8 @@ export default function SnapshotChart({ userId }: Props) {
             "Followers snapshot data last month fetched successfully"
         );
       } catch (error) {
-          console.error(error);
-          toastError("Fetch error");
+        console.error(error);
+        toastError("Fetch error");
       } finally {
         setLoading(false);
       }
@@ -134,12 +134,15 @@ export default function SnapshotChart({ userId }: Props) {
               <XAxis
                 dataKey="day"
                 tickFormatter={(d: string) => {
-                  const [y, m, dd] = d.split("-");
+                  const [m, dd] = d.split("-");
                   return `${dd}/${m}`;
                 }}
                 minTickGap={20}
               />
-              <YAxis allowDecimals={false} domain={["dataMin-1", "dataMax+1"]} />
+              <YAxis
+                allowDecimals={false}
+                domain={["dataMin-1", "dataMax+1"]}
+              />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Line

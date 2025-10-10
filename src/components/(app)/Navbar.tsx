@@ -14,46 +14,35 @@ import {
 export default function Navbar() {
   const router = useRouter();
 
-  const [themeMode, setThemeMode] = useState(false);
-
-  // Initialize theme from storage or system preference
-  useEffect(() => {
-    try {
-      const storedThemeMode = localStorage.getItem("themeMode");
-      let isDark = false;
-      if (storedThemeMode !== null) {
-        isDark = JSON.parse(storedThemeMode) === true;
-      } else if (
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
-      ) {
-        isDark = true;
-      }
-      setThemeMode(isDark);
-      document.documentElement.setAttribute(
-        "data-theme",
-        isDark ? "dark" : "light"
-      );
-    } catch {
-      // ignore
-    }
-  }, []);
+  const [theme, setTheme] = useState(false);
 
   const handleTheme = () => {
-    setThemeMode((prevThemeMode) => {
-      const next = !prevThemeMode;
-      try {
-        localStorage.setItem("themeMode", JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      document.documentElement.setAttribute(
-        "data-theme",
-        next ? "dark" : "light"
-      );
-      return next;
-    });
+    setTheme((prev) => !prev);
+    const next = theme ? "light" : "dark";
+    localStorage.setItem("theme", next);
+    if (next === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (!saved) {
+      localStorage.setItem("theme", "dark");
+      setTheme(false);
+      document.documentElement.classList.add("dark");
+      return;
+    }
+    if (saved === "light") {
+      setTheme(true);
+      document.documentElement.classList.remove("dark");
+      return;
+    }
+    setTheme(false);
+    document.documentElement.classList.add("dark");
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -125,7 +114,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
-            {themeMode && (
+            {theme && (
               <button
                 onClick={handleTheme}
                 className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors"
@@ -133,7 +122,7 @@ export default function Navbar() {
                 Dark Mode <FontAwesomeIcon icon={faMoon} className="w-4 h-4" />
               </button>
             )}
-            {!themeMode && (
+            {!theme && (
               <button
                 onClick={handleTheme}
                 className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors"

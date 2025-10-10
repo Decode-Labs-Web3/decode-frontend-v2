@@ -14,20 +14,7 @@
     sans-serif;
 }
 
-/* Explicit theme overrides via data attribute */
-[data-theme="light"] {
-  --background: #ffffff;
-  --foreground: #171717;
-  --surface: #ffffff;
-  --surface-muted: #f6f7f8;
-  --navbar-bg: rgba(255, 255, 255, 0.8);
-  --border: rgba(0, 0, 0, 0.08);
-  --muted-foreground: #6b7280;
-  --muted-foreground-2: #9ca3af;
-  --shadow: rgba(0, 0, 0, 0.15);
-}
-
-[data-theme="dark"] {
+.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
   --surface: #111214;
@@ -45,21 +32,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-/* Fallback to system preference if no data-theme is set */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --surface: #111214;
-    --surface-muted: #15171a;
-    --navbar-bg: rgba(0, 0, 0, 0.8);
-    --border: rgba(255, 255, 255, 0.1);
-    --muted-foreground: #9ca3af;
-    --muted-foreground-2: #6b7280;
-    --shadow: rgba(255, 255, 255, 0.12);
-  }
 }
 
 body {

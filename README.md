@@ -7,58 +7,65 @@
 
 ---
 
-## 🎯 Project Overview
+## 🎯 Technical Overview
 
-Decode Protocol is a comprehensive Web3 authentication and identity management system that bridges traditional authentication methods with modern blockchain technology. Built as a final project for the University of Greenwich, this system provides secure, user-friendly authentication through both traditional credentials and Web3 wallet integration.
+Decode Protocol is a comprehensive Web3 authentication and identity management system built with Next.js 15.5.3, TypeScript 5, and modern Web3 technologies. The system implements dual authentication mechanisms combining traditional email/password authentication with Web3 wallet integration through cryptographic message signing.
 
-## 🚀 Key Features
+## 🚀 Core Technical Features
 
-### 🔐 **Dual Authentication System**
+### 🔐 **Advanced Authentication Architecture**
 
-- **Traditional Authentication** - Email/username and password-based login
-- **Web3 Wallet Integration** - Connect and authenticate using MetaMask and other Web3 wallets
-- **Device Fingerprint Verification** - Advanced security through device trust management
-- **Email Verification** - Secure account creation and password reset flows
+- **Dual Authentication System**: Traditional credentials and Web3 wallet integration
+- **Device Fingerprinting**: SHA-256 hashed device identification using browser, OS, timezone, language, and audio fingerprinting
+- **JWT Token Management**: Secure session handling with automatic refresh and HttpOnly cookies
+- **Middleware-based Route Protection**: Server-side authentication checks with token validation
+- **Multi-factor Authentication**: Email verification and device trust management
 
-### 🛡️ **Advanced Security Features**
+### 🛡️ **Security Implementation**
 
-- **Middleware-based Route Protection** - Server-side authentication checks
-- **HttpOnly Cookies** - Secure token storage with automatic refresh
-- **CSRF Protection** - SameSite cookie policies and request validation
-- **Real-time Validation** - Immediate feedback and error handling
-- **Device Trust Management** - Email verification for new devices
-
-### 🎨 **Modern User Experience**
-
-- **Responsive Design** - Works seamlessly on all device sizes
-- **Real-time Feedback** - Live validation and error clearing
-- **Smart Code Input** - Enhanced UX with auto-focus and smart paste
-- **Loading States** - Visual feedback during API calls
-- **Modern UI Components** - Clean, professional interface design
+- **Cryptographic Security**: Web3 message signing with ethers.js for wallet authentication
+- **CSRF Protection**: SameSite cookie policies and request validation headers
+- **Secure Cookie Management**: HttpOnly, Secure, and SameSite policies with automatic expiration
+- **Content Security Policy**: Comprehensive CSP headers for XSS protection
+- **Request Validation**: Internal request headers to prevent external API access
 
 ### 🌐 **Web3 Integration**
 
-- **AppKit Integration** - Seamless wallet connection experience
-- **Multi-chain Support** - Ethereum and Arbitrum network support
-- **Wallet Authentication** - Sign messages to authenticate with Web3 wallets
-- **Balance Display** - Real-time wallet balance and connection status
+- **AppKit Integration**: WalletConnect v2 with multi-wallet support (MetaMask, Coinbase, Trust Wallet)
+- **Ethers.js 6.15.0**: Ethereum library for Web3 interactions and message signing
+- **Multi-chain Support**: Ethereum Mainnet and Arbitrum network compatibility
+- **IPFS Integration**: Pinata service for decentralized avatar storage
+- **Real-time Balance Display**: Live cryptocurrency balance fetching
 
-## 🏗️ Technical Architecture
+## 🏗️ Technical Stack
 
-### **Frontend Stack**
+### **Frontend Framework**
 
-- **Next.js 15.5.3** - React framework with App Router
-- **TypeScript 5** - Full type safety and development experience
-- **Tailwind CSS 4** - Utility-first styling framework
-- **Ethers.js 6.15.0** - Ethereum library for Web3 interactions
-- **AppKit 1.8.6** - Wallet connection and management
+- **Next.js 15.5.3**: React framework with App Router and server-side rendering
+- **TypeScript 5**: Full type safety with strict configuration
+- **React 19.1.1**: Latest React with concurrent features
+- **Tailwind CSS 4**: Utility-first styling with custom CSS variables
 
-### **Security Implementation**
+### **Web3 & Blockchain**
 
-- **JWT Token Management** - Secure authentication with automatic refresh
-- **Device Fingerprinting** - Browser and device-specific identification
-- **Route Middleware** - Server-side protection for sensitive routes
-- **Cookie Security** - HttpOnly, Secure, and SameSite policies
+- **@reown/appkit 1.8.6**: Wallet connection and management
+- **@reown/appkit-adapter-ethers 1.8.6**: Ethers.js integration
+- **ethers 6.15.0**: Ethereum library for blockchain interactions
+- **IPFS/Pinata**: Decentralized file storage for avatars
+
+### **Authentication & Security**
+
+- **JWT Token Management**: Access and refresh token rotation
+- **Device Fingerprinting**: Browser-based device identification
+- **Cookie Security**: HttpOnly, Secure, SameSite policies
+- **Middleware Protection**: Route-level authentication guards
+
+### **Development Tools**
+
+- **ESLint 9**: Code quality and consistency
+- **TypeScript Compiler**: Type checking and compilation
+- **React Loading Skeleton**: Loading state components
+- **React Toastify**: User notification system
 
 ## 📋 Prerequisites
 
@@ -66,24 +73,20 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
 - npm, yarn, pnpm, or bun
 - Backend API endpoint (configured via environment variables)
 - Web3 wallet (MetaMask, WalletConnect, etc.)
+- Reown Project ID for AppKit integration
 
 ## 🛠️ Installation & Setup
 
-1. **Clone the repository**
+1. **Clone and Install Dependencies**
 
    ```bash
    git clone <repository-url>
    cd decode-frontend-v2
-   ```
-
-2. **Install dependencies**
-
-   ```bash
    npm install
    ```
 
-3. **Environment Setup**
-   Create a `.env` file in the root directory:
+2. **Environment Configuration**
+   Create a `.env` file with required variables:
 
    ```env
    BACKEND_BASE_URL=http://localhost:4000
@@ -94,146 +97,116 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
    NODE_ENV=development
    ```
 
-4. **Start the development server**
+3. **Development Server**
 
    ```bash
    npm run dev
    ```
 
-5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-## 🏗️ Project Structure
-
-```
-src/
-├── app/
-│   ├── (auth)/                 # Authentication pages
-│   │   ├── login/             # Traditional login
-│   │   ├── register/          # User registration
-│   │   ├── verify/            # Email verification pages
-│   │   ├── forgot-password/   # Password reset request
-│   │   └── change-password/   # New password setup
-│   ├── (app)/                 # Protected application pages
-│   │   └── dashboard/         # Main dashboard with multiple sections
-│   │       ├── overview/      # User profile overview
-│   │       ├── personal/      # Personal information management
-│   │       ├── wallets/       # Web3 wallet management
-│   │       ├── security/      # Security settings
-│   │       ├── devices/       # Device management
-│   │       ├── connections/   # Third-party connections
-│   │       ├── notifications/ # Notification center
-│   │       └── news/          # News and updates
-│   ├── api/                   # API routes
-│   │   ├── auth/              # Authentication endpoints
-│   │   ├── users/             # User management endpoints
-│   │   └── wallet/            # Web3 wallet endpoints
-│   ├── providers/             # React context providers
-│   └── middleware.ts          # Route protection middleware
-├── components/
-│   ├── (auth)/                # Authentication components
-│   │   ├── AuthCard.tsx       # Main auth card layout
-│   │   ├── TextField.tsx      # Standardized text input
-│   │   ├── PasswordField.tsx  # Password input with toggle
-│   │   ├── SubmitButton.tsx   # Loading states button
-│   │   ├── BackgroundAccents.tsx # Animated backgrounds
-│   │   └── BrandLogos.tsx     # Brand logo display
-│   └── (app)/                 # Application components
-│       ├── Navbar.tsx         # Navigation bar
-│       ├── Sidebar.tsx        # Dashboard sidebar
-│       └── PageHeader.tsx     # Page header component
-├── contexts/                  # React contexts
-├── hooks/                     # Custom React hooks
-├── services/                  # Business logic services
-├── utils/                     # Utility functions
-└── interfaces/                # TypeScript type definitions
-```
+4. **Production Build**
+   ```bash
+   npm run build
+   npm run start
+   ```
 
 ## 🔄 Authentication Flows
 
-### 1. **Traditional Authentication Flow**
+### **Web3 Wallet Authentication**
 
-```
-Landing Page → Email/Username Input → Login/Register → Dashboard
-```
+1. **Wallet Connection**: AppKit modal opens for wallet selection
+2. **Challenge Generation**: Backend creates unique signing challenge
+3. **Message Signing**: User signs challenge with private key
+4. **Signature Verification**: Backend validates signature and wallet ownership
+5. **Session Creation**: JWT tokens created and stored securely
 
-### 2. **Web3 Wallet Authentication Flow**
+### **Traditional Authentication**
 
-```
-Landing Page → Connect Wallet → Sign Message → Dashboard
-```
+1. **Smart Detection**: System determines if user exists via email/username
+2. **Device Fingerprinting**: SHA-256 hashed device identification
+3. **Multi-factor Verification**: Email OTP for new devices
+4. **Token Management**: Secure cookie-based session handling
 
-### 3. **Device Verification Flow**
+### **Device Trust Management**
 
-```
-Login Attempt → Device Check → Email Verification → Dashboard
-```
-
-### 4. **Password Reset Flow**
-
-```
-Forgot Password → Email Code → Verify Code → Change Password → Login
-```
+- **Fingerprint Generation**: Browser, OS, timezone, language, audio fingerprinting
+- **Trust Verification**: Email verification for untrusted devices
+- **Session Management**: Device-specific session tracking
 
 ## 🛡️ Security Features
 
 ### **Multi-Layer Security**
 
-- **Device Fingerprinting** - Unique device identification
-- **Email Verification** - Multi-factor authentication
-- **JWT Token Management** - Secure session handling
-- **Route Protection** - Middleware-based access control
-- **CSRF Protection** - Request validation and cookie security
+- **Device Fingerprinting**: Unique device identification using multiple browser APIs
+- **Email Verification**: Multi-factor authentication for new devices
+- **JWT Token Management**: Secure session handling with automatic refresh
+- **Route Protection**: Middleware-based access control with token validation
+- **CSRF Protection**: Request validation and secure cookie policies
 
 ### **Web3 Security**
 
-- **Message Signing** - Cryptographic authentication
-- **Wallet Verification** - Address-based identity verification
-- **Network Validation** - Supported network checks
+- **Message Signing**: Cryptographic authentication using wallet private keys
+- **Wallet Verification**: Address-based identity verification
+- **Network Validation**: Supported network checks (Ethereum, Arbitrum)
+- **Signature Validation**: Backend verification of wallet signatures
 
-## 🎯 Dashboard Features
+### **Cookie Security**
 
-### **User Management**
+- **HttpOnly Tokens**: Secure server-side token storage
+- **Secure Cookies**: Production environment security
+- **SameSite Protection**: CSRF protection
+- **Automatic Expiration**: Based on backend response timestamps
 
-- **Profile Overview** - Personal information display
-- **Avatar Management** - IPFS-based image storage
-- **Account Settings** - Username and email management
+## 🎨 User Experience Features
 
-### **Web3 Integration**
+### **Smart Code Input System**
 
-- **Wallet Management** - Connect and manage multiple wallets
-- **Balance Display** - Real-time cryptocurrency balances
-- **Transaction History** - Wallet activity tracking
+- **Smart Paste**: Automatically extracts 6-character codes from `fingerprint-email-verification:XXXXXX` format
+- **Auto-focus**: Automatically moves to next input field
+- **Keyboard Navigation**: Arrow keys and backspace support
+- **Input Validation**: Only allows alphanumeric characters (a-f, 0-9)
 
-### **Security Center**
+### **Real-time Validation**
 
-- **Device Management** - Trusted device management
-- **Security Settings** - Password and verification settings
-- **Activity Monitoring** - Login and security event tracking
+- **Form Validation**: Immediate feedback on input changes
+- **Error Clearing**: Errors clear when user starts typing
+- **Loading States**: Visual feedback during API calls
+- **Toast Notifications**: User-friendly success/error messages
 
-## 🔧 API Endpoints
+### **Responsive Design**
 
-### **Authentication Routes**
+- **Mobile-First**: Optimized for mobile devices
+- **Desktop Enhancement**: Enhanced features for larger screens
+- **Touch Support**: Full touch interaction support
+- **Dark/Light Mode**: Theme switching with localStorage persistence
 
-- `POST /api/auth/login` - Traditional user login
-- `POST /api/auth/register` - User registration
+## 🔧 API Integration
+
+### **Authentication Endpoints**
+
+- `POST /api/auth/login` - Traditional user login with device fingerprinting
+- `POST /api/auth/register` - User registration with email verification
 - `POST /api/auth/login-or-register` - Smart login/register detection
-- `POST /api/auth/verify` - Email verification
+- `POST /api/auth/verify-*` - Email verification for various flows
 - `POST /api/auth/forgot-password` - Password reset initiation
 - `POST /api/auth/change-password` - Password update
 
-### **Web3 Wallet Routes**
+### **Web3 Wallet Endpoints**
 
 - `POST /api/wallet/auth-challenge` - Generate signing challenge
 - `POST /api/wallet/auth-validation` - Validate wallet signature
+- `POST /api/wallet/link-challenge` - Generate wallet linking challenge
+- `POST /api/wallet/link-validation` - Validate wallet linking signature
+- `GET /api/wallet/all-wallet` - Fetch user's connected wallets
 
-### **User Management Routes**
+### **User Management Endpoints**
 
 - `GET /api/users/overview` - User profile data
 - `PUT /api/users/profile-change` - Update user profile
-- `POST /api/users/avatar` - Upload avatar image
+- `POST /api/users/avatar` - Upload avatar to IPFS
+- `GET /api/users/notifications` - Fetch user notifications
+- `GET /api/users/websocket` - Server-sent events for real-time updates
 
-## 🚀 Deployment
+## 🚀 Deployment Configuration
 
 ### **Environment Variables**
 
@@ -251,20 +224,24 @@ PINATA_JWT=your_pinata_jwt_token
 
 # Environment
 NODE_ENV=production
+PUBLIC_FRONTEND_URL=https://app.decodenetwork.app
 ```
 
-### **Build Commands**
+### **Build Optimizations**
 
-```bash
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run type-check   # Run TypeScript checks
-```
+- **Memory-based Workers**: Optimized for memory-constrained environments
+- **Code Splitting**: AppKit bundle separation for better performance
+- **Console Removal**: Production console.log removal
+- **Image Optimization**: Unoptimized images for IPFS compatibility
 
-## 🧪 Development
+### **Security Headers**
 
-### **Available Scripts**
+- **Content Security Policy**: Comprehensive CSP for XSS protection
+- **CORS Configuration**: Proper cross-origin resource sharing
+- **Security Headers**: X-Frame-Options, X-Content-Type-Options, HSTS
+- **Permissions Policy**: Camera, microphone, geolocation restrictions
+
+## 🧪 Development Scripts
 
 ```bash
 npm run dev          # Start development server
@@ -273,13 +250,6 @@ npm run start        # Start production server
 npm run lint         # Run ESLint
 npm run type-check   # Run TypeScript checks
 ```
-
-### **Code Quality**
-
-- **TypeScript** - Full type safety throughout the application
-- **ESLint** - Code quality and consistency enforcement
-- **Tailwind CSS** - Utility-first styling approach
-- **Component Architecture** - Modular, reusable components
 
 ## 📱 Browser Support
 
@@ -291,23 +261,23 @@ npm run type-check   # Run TypeScript checks
 
 ## 🎓 Academic Context
 
-This project was developed as a final project for the University of Greenwich, demonstrating:
+This project demonstrates advanced full-stack development skills including:
 
-- **Full-Stack Development** - Complete web application development
-- **Web3 Integration** - Modern blockchain technology implementation
-- **Security Best Practices** - Comprehensive security implementation
-- **User Experience Design** - Modern, responsive interface design
-- **TypeScript Proficiency** - Advanced type safety and development practices
+- **Modern React Development**: Next.js 15 with App Router and server components
+- **TypeScript Proficiency**: Advanced type safety and development practices
+- **Web3 Integration**: Blockchain technology implementation with ethers.js
+- **Security Implementation**: Comprehensive authentication and authorization
+- **User Experience Design**: Modern, responsive interface with accessibility
 
-## 🔮 Future Enhancements
+## 🔮 Technical Enhancements
 
-- [ ] Multi-wallet support expansion
-- [ ] Social login integration
-- [ ] Advanced security analytics
-- [ ] Mobile app development
-- [ ] Cross-chain compatibility
-- [ ] NFT integration
-- [ ] DeFi protocol integration
+- **Multi-wallet Support**: Expanded wallet provider integration
+- **Social Login**: OAuth integration with major providers
+- **Advanced Analytics**: Security event tracking and monitoring
+- **Mobile App**: React Native implementation
+- **Cross-chain Compatibility**: Additional blockchain network support
+- **NFT Integration**: Non-fungible token management
+- **DeFi Protocol Integration**: Decentralized finance features
 
 ## 📄 License
 
@@ -315,17 +285,11 @@ This project is developed as part of academic coursework at the University of Gr
 
 ## 🆘 Support
 
-For questions or support regarding this project:
+For technical questions or support:
 
 - **Student Email:** minhvtqgcs220006@fpt.edu.vn
 - **University:** University of Greenwich
 - **Project Type:** Final Project - Web3 Authentication System
-
-## 📚 Documentation
-
-- [USERFLOW.md](USERFLOW.md) - Detailed user flow documentation
-- [Component Documentation](src/components/) - In-code component documentation
-- [API Documentation](src/app/api/) - API endpoint documentation
 
 ---
 
