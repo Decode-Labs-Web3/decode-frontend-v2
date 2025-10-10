@@ -364,8 +364,8 @@ export default function Page() {
                 <Image
                   src={
                     userData.avatar_ipfs_hash
-                      ? `https://gateway.pinata.cloud/ipfs/${userData.avatar_ipfs_hash}`
-                      : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      ? `http://35.247.142.76:8080/ipfs/${userData.avatar_ipfs_hash}`
+                      : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt={"Avatar"}
                   width={80}
@@ -537,8 +537,8 @@ export default function Page() {
                       <Image
                         src={
                           mutualFollower.avatar_ipfs_hash
-                            ? `https://gateway.pinata.cloud/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                            : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                            ? `http://35.247.142.76:8080/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                            : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                         }
                         alt={mutualFollower.display_name}
                         width={40}
@@ -561,8 +561,8 @@ export default function Page() {
                               <Image
                                 src={
                                   mutualFollower.avatar_ipfs_hash
-                                    ? `https://gateway.pinata.cloud/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                    : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                    ? `http://35.247.142.76:8080/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                    : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                                 }
                                 alt={"Avatar"}
                                 width={64}

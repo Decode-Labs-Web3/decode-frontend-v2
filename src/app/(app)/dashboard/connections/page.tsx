@@ -130,7 +130,7 @@ export default function ConnectionsIndex() {
         toastError("Failed to fetch interests");
         return;
       }
-      console.log("Response from suggest",response.data.users);
+      console.log("Response from suggest", response.data.users);
       setUserSuggest(response.data.users);
     } catch (error) {
       console.error("Fetch interests error:", error);
@@ -179,8 +179,8 @@ export default function ConnectionsIndex() {
   }, [handleGetInterest]);
 
   useEffect(() => {
-    handleSameInterest()
-  },[handleSameInterest])
+    handleSameInterest();
+  }, [handleSameInterest]);
 
   const handleInterest = async () => {
     setModalOpen(true);
@@ -252,8 +252,8 @@ export default function ConnectionsIndex() {
                   <Image
                     src={
                       user.avatar_ipfs_hash
-                        ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                        : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        ? `http://35.247.142.76:8080/ipfs/${user.avatar_ipfs_hash}`
+                        : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                     }
                     alt={user.username || "Avatar"}
                     width={64}
@@ -323,78 +323,78 @@ export default function ConnectionsIndex() {
             User Suggestions
           </h2>
 
-            {userSuggest.map((user) => (
-              <div
-                key={user.user_id}
-                className="flex items-center justify-between bg-[color:var(--surface)] p-6 rounded-2xl shadow-lg hover:shadow-xl hover:bg-[color:var(--surface-muted)] transition-all duration-200 border border-[color:var(--border)]"
-              >
-                <div className="flex items-center gap-4 min-w-0 flex-1">
-                  <div className="relative w-16 h-16 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-lg flex-shrink-0">
-                    <Image
-                      src={
-                        user.avatar_ipfs_hash
-                          ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                          : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                      }
-                      alt={user.username || "Avatar"}
-                      width={64}
-                      height={64}
-                      className="w-full h-full"
-                      unoptimized
-                    />
-                  </div>
-                  <div className="flex flex-col min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-[color:var(--foreground)] truncate text-lg">
-                        {user.display_name || user.username}
+          {userSuggest.map((user) => (
+            <div
+              key={user.user_id}
+              className="flex items-center justify-between bg-[color:var(--surface)] p-6 rounded-2xl shadow-lg hover:shadow-xl hover:bg-[color:var(--surface-muted)] transition-all duration-200 border border-[color:var(--border)]"
+            >
+              <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div className="relative w-16 h-16 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-lg flex-shrink-0">
+                  <Image
+                    src={
+                      user.avatar_ipfs_hash
+                        ? `http://35.247.142.76:8080/ipfs/${user.avatar_ipfs_hash}`
+                        : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                    }
+                    alt={user.username || "Avatar"}
+                    width={64}
+                    height={64}
+                    className="w-full h-full"
+                    unoptimized
+                  />
+                </div>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-[color:var(--foreground)] truncate text-lg">
+                      {user.display_name || user.username}
+                    </span>
+                    {user.is_following && (
+                      <span className="bg-blue-700/15 text-blue-600 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
+                        Following
                       </span>
-                      {user.is_following && (
-                        <span className="bg-blue-700/15 text-blue-600 dark:text-blue-300 text-xs px-2 py-1 rounded-full">
-                          Following
+                    )}
+                  </div>
+                  <span className="text-sm text-[color:var(--muted-foreground)] truncate">
+                    @{user.username}
+                  </span>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-green-600">
+                      {user.shared_interests_count} shared interests
+                    </span>
+                    <span className="text-xs text-[color:var(--muted-foreground)]">
+                      {user.followers_number} followers
+                    </span>
+                  </div>
+                  {user.shared_interests.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {user.shared_interests.slice(0, 3).map((interest) => (
+                        <span
+                          key={interest}
+                          className="bg-blue-500/10 text-blue-600 text-xs px-2 py-1 rounded-full"
+                        >
+                          {interest.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                      {user.shared_interests.length > 3 && (
+                        <span className="text-xs text-[color:var(--muted-foreground)]">
+                          +{user.shared_interests.length - 3} more
                         </span>
                       )}
                     </div>
-                    <span className="text-sm text-[color:var(--muted-foreground)] truncate">
-                      @{user.username}
-                    </span>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs text-green-600">
-                        {user.shared_interests_count} shared interests
-                      </span>
-                      <span className="text-xs text-[color:var(--muted-foreground)]">
-                        {user.followers_number} followers
-                      </span>
-                    </div>
-                    {user.shared_interests.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {user.shared_interests.slice(0, 3).map((interest) => (
-                          <span
-                            key={interest}
-                            className="bg-blue-500/10 text-blue-600 text-xs px-2 py-1 rounded-full"
-                          >
-                            {interest.replace(/_/g, " ")}
-                          </span>
-                        ))}
-                        {user.shared_interests.length > 3 && (
-                          <span className="text-xs text-[color:var(--muted-foreground)]">
-                            +{user.shared_interests.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2 ml-4">
-                  <Link
-                    href={`/dashboard/connections/followings/${user.user_id}`}
-                    className="bg-blue-700 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-                  >
-                    View Profile
-                  </Link>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
+              <div className="flex flex-col items-end gap-2 ml-4">
+                <Link
+                  href={`/dashboard/connections/followings/${user.user_id}`}
+                  className="bg-blue-700 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                >
+                  View Profile
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </main>
   );

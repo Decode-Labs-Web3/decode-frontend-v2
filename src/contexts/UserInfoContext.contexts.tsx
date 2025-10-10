@@ -1,6 +1,15 @@
 "use client";
 
-import { createContext } from "react";
-import { UserContextType } from "@/interfaces/index.interfaces";
+import { createContext, useContext } from "react";
+import { UserProfile } from "@/interfaces/index.interfaces";
 
-export const UserInfoContext = createContext<UserContextType | null>(null);
+export interface UserContextType {
+  userInfo: UserProfile | undefined;
+  fetchUserInfo: () => Promise<void>;
+}
+
+export const UserInfoContext = createContext<UserContextType | undefined>(
+  undefined
+);
+
+export const useUserInfoContext = () => useContext(UserInfoContext);

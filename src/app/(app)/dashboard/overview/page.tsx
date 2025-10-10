@@ -3,9 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { useUserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import {
   faShieldHalved,
   faWallet,
@@ -25,8 +25,8 @@ interface NotificationReceived {
 
 export default function OverviewPage() {
   const router = useRouter();
-  const userContext = useContext(UserInfoContext);
-  const user = userContext?.user;
+  const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
+
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
     []
   );
@@ -50,7 +50,7 @@ export default function OverviewPage() {
   return (
     <>
       {/* Profile */}
-      {user && (
+      {userInfo && (
         <div className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] backdrop-blur-sm p-8 mb-8 shadow-2xl hover-card">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -59,7 +59,7 @@ export default function OverviewPage() {
                 Profile Information
               </h3>
               <p className="font-mono text-sm text-[color:var(--muted-foreground)]">
-                User ID: {user.id}
+                User ID: {userInfo._id}
               </p>
             </div>
           </div>
@@ -70,11 +70,11 @@ export default function OverviewPage() {
               <div className="w-80 h-80 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-xl">
                 <Image
                   src={
-                    user.avatar_ipfs_hash
-                      ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                      : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                    userInfo.avatar_ipfs_hash
+                      ? `http://35.247.142.76:8080/ipfs/${userInfo.avatar_ipfs_hash}`
+                      : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
-                  alt={user.username || "Avatar"}
+                  alt={"Avatar"}
                   width={320}
                   height={320}
                   className="w-full h-full object-cover"
@@ -89,16 +89,17 @@ export default function OverviewPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
                   <h2 className="text-3xl font-bold text-[color:var(--foreground)]">
-                    {user.display_name || user.username || "Your name"}
+                    {userInfo.display_name || userInfo.username || "Your name"}
                   </h2>
-                  {user?.role && (
+                  {userInfo.role && (
                     <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600/10 to-indigo-600/10 text-blue-600/80 dark:text-blue-300 text-sm font-medium border border-blue-500/20">
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      {userInfo.role.charAt(0).toUpperCase() +
+                        userInfo.role.slice(1)}
                     </span>
                   )}
                 </div>
                 <p className="text-lg text-[color:var(--muted-foreground)]">
-                  {user.email}
+                  {userInfo.email}
                 </p>
               </div>
 
@@ -110,8 +111,7 @@ export default function OverviewPage() {
                   </h4>
                   <div className="bg-[color:var(--surface)] rounded-xl p-4 border border-[color:var(--border)] hover-card">
                     <p className="leading-relaxed text-[color:var(--foreground)]/90">
-                      {user.bio ||
-                        "No bio added yet. Visit the Personal page to add a short description about yourself."}
+                      {userInfo.bio}
                     </p>
                   </div>
                 </div>
@@ -126,7 +126,7 @@ export default function OverviewPage() {
                         Followers
                       </span>
                       <p className="text-sm text-[color:var(--foreground)]">
-                        {user.followers_number}
+                        {userInfo.followers_number}
                       </p>
                     </Link>
                   </div>
@@ -136,7 +136,7 @@ export default function OverviewPage() {
                         Following
                       </span>
                       <p className="text-sm text-[color:var(--foreground)]">
-                        {user.following_number}
+                        {userInfo.following_number}
                       </p>
                     </Link>
                   </div>
@@ -182,10 +182,10 @@ export default function OverviewPage() {
           </p>
           <p className="text-xs text-[color:var(--muted-foreground)] mt-1">
             {" "}
-            {user?.primary_wallet?.address
-              ? user?.primary_wallet?.address.slice(0, 10) +
+            {userInfo?.primary_wallet?.address
+              ? userInfo?.primary_wallet?.address.slice(0, 10) +
                 "......" +
-                user?.primary_wallet?.address.slice(-6)
+                userInfo?.primary_wallet?.address.slice(-6)
               : "No wallet connected"}
           </p>
         </div>
@@ -204,7 +204,9 @@ export default function OverviewPage() {
             Current device
           </p>
           <p className="text-xs text-[color:var(--muted-foreground)] mt-1">
-            {new Date(user?.last_login || "").toLocaleString()}
+            {userInfo?.last_login
+              ? new Date(userInfo.last_login).toLocaleString()
+              : "—"}
           </p>
         </div>
 

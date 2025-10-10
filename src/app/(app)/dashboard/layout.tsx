@@ -2,8 +2,8 @@
 
 import App from "@/components/(app)";
 import Loading from "@/components/(loading)";
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { UserProfile } from "@/interfaces/index.interfaces";
 import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
@@ -29,14 +29,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [loading, setLoading] = useState(true);
-  const [active, setActive] = useState<string>("overview");
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [userInfo, setUserInfo] = useState<UserProfile>();
   const [isDeactivated, setIsDeactivated] = useState(false);
 
-  const refetchUserData = async () => {
-    setLoading(true);
+  const fetchUserInfo = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/users/overview", {
         method: "GET",
@@ -48,134 +45,43 @@ export default function DashboardLayout({
         signal: AbortSignal.timeout(10000),
       });
 
-      if (!apiResponse.ok) {
-        toastError("Failed to refresh user data");
-        router.push("/");
-        return;
-      }
-
-      const responseData = await apiResponse.json();
+      const response = await apiResponse.json();
+      // const fetchUser = async () => {
+      //   try {
+      //     const apiResponse = await fetch("/api/users/overview");
+      //     const responseJson = await apiResponse.json();
+      //     if (responseJson?.statusCode === 403) {
+      //     }
+      //   } catch (error) {}
+      // };
       if (
-        responseData.statusCode === 403 &&
-        responseData.message === "Your account is deactivated"
+        response.statusCode === 403 &&
+        response.message === "Your account is deactivated"
       ) {
         setIsDeactivated(true);
         toastError("Account deactivated, please choose the modal");
         return;
       }
-      if (responseData.success && responseData.data) {
-        const userData: UserProfile = {
-          last_username_change: responseData.data.last_username_change,
-          last_email_change: responseData.data.last_email_change,
-          id: responseData.data._id,
-          email: responseData.data.email,
-          username: responseData.data.username,
-          role: responseData.data.role,
-          display_name: responseData.data.display_name,
-          bio: responseData.data.bio,
-          avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
-          last_login: responseData.data.last_login,
-          primary_wallet: responseData.data.primary_wallet,
-          following_number: responseData.data.following_number,
-          followers_number: responseData.data.followers_number,
-        };
-
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-      }
+      setUserInfo(response.data);
+      localStorage.setItem("user", JSON.stringify(response.data));
     } catch (error) {
-      console.error("Error refetching user data:", error);
-      toastError("Failed to refresh user data");
+      console.error("User data fetch error:", error);
+      toastError("Failed to load user data");
     } finally {
-      console.log("User data refetch operation completed");
+      setLoading(false);
+      // setLoading(true);
+      console.log("User data fetch operation completed");
     }
-  };
-
-  useEffect(() => {
-    if (!pathname) return;
-    const parts = pathname.split("/").filter(Boolean);
-    if (parts[0] === "dashboard") {
-      const section = parts[1] || "overview";
-      setActive(section);
-    }
-  }, [pathname]);
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      setUserInfo(JSON.parse(storedUser));
       setLoading(false);
     }
-
-    const fetchUser = async () => {
-      try {
-        const apiResponse = await fetch("/api/users/overview", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-          },
-          cache: "no-store",
-          signal: AbortSignal.timeout(10000),
-        });
-
-        const responseData = await apiResponse.json();
-        // const fetchUser = async () => {
-        //   try {
-        //     const apiResponse = await fetch("/api/users/overview");
-        //     const responseJson = await apiResponse.json();
-        //     if (responseJson?.statusCode === 403) {
-        //     }
-        //   } catch (error) {}
-        // };
-        if (
-          responseData.statusCode === 403 &&
-          responseData.message === "Your account is deactivated"
-        ) {
-          setIsDeactivated(true);
-          toastError("Account deactivated, please choose the modal");
-          return;
-        }
-
-        const userData: UserProfile = {
-          last_username_change: responseData.data.last_username_change,
-          last_email_change: responseData.data.last_email_change,
-          id: responseData.data._id,
-          email: responseData.data.email,
-          username: responseData.data.username,
-          role: responseData.data.role,
-          display_name: responseData.data.display_name,
-          bio: responseData.data.bio,
-          avatar_ipfs_hash: responseData.data.avatar_ipfs_hash,
-          last_login: responseData.data.last_login,
-          primary_wallet: responseData.data.primary_wallet,
-          following_number: responseData.data.following_number,
-          followers_number: responseData.data.followers_number,
-        };
-
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-      } catch (error) {
-        console.error("User data fetch error:", error);
-        toastError("Failed to load user data");
-      } finally {
-        setLoading(false);
-        // setLoading(true);
-        console.log("User data fetch operation completed");
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  const handleChange = (key: string) => {
-    setActive(key);
-    if (key === "overview") {
-      router.push("/dashboard");
-    } else {
-      router.push(`/dashboard/${key}`);
-    }
-  };
+    fetchUserInfo();
+  }, [fetchUserInfo]);
 
   const [logs, setLogs] = useState<NotificationReceived[]>([]);
   console.log("logs", logs);
@@ -346,7 +252,7 @@ export default function DashboardLayout({
     return (
       <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
         <App.Navbar />
-        <App.Sidebar active="overview" onChange={() => {}} />
+        <App.Sidebar />
         <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
           <Loading.OverviewCard />
         </div>
@@ -355,10 +261,10 @@ export default function DashboardLayout({
   }
 
   return (
-    <UserInfoContext.Provider value={{ user, refetchUserData }}>
+    <UserInfoContext.Provider value={{ userInfo, fetchUserInfo }}>
       <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
         <App.Navbar />
-        <App.Sidebar active={active} onChange={handleChange} />
+        <App.Sidebar />
         <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>
       </div>
     </UserInfoContext.Provider>

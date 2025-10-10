@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGaugeHigh,
@@ -14,8 +14,6 @@ import {
   faUser,
   faPenToSquare,
 } from "@fortawesome/free-solid-svg-icons";
-
-import { SidebarProps } from "@/interfaces/index.interfaces";
 
 const items = [
   { key: "overview", label: "Overview", icon: faGaugeHigh },
@@ -37,14 +35,18 @@ const items = [
 //   createdAt: string;
 // }
 
-export default function Sidebar({ active, onChange }: SidebarProps) {
+export default function Sidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [unread, setUnread] = useState<number>(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   // const [notifications, setNotifications] = useState<NotificationReceived[]>(
   //   []
   // );
 
-  const getUnread = async () => {
+  const active = pathname.replace(/\/+$/, "").split("/")[2] || "overview";
+
+  const getUnread = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/users/unread", {
         method: "GET",
@@ -64,11 +66,11 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getUnread();
-  }, []);
+  }, [getUnread]);
 
   useEffect(() => {
     const handler = () => setMobileOpen((v) => !v);
@@ -83,7 +85,7 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
         <button
           key={item.key}
           onClick={() => {
-            onChange(item.key);
+            router.push(`/dashboard/${item.key}`);
             setMobileOpen(false);
           }}
           className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${

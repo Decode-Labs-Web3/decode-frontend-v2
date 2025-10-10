@@ -1,25 +1,41 @@
 export interface UserProfile {
-  last_username_change?: string;
-  last_email_change?: string;
-  id: string;
-  email: string;
+  _id: string;
   username: string;
+  email: string;
+  display_name: string;
+  bio: string;
+  avatar_ipfs_hash: string;
   role: string;
-  display_name?: string;
-  bio?: string;
-  avatar_ipfs_hash?: string;
   last_login?: string;
+  is_active: boolean;
+  __v: number;
+  last_account_deactivation?: string;
   primary_wallet?: PrimaryWallet;
+  wallets?: Wallet[];
   following_number: number;
   followers_number: number;
 }
 
 export interface PrimaryWallet {
-  id: string;
+  _id: string;
   address: string;
   user_id: string;
-  name_service: string;
+  name_service: string | null;
   is_primary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface Wallet {
+  _id: string;
+  address: string;
+  user_id: string;
+  name_service: string | null;
+  is_primary: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface UserContextType {

@@ -6,11 +6,6 @@ export interface PageHeaderProps {
   className?: string;
 }
 
-export interface SidebarProps {
-  active: string;
-  onChange: (key: string) => void;
-}
-
 export interface BackButtonProps {
   href?: string;
   onClick?: () => void;

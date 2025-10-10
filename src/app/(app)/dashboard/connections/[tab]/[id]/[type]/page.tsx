@@ -135,8 +135,8 @@ export default function Page() {
                   <Image
                     src={
                       user.avatar_ipfs_hash
-                        ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                        : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        ? `http://35.247.142.76:8080/ipfs/${user.avatar_ipfs_hash}`
+                        : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                     }
                     alt={"Avatar"}
                     width={56}
@@ -158,8 +158,8 @@ export default function Page() {
                           <Image
                             src={
                               user.avatar_ipfs_hash
-                                ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                                : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                ? `http://35.247.142.76:8080/ipfs/${user.avatar_ipfs_hash}`
+                                : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                             }
                             alt={"Avatar"}
                             width={64}
@@ -223,8 +223,8 @@ export default function Page() {
                                   key={mutualFollower.user_id}
                                   src={
                                     mutualFollower.avatar_ipfs_hash
-                                      ? `https://gateway.pinata.cloud/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                      : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                      ? `http://35.247.142.76:8080/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                      : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                                   }
                                   alt={"Avatar"}
                                   width={20}

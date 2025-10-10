@@ -86,7 +86,7 @@ export default function NewsPage() {
 
   const getImageUrl = (post: BlogPost) => {
     if (post.post_ipfs_hash) {
-      return `https://gateway.pinata.cloud/ipfs/${post.post_ipfs_hash}`;
+      return `http://35.247.142.76:8080/ipfs/${post.post_ipfs_hash}`;
     }
     return "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop";
   };

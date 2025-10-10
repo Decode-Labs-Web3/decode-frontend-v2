@@ -3,16 +3,8 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/index.utils";
-import {
-  useState,
-  useContext,
-  useRef,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import {
   faEnvelope,
   faCamera,
@@ -32,6 +24,7 @@ import {
   Legend,
 } from "recharts";
 import { format, parseISO } from "date-fns";
+import { userInfoContext } from "@/contexts/UserInfoContext.contexts";
 
 interface SnapshotData {
   _id: string;
@@ -48,9 +41,8 @@ interface ChartRow {
 
 export default function PersonalPage() {
   const router = useRouter();
-  const userContext = useContext(UserInfoContext);
-  const user = userContext?.user;
-  const refetchUserData = userContext?.refetchUserData;
+  const user = userInfoContext();
+  const refetchUserData = userInfoContext();
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<SnapshotData[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -505,8 +497,8 @@ export default function PersonalPage() {
                 <Image
                   src={
                     profileForm.avatar_ipfs_hash
-                      ? `https://gateway.pinata.cloud/ipfs/${profileForm.avatar_ipfs_hash}`
-                      : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      ? `http://35.247.142.76:8080/ipfs/${profileForm.avatar_ipfs_hash}`
+                      : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt={"Avatar"}
                   width={192}
@@ -837,7 +829,7 @@ export default function PersonalPage() {
           ref={(element: HTMLDivElement) => {
             element?.focus();
           }}
-          onKeyDown={(event)=> {
+          onKeyDown={(event) => {
             if (event.key === "Escape") {
               setIsDeleteModalOpen(false);
             }
