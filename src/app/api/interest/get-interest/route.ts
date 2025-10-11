@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   try {
     // const cookieStore = await cookies();
     // const accessToken = cookieStore.get("accessToken")?.value;
-    const accessToken =  (await cookies()).get("accessToken")?.value
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -30,8 +30,7 @@ export async function GET(req: Request) {
     }
 
     const userAgent = req.headers.get("user-agent") || "";
-    const fingerprintResult = await fingerprintService(userAgent);
-    const { fingerprint_hashed } = fingerprintResult;
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/relationship/interest/list`,

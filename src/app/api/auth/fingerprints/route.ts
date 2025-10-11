@@ -30,9 +30,7 @@ export async function GET(req: Request) {
     }
 
     const userAgent = req.headers.get("user-agent") || "";
-    const fingerprintResult = await fingerprintService(userAgent);
-    const { fingerprint_hashed } = fingerprintResult;
-    console.log("Fingerprint result from fingerprints api:", fingerprintResult);
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/auth/fingerprints`,

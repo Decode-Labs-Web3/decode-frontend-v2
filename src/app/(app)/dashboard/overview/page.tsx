@@ -27,7 +27,9 @@ export default function OverviewPage() {
   const router = useRouter();
   const { userInfo } = useUserInfoContext() || {};
 
-  const [notifications, setNotifications] = useState<NotificationReceived[]>([]);
+  const [notifications, setNotifications] = useState<NotificationReceived[]>(
+    []
+  );
 
   useEffect(() => {
     router.refresh();

@@ -35,8 +35,7 @@ export async function POST(req: Request) {
     console.log("this is id from snapshot", id);
 
     const userAgent = req.headers.get("user-agent") || "";
-    const fingerprintResult = await fingerprintService(userAgent);
-    const { fingerprint_hashed } = fingerprintResult;
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/relationship/snapshot/last-month/${id}`,

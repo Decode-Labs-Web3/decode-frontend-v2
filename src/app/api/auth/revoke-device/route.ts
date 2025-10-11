@@ -68,8 +68,7 @@ export async function POST(req: Request) {
     };
 
     const userAgent = req.headers.get("user-agent") || "";
-    const fingerprintResult = await fingerprintService(userAgent);
-    const { fingerprint_hashed } = fingerprintResult;
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const backendResponse = await fetch(
       `${process.env.BACKEND_BASE_URL}/auth/fingerprints/revoke`,

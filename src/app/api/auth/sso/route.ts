@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   try {
     // const cookieStore = await cookies();
     // const accessToken = cookieStore.get("accessToken")?.value;
-    const accessToken = (await cookies()).get("accessToken")?.value
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -30,8 +30,7 @@ export async function POST(req: Request) {
     }
 
     const userAgent = req.headers.get("user-agent") || "";
-    const fingerprintResult = await fingerprintService(userAgent);
-    const { fingerprint_hashed } = fingerprintResult;
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
 
     const body = await req.json();
     const { app } = body;
@@ -83,7 +82,7 @@ export async function POST(req: Request) {
         success: true,
         statusCode: 200,
         message: "SSO token created",
-        data: response.data
+        data: response.data,
       },
       { status: 200 }
     );
