@@ -90,7 +90,7 @@ export default function Sidebar() {
           }}
           className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
             active === item.key
-              ? "bg-[color:var(--surface)] text-[color:var(--foreground)] border border-[color:var(--border)]"
+              ? "bg-[color:var(--surface)] text-[color:var(--foreground)] border-l-6 border-[color:var(--border)]"
               : "text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface)] hover:text-[color:var(--foreground)]"
           }`}
         >

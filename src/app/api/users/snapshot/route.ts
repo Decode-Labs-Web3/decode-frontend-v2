@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     }
 
     const data = await backendRes.json();
-    console.log("Overview data:", data);
+    // console.log("Overview data:", data);
     return NextResponse.json(
       {
         success: true,

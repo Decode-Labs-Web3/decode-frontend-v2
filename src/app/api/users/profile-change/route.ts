@@ -83,6 +83,7 @@ async function makeBackendRequest(
     }
 
     const response = await backendRes.json().catch(() => ({}));
+    console.log(`${endpoint}`, response);
     return {
       success: true,
       message: response.message || "Updated successfully",
@@ -118,6 +119,8 @@ export async function PUT(req: Request) {
         { status: 400 }
       );
     }
+
+    console.log("hi world ewdwedewdwedewd");
 
     const changedFields = getChangedFields(current, original);
 
