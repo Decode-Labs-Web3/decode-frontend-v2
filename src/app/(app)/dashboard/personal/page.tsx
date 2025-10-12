@@ -385,8 +385,8 @@ export default function PersonalPage() {
                 <Image
                   src={
                     profileForm.avatar_ipfs_hash
-                      ? `http://35.247.142.76:8080/ipfs/${profileForm.avatar_ipfs_hash}`
-                      : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      ? `https://ipfs.de-id.xyz/ipfs/${profileForm.avatar_ipfs_hash}`
+                      : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt={"Avatar"}
                   width={48}

@@ -234,8 +234,8 @@ export default function Page() {
                 <Image
                   src={
                     userData.avatar_ipfs_hash
-                      ? `http://35.247.142.76:8080/ipfs/${userData.avatar_ipfs_hash}`
-                      : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                      ? `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`
+                      : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt={"Avatar"}
                   width={80}
@@ -370,8 +370,8 @@ export default function Page() {
                       <Image
                         src={
                           mutualFollower.avatar_ipfs_hash
-                            ? `http://35.247.142.76:8080/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                            : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                            ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                         }
                         alt={mutualFollower.display_name}
                         width={40}
@@ -394,8 +394,8 @@ export default function Page() {
                               <Image
                                 src={
                                   mutualFollower.avatar_ipfs_hash
-                                    ? `http://35.247.142.76:8080/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                    : "http://35.247.142.76:8080/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                    ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                                 }
                                 alt={"Avatar"}
                                 width={64}
