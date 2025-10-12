@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
-import { useHoverDelay } from "@/hooks/index.hooks";
 import { useState, useEffect, useCallback } from "react";
 import SnapshotChart from "@/components/(app)/SnapshotChart";
 import { toastSuccess, toastError } from "@/utils/index.utils";
@@ -52,7 +51,6 @@ interface MutualFollower {
 
 export default function Page() {
   const { tab, id } = useParams<{ id: string; tab: string }>();
-  const hover = useHoverDelay(250, 120);
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
 
@@ -362,104 +360,93 @@ export default function Page() {
                         <button className="text-xs px-2 py-1 border rounded">view</button>
                       </div>
                       */}
-                    <div
-                      className="relative"
-                      onMouseEnter={hover.onEnter}
-                      onMouseLeave={hover.onLeave}
+                    <Link
+                      href={`/dashboard/connections/followings/${mutualFollower.user_id}`}
+                      className="w-full h-full"
                     >
-                      <Image
-                        src={
-                          mutualFollower.avatar_ipfs_hash
-                            ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                        }
-                        alt={mutualFollower.display_name}
-                        width={40}
-                        height={40}
-                        className="w-10 h-10 rounded-xl object-cover border border-[color:var(--border)]"
-                        unoptimized
-                      />
-                    </div>
+                      <div className="relative">
+                        <Image
+                          src={
+                            mutualFollower.avatar_ipfs_hash
+                              ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                          }
+                          alt={mutualFollower.display_name}
+                          width={40}
+                          height={40}
+                          className="w-10 h-10 rounded-xl object-cover border border-[color:var(--border)]"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-[color:var(--foreground)]">
+                          {mutualFollower.display_name}
+                        </div>
+                        <div className="truncate text-xs text-[color:var(--muted-foreground)]">
+                          @{mutualFollower.username}
+                        </div>
+                      </div>
+                    </Link>
+                    {/* hover part */}
+                    <div className="absolute z-50 left-1/2 -translate-x-1/2 top-[calc(100%+10px)] w-[340px] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-2xl p-4">
+                      <div className="flex flex-col">
+                        {/* image section */}
+                        <div className="flex flex-row gap-4">
+                          <div className="w-25 h-25 rounded-xl overflow-hidden border border-[color:var(--border)] flex-shrink-0">
+                            <Image
+                              src={
+                                mutualFollower.avatar_ipfs_hash
+                                  ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                  : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                              }
+                              alt={"Avatar"}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                              unoptimized
+                            />
+                          </div>
 
-                    {hover.open && (
-                      <div
-                        className="absolute z-50 left-1/2 -translate-x-1/2 top-[calc(100%+10px)] w-[340px] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-2xl p-4"
-                        onMouseEnter={hover.onEnter}
-                        onMouseLeave={hover.onLeave}
-                      >
-                        <div className="flex flex-col">
-                          {/* image section */}
-                          <div className="flex flex-row gap-4">
-                            <div className="w-25 h-25 rounded-xl overflow-hidden border border-[color:var(--border)] flex-shrink-0">
-                              <Image
-                                src={
-                                  mutualFollower.avatar_ipfs_hash
-                                    ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                                }
-                                alt={"Avatar"}
-                                width={64}
-                                height={64}
-                                className="w-full h-full object-cover"
-                                unoptimized
-                              />
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium text-[color:var(--foreground)] truncate">
-                                  {mutualFollower.display_name}
-                                </p>
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color:var(--surface)] border border-[color:var(--border)] text-[color:var(--muted-foreground)] whitespace-nowrap">
-                                  {mutualFollower.role}
-                                </span>
-                              </div>
-                              <p className="text-xs text-[color:var(--muted-foreground)] truncate">
-                                @{mutualFollower.username}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-[color:var(--foreground)] truncate">
+                                {mutualFollower.display_name}
                               </p>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color:var(--surface)] border border-[color:var(--border)] text-[color:var(--muted-foreground)] whitespace-nowrap">
+                                {mutualFollower.role}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[color:var(--muted-foreground)] truncate">
+                              @{mutualFollower.username}
+                            </p>
 
-                              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                                <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                                  <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                                    Following
-                                  </p>
-                                  <p className="text-sm font-medium text-[color:var(--foreground)]">
-                                    {mutualFollower.following_number}
-                                  </p>
-                                </div>
-                                <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                                  <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                                    Followers
-                                  </p>
-                                  <p className="text-sm font-medium text-[color:var(--foreground)]">
-                                    {mutualFollower.followers_number}
-                                  </p>
-                                </div>
-                                {/* <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
+                            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                              <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
+                                <p className="text-[10px] text-[color:var(--muted-foreground)]">
+                                  Following
+                                </p>
+                                <p className="text-sm font-medium text-[color:var(--foreground)]">
+                                  {mutualFollower.following_number}
+                                </p>
+                              </div>
+                              <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
+                                <p className="text-[10px] text-[color:var(--muted-foreground)]">
+                                  Followers
+                                </p>
+                                <p className="text-sm font-medium text-[color:var(--foreground)]">
+                                  {mutualFollower.followers_number}
+                                </p>
+                              </div>
+                              {/* <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
                                   <p className="text-[10px] text-[color:var(--muted-foreground)]">
                                     Mutual
                                   </p>
                                 </div> */}
-                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-[color:var(--foreground)]">
-                        {mutualFollower.display_name}
-                      </div>
-                      <div className="truncate text-xs text-[color:var(--muted-foreground)]">
-                        @{mutualFollower.username}
-                      </div>
                     </div>
-                    <Link
-                      href={`/dashboard/connections/followings/${mutualFollower.user_id}`}
-                      className="shrink-0 text-xs px-3 py-1.5 rounded-lg border border-[color:var(--border)] text-[color:var(--foreground)] hover:bg-[color:var(--surface)] transition-colors"
-                    >
-                      View
-                    </Link>
                   </div>
                 )
               )}
