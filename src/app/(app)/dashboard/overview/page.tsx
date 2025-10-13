@@ -77,8 +77,7 @@ export default function OverviewPage() {
                   alt={"Avatar"}
                   width={80}
                   height={80}
-                  className="w-full h-full object-cover"
-                  unoptimized
+                  className="w-full h-full"
                 />
               </div>
             </div>

@@ -42,9 +42,3 @@ export interface UserContextType {
   user: UserProfile | null;
   refetchUserData: () => Promise<void>;
 }
-
-export interface ProfileData {
-  avatar_ipfs_hash?: string;
-  display_name?: string;
-  bio?: string;
-}

@@ -1,101 +1,46 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
-import { ProfileData } from "@/interfaces/index.interfaces";
 import {
-  generateRequestId,
-  apiPathName,
   guardInternal,
+  apiPathName,
+  generateRequestId,
 } from "@/utils/index.utils";
 
-function getChangedFields(current: ProfileData, original: ProfileData) {
-  const changes: { [key: string]: { data: ProfileData; endpoint: string } } =
-    {};
+interface ProfileChangeInput {
+  avatar_ipfs_hash?: string;
+  display_name?: string;
+  bio?: string;
+}
+
+export function diffProfileChanges(
+  current: ProfileChangeInput,
+  original: ProfileChangeInput
+) {
+  const tasks = [];
 
   if (current.avatar_ipfs_hash !== original.avatar_ipfs_hash) {
-    changes.avatar_ipfs_hash = {
-      data: { avatar_ipfs_hash: current.avatar_ipfs_hash },
-      endpoint: "/users/profile/avatar",
-    };
+    tasks.push({
+      endpoint: "users/profile/avatar",
+      body: { avatar_ipfs_hash: current.avatar_ipfs_hash },
+    });
   }
 
   if (current.display_name !== original.display_name) {
-    changes.display_name = {
-      data: { display_name: current.display_name },
-      endpoint: "/users/profile/display-name",
-    };
+    tasks.push({
+      endpoint: "users/profile/display-name",
+      body: { display_name: current.display_name },
+    });
   }
 
   if (current.bio !== original.bio) {
-    changes.bio = {
-      data: { bio: current.bio },
-      endpoint: "/users/profile/bio",
-    };
+    tasks.push({
+      endpoint: "users/profile/bio",
+      body: { bio: current.bio },
+    });
   }
 
-  return changes;
-}
-
-// Helper function to make individual backend requests
-async function makeBackendRequest(
-  endpoint: string,
-  data: ProfileData,
-  req: Request,
-  requestId: string
-) {
-  try {
-    // const cookieStore = await cookies();
-    // const accessToken = cookieStore.get("accessToken")?.value;
-    const accessToken = (await cookies()).get("accessToken")?.value;
-
-    if (!accessToken) {
-      return {
-        success: false,
-        message: "No access token found",
-      };
-    }
-
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
-
-    const backendRes = await fetch(
-      `${process.env.BACKEND_BASE_URL}${endpoint}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          "X-Fingerprint-Hashed": fingerprint_hashed,
-          "X-Request-Id": requestId,
-        },
-        body: JSON.stringify(data),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      }
-    );
-
-    if (!backendRes.ok) {
-      const error = await backendRes.json().catch(() => null);
-      return {
-        success: false,
-        message: error?.message || "Update failed",
-      };
-    }
-
-    const response = await backendRes.json().catch(() => ({}));
-    console.log(`${endpoint}`, response);
-    return {
-      success: true,
-      message: response.message || "Updated successfully",
-    };
-  } catch (error) {
-    console.error("makeBackendRequest error:", error);
-    return {
-      success: false,
-      statusCode: 500,
-      message: error instanceof Error ? error.message : "Network error",
-    };
-  }
+  return tasks;
 }
 
 export async function PUT(req: Request) {
@@ -107,76 +52,94 @@ export async function PUT(req: Request) {
   try {
     const body = await req.json();
     const { current, original } = body;
-
     if (!current || !original) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
-          message:
-            "Invalid request body. Must include current and original data",
+          statusCode: 401,
+          message: "Missing current or origin",
         },
-        { status: 400 }
+        { status: 401 }
       );
     }
 
-    console.log("hi world ewdwedewdwedewd");
+    const accessToken = (await cookies()).get("accessToken")?.value;
+    const userAgent = req.headers.get("user-agent") || "";
+    const { fingerprint_hashed } = await fingerprintService(userAgent);
 
-    const changedFields = getChangedFields(current, original);
+    const changeData = diffProfileChanges(current, original);
 
-    if (Object.keys(changedFields).length === 0) {
+    console.log("current and original", current, original);
+    console.log("change data", changeData);
+
+    const promises = changeData.map(async (data) => {
+      const backendRes = await fetch(
+        `${process.env.BACKEND_BASE_URL}/${data.endpoint}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "X-Fingerprint-Hashed": fingerprint_hashed,
+            "X-Request-Id": requestId,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data.body),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        }
+      );
+
+      if (!backendRes.ok) {
+        return NextResponse.json(
+          {
+            success: false,
+            statusCode: backendRes.status || 400,
+            message: backendRes.statusText,
+          },
+          { status: backendRes.status || 400 }
+        );
+      }
+
+      const response = await backendRes.text().catch(() => "");
+      return {
+        response: response,
+        endpoint: data.endpoint,
+        status: backendRes.status,
+      };
+    });
+    const results = await Promise.all(promises);
+
+    const allOk = results.every((r) => r.status);
+    const someOk = results.some((r) => r.status);
+
+    if (allOk) {
       return NextResponse.json(
         {
           success: true,
           statusCode: 200,
-          message: "No changes detected",
-          results: {},
+          message: "Profile updated",
         },
         { status: 200 }
       );
     }
 
-    // Process each changed field
-    const results: { [key: string]: { success: boolean; message: string } } =
-      {};
-    const promises = Object.entries(changedFields).map(
-      async ([field, config]) => {
-        const result = await makeBackendRequest(
-          config.endpoint,
-          config.data,
-          req,
-          requestId
-        );
-        results[field] = result;
-      }
-    );
-
-    await Promise.all(promises);
-
-    // Check if all updates were successful
-    const allSuccessful = Object.values(results).every(
-      (result) => result.success
-    );
-
-    return NextResponse.json(
-      {
-        success: allSuccessful,
-        statusCode: allSuccessful ? 200 : 207,
-        message: allSuccessful
-          ? "All updates successful"
-          : "Some updates failed",
-        results,
-      },
-      { status: allSuccessful ? 200 : 207 }
-    );
+    if (someOk) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 207,
+          message: "Partial update",
+        },
+        { status: 207 }
+      );
+    }
   } catch (error) {
-    console.error("/api/users/profile-change handler error:", error);
+    console.error(error);
     return NextResponse.json(
       {
-        success: false,
+        status: false,
         statusCode: 500,
-        message:
-          error instanceof Error ? error.message : "Failed to change profile",
+        message: "Server change profile error",
       },
       { status: 500 }
     );

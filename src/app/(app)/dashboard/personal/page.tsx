@@ -11,6 +11,10 @@ import { useUserInfoContext } from "@/contexts/UserInfoContext.contexts";
 
 export default function PersonalPage() {
   const router = useRouter();
+  const [loadingAvatar, setLoadingAvartar] = useState({
+    loading: false,
+    new: false,
+  });
   const [loading, setLoading] = useState(false);
   const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
   const [modal, setModal] = useState({
@@ -19,9 +23,9 @@ export default function PersonalPage() {
   });
 
   const [updateUserInfo, setUpdateUserInfo] = useState({
-    avartar_ipfs_hash: userInfo?.avatar_ipfs_hash || "",
-    display_name: userInfo?.display_name || "",
-    bio: userInfo?.bio || "",
+    avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
+    display_name: userInfo?.display_name,
+    bio: userInfo?.bio,
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -38,6 +42,10 @@ export default function PersonalPage() {
   const handleAvartarUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    setLoadingAvartar((prev) => ({
+      ...prev,
+      loading: true,
+    }));
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
@@ -45,8 +53,6 @@ export default function PersonalPage() {
       event.target.value = "";
       return;
     }
-    setLoading(true);
-
     const formData = new FormData();
     formData.append("file", file);
 
@@ -68,18 +74,33 @@ export default function PersonalPage() {
       }
 
       const response = await apiResponse.json();
+      console.log(
+        "dwdgeubdwujdbwjedbwejdhwejdwedwed",
+        updateUserInfo.avatar_ipfs_hash
+      );
+
+      console.log("this is ipfs response hwduewbdjwedbwebdhwejdhwe", response);
 
       setUpdateUserInfo((prev) => ({
         ...prev,
-        avartar_ipfs_hash: response.ipfsHash,
+        avatar_ipfs_hash: response.ipfsHash,
       }));
+
+      console.log(
+        "dwdgeubdwujdbwjedbwejdhwejdwedwed",
+        updateUserInfo.avatar_ipfs_hash
+      );
+
       toastSuccess("Avatar uploaded successfully");
     } catch (error) {
       console.error("Avatar upload request error:", error);
       toastError("Avatar upload failed. Please try again.");
       return;
     } finally {
-      setLoading(false);
+      setLoadingAvartar({
+        new: true,
+        loading: false,
+      });
     }
   };
 
@@ -95,9 +116,9 @@ export default function PersonalPage() {
         body: JSON.stringify({
           current: updateUserInfo,
           original: {
-            avatar_ipfs_hash: userInfo?.avatar_ipfs_hash || "",
-            display_name: userInfo?.display_name || "",
-            bio: userInfo?.bio || "",
+            avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
+            display_name: userInfo?.display_name,
+            bio: userInfo?.bio,
           },
         }),
         cache: "no-store",
@@ -111,37 +132,28 @@ export default function PersonalPage() {
       }
       const response = await apiResponse.json();
 
-      if (response.data?.results) {
-        let hasErrors = false;
-        let hasSuccess = false;
-
-        Object.entries(response.data.results).forEach(([field, result]) => {
-          const typedResult = result as { success: boolean; message: string };
-          if (typedResult.success) {
-            hasSuccess = true;
-            const fieldName = field
-              .replace("_", " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase());
-            toastSuccess(`${fieldName} updated successfully`);
-          } else {
-            hasErrors = true;
-            const fieldName = field
-              .replace("_", " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase());
-            toastError(
-              `${fieldName} update failed: ${
-                typedResult.message || "Unknown error"
-              }`
-            );
-          }
-        });
-
-        if (hasSuccess && !hasErrors) {
-          fetchUserInfo?.();
-        }
-      } else if (response.success) {
-        toastSuccess("Profile updated successfully");
+      if (
+        response.statusCode === 200 &&
+        response.message === "Profile updated"
+      ) {
+        toastSuccess(response.message || "Profile updated");
+        setModal((prev) => ({
+          ...prev,
+          edit: false,
+        }));
         fetchUserInfo?.();
+        setUpdateUserInfo({
+          avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
+          display_name: userInfo?.display_name,
+          bio: userInfo?.bio,
+        });
+      }
+
+      if (
+        response.statusCode === 207 &&
+        response.message === "Partial update"
+      ) {
+        toastError(response.message || "Partial failed");
       }
     } catch (error) {
       console.error("Profile update request error:", error);
@@ -211,7 +223,7 @@ export default function PersonalPage() {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Avatar Section */}
+            {/* avatar */}
             <div className="flex flex-col items-center lg:items-start">
               <div className="w-50 h-50 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-xl">
                 <Image
@@ -220,11 +232,10 @@ export default function PersonalPage() {
                       ? `https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`
                       : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
-                  alt={"Avatar"}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                  unoptimized
+                  alt="Avatar"
+                  width={50}
+                  height={50}
+                  className="w-full h-full"
                 />
               </div>
             </div>
@@ -284,79 +295,130 @@ export default function PersonalPage() {
             className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
             onClick={() => setModal((prev) => ({ ...prev, edit: false }))}
           />
-          <div className="relative z-10 w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-xl">
+
+          <div className="relative z-10 w-full max-w-xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-xl">
             <div className="px-5 py-4 border-b border-[color:var(--border)]">
               <h3 className="text-base font-semibold text-[color:var(--foreground)]">
                 Change Account Information
               </h3>
             </div>
 
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={openFilePicker}
-              className="w-50 h-50 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-2 border-[color:var(--border)] overflow-hidden shadow-xl relative cursor-pointer group"
-              aria-label="Change avatar"
-              title="Click to change avatar"
-            >
-              <Image
-                src={
-                  userInfo?.avatar_ipfs_hash
-                    ? `https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`
-                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                }
-                alt="Avatar"
-                width={80}
-                height={80}
-                className="w-full h-full object-cover"
-                unoptimized
-              />
+            <div className="flex flex-row gap-4 m-4 w-130 items-start">
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={openFilePicker}
+                className="w-45 h-45 rounded-xl border-2 border-[color:var(--border)] overflow-hidden relative cursor-pointer group flex items-center justify-center"
+                aria-label="Change avatar"
+                title="Click to change avatar"
+              >
+                {loadingAvatar.loading ? (
+                  <div className="text-sm text-[color:var(--muted-foreground)]">
+                    Loading...
+                  </div>
+                ) : (
+                  <>
+                    {loadingAvatar.new ? (
+                      <Image
+                        src={
+                          userInfo?.avatar_ipfs_hash
+                            ? `https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`
+                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        }
+                        alt={"Avatar"}
+                        width={20}
+                        height={20}
+                        className="w-full h-full"
+                      />
+                    ) : (
+                      <Image
+                        src={
+                          userInfo?.avatar_ipfs_hash
+                            ? `https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`
+                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        }
+                        alt={"Avatar"}
+                        width={20}
+                        height={20}
+                        className="w-full h-full"
+                      />
+                    )}
+                  </>
+                )}
 
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors grid place-items-center text-white text-sm font-medium">
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  Click to upload
-                </span>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors grid place-items-center text-white text-sm font-medium">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-center">
+                    Click to upload
+                  </span>
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvartarUpload}
+                />
               </div>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvartarUpload}
-              />
-            </div>
+              <div className="flex flex-col flex-1">
+                <label
+                  htmlFor="display_name"
+                  className="text-sm text-[color:var(--muted-foreground)] mb-1"
+                >
+                  Change Display Name
+                </label>
+                <input
+                  id="display_name"
+                  name="display_name"
+                  value={updateUserInfo.display_name}
+                  onChange={handleUserInfoChange}
+                  placeholder="Change Display Name"
+                  autoFocus
+                  className="w-full px-3 py-2 border rounded-lg border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] mb-3"
+                />
 
-            <label htmlFor="display_name">Change Display Name</label>
-            <input
-              id="display_name"
-              name="display_name"
-              value={updateUserInfo.display_name}
-              onChange={handleUserInfoChange}
-              placeholder="Change Display Name"
-            />
-            <label htmlFor="bio">Change Bio</label>
-            <input
-              id="bio"
-              name="bio"
-              value={updateUserInfo.bio}
-              onChange={handleUserInfoChange}
-              placeholder="Change Bio"
-            />
-            <button
-              type="button"
-              onClick={() => setModal((prev) => ({ ...prev, edit: false }))}
-              className="px-4 py-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] text-sm hover:bg-[color:var(--surface)] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleUpdateProfile}
-              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors"
-            >
-              Save Changes
-            </button>
+                <label
+                  htmlFor="bio"
+                  className="text-sm text-[color:var(--muted-foreground)] mb-1"
+                >
+                  Change Bio
+                </label>
+                <input
+                  id="bio"
+                  name="bio"
+                  value={updateUserInfo.bio}
+                  onChange={handleUserInfoChange}
+                  placeholder="Change Bio"
+                  autoFocus
+                  className="w-full px-3 py-2 border rounded-lg border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] mb-3"
+                />
+
+                <div className="flex flex-row justify-end gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModal((prev) => ({ ...prev, edit: false }));
+                      setUpdateUserInfo({
+                        avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
+                        display_name: userInfo?.display_name,
+                        bio: userInfo?.bio,
+                      });
+                    }}
+                    className="px-4 py-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] text-sm hover:bg-[color:var(--surface)] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleUpdateProfile}
+                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
