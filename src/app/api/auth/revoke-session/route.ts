@@ -71,7 +71,7 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
-      console.log("Backend response Revoke API:", error);
+      console.log(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendRes.json();
-    console.log("Backend response Revoke API:", response);
+    // console.log(`${pathname} :`, response);
 
     if (sessionId === deviceId) {
       const res = NextResponse.json(
@@ -96,9 +96,9 @@ export async function POST(req: Request) {
         { status: 200 }
       );
 
-      res.cookies.delete("sessionId")
-      res.cookies.delete("accessToken")
-      res.cookies.delete("refreshToken")
+      res.cookies.delete("sessionId");
+      res.cookies.delete("accessToken");
+      res.cookies.delete("refreshToken");
 
       return res;
     }
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error("/api/auth/revoke-session handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

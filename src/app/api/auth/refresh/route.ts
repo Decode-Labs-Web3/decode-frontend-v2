@@ -33,6 +33,8 @@ export async function POST(req: NextRequest) {
     );
 
     if (!backendRes.ok) {
+      const error = await backendRes.json().catch(() => null)
+      console.error(`${pathname} error:`, error)
       const res = NextResponse.json(
         {
           success: false,
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error("Refresh token error:", error);
+    console.error(`${pathname} error:`, error);
     const res = NextResponse.json(
       {
         success: false,

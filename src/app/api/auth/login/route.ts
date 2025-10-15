@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const fingerprintResult = await fingerprintService(userAgent);
     const { fingerprint_hashed, device, browser } = fingerprintResult;
 
-    console.log("fingerprint_hashed", fingerprint_hashed)
+    console.log("fingerprint_hashed", fingerprint_hashed);
 
     const requestBody = {
       email_or_username,
@@ -57,14 +57,11 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.log("this is backendResponse for login", backendResponse);
+    // console.log(`${pathname} error:`, backendResponse);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error(
-        "/api/auth/login backend error:",
-        error || backendResponse.statusText
-      );
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -76,7 +73,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.log("this is response from login", response);
+    // console.log(`${pathname} :`, response);
 
     if (
       response.success &&
@@ -92,9 +89,9 @@ export async function POST(req: Request) {
       const accessExpISO = response.data.expires_at as string;
       const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
       const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
-      console.log("this is accessMaxAge", accessMaxAge);
-      console.log("this is accessExpSec", accessExpSec);
-      console.log(`this is login ${pathname}`, response.data);
+      // console.log("this is accessMaxAge", accessMaxAge);
+      // console.log("this is accessExpSec", accessExpSec);
+      // console.log(`this is login ${pathname}`, response.data);
 
       res.cookies.set("sessionId", response.data._id, {
         httpOnly: false,
@@ -142,13 +139,17 @@ export async function POST(req: Request) {
         message: response.message || "Please verify OTP to login",
       });
 
-      res.cookies.set("login_session_token", response.data.login_session_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 5,
-      });
+      res.cookies.set(
+        "login_session_token",
+        response.data.login_session_token,
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: 60 * 5,
+        }
+      );
 
       res.cookies.set("gate-key-for-verify-otp", "true", {
         httpOnly: false,
@@ -169,16 +170,21 @@ export async function POST(req: Request) {
       const res = NextResponse.json({
         success: true,
         statusCode: response.statusCode || 200,
-        message: response.message || "Please verify OTP to verify device fingerprint",
+        message:
+          response.message || "Please verify OTP to verify device fingerprint",
       });
 
-      res.cookies.set("verify_device_fingerprint_session_token", response.data.verify_device_fingerprint_session_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 5,
-      });
+      res.cookies.set(
+        "verify_device_fingerprint_session_token",
+        response.data.verify_device_fingerprint_session_token,
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: 60 * 5,
+        }
+      );
 
       res.cookies.set("gate-key-for-verify-fingerprint", "true", {
         httpOnly: false,

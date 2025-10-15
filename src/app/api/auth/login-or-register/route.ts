@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
-import { generateRequestId, guardInternal, apiPathName } from "@/utils/index.utils";
+import {
+  generateRequestId,
+  guardInternal,
+  apiPathName,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
-  const pathname = apiPathName(req)
+  const pathname = apiPathName(req);
   const denied = guardInternal(req);
   if (denied) return denied;
 
   try {
-
     const body = await req.json();
     const { email_or_username } = body;
 
@@ -43,10 +46,7 @@ export async function POST(req: Request) {
 
     if (!backendResponse.ok && backendResponse.status != 404) {
       const error = await backendResponse.json().catch(() => null);
-      console.error(
-        "/api/auth/login-or-register backend error status:",
-        backendResponse.status
-      );
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
       message: response.message || "Login or register failed",
     });
   } catch (error) {
-    console.error("/api/auth/login-or-register handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
@@ -131,8 +131,7 @@ export async function POST(req: Request) {
       },
       { status: 400 }
     );
-  }
-  finally {
+  } finally {
     console.info(`${pathname}: ${requestId}`);
   }
 }

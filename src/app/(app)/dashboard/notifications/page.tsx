@@ -21,8 +21,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
     []
   );
-  const { setUnread } = useNotificationContext();
-
+  const { fetchUnread } = useNotificationContext();
 
   const getNotifications = useCallback(async () => {
     if (endOfData) return;
@@ -103,7 +102,7 @@ export default function NotificationsPage() {
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, read: true }))
       );
-      setUnread(0)
+      fetchUnread?.();
       console.log("All notifications marked as read");
     } catch (error) {
       console.error("Error marking all as read:", error);
@@ -149,7 +148,7 @@ export default function NotificationsPage() {
             : notification
         )
       );
-      setUnread(prev => prev - 1)
+      fetchUnread?.();
       console.log("Notification marked as read:", id);
     } catch (error) {
       console.error("Error marking notification as read:", error);
@@ -214,10 +213,9 @@ export default function NotificationsPage() {
       </button>
       {loading && <Loading.NotificationCard />}
       {!loading &&
-        notifications.map((notification, index) => (
+        notifications.map((notification) => (
           <div
-            key={index}
-            id={notification._id}
+            key={notification._id}
             className="flex items-center justify-between p-4 border border-[color:var(--border)] rounded-lg my-2 bg-[color:var(--surface)] hover-card"
           >
             <div className="flex items-center gap-3">
@@ -242,12 +240,14 @@ export default function NotificationsPage() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => markAsRead(notification._id)}
-              className="bg-blue-700 p-2 rounded-lg text-white w-20"
-            >
-              Read
-            </button>
+            {!notification.read && (
+              <button
+                onClick={() => markAsRead(notification._id)}
+                className="bg-blue-700 p-2 rounded-lg text-white w-20"
+              >
+                Read
+              </button>
+            )}
           </div>
         ))}
       {endOfData && (

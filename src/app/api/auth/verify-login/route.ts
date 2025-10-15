@@ -21,14 +21,14 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { code } = body;
 
-    // console.log("this is code form", code)
+    // console.log(`${pathname} :`, code)
 
     if (!code) {
       return NextResponse.json(
         {
           success: false,
           statusCode: 400,
-          message: "Code are required"
+          message: "Code are required",
         },
         { status: 400 }
       );
@@ -42,20 +42,17 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
           "X-Request-Id": requestId,
         },
-        body: JSON.stringify({code}),
+        body: JSON.stringify({ code }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
     );
 
-    // console.log("this is backendResponse for login", backendResponse);
+    // console.log(`${pathname} error:`, backendResponse);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error(
-        "/api/auth/verify-login backend error:",
-        error || backendResponse.statusText
-      );
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -67,7 +64,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.log("this is response from login", response);
+    // console.log(`${pathname}:`, response);
 
     if (
       response.success &&
@@ -83,9 +80,9 @@ export async function POST(req: Request) {
       const accessExpISO = response.data.expires_at as string;
       const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
       const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
-      console.log("this is accessMaxAge", accessMaxAge);
-      console.log("this is accessExpSec", accessExpSec);
-      console.log(`this is login ${pathname}`, response.data);
+      // console.log("this is accessMaxAge", accessMaxAge);
+      // console.log("this is accessExpSec", accessExpSec);
+      // console.log(`this is login ${pathname}`, response.data);
 
       res.cookies.set("sessionId", response.data._id, {
         httpOnly: false,
@@ -131,7 +128,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   } catch (error) {
-    console.error("/api/auth/login handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

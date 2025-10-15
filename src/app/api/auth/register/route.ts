@@ -45,14 +45,9 @@ export async function POST(req: Request) {
       }
     );
 
-    const response = await backendRes.json();
-
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
-      console.error(
-        "/api/auth/register backend error:",
-        error || backendRes.statusText
-      );
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -63,6 +58,7 @@ export async function POST(req: Request) {
       );
     }
 
+    const response = await backendRes.json();
     if (
       response.success &&
       response.statusCode === 200 &&
@@ -86,8 +82,10 @@ export async function POST(req: Request) {
         maxAge: 60,
       });
 
-      res.cookies.set( "registration_data", JSON.stringify({
-        email,
+      res.cookies.set(
+        "registration_data",
+        JSON.stringify({
+          email,
           username,
         }),
         {
@@ -110,7 +108,7 @@ export async function POST(req: Request) {
       return res;
     }
   } catch (error) {
-    console.error("/api/auth/register handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

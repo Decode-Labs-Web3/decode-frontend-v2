@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         {
           success: false,
           statusCode: 400,
-          message: "Code are required"
+          message: "Code are required",
         },
         { status: 400 }
       );
@@ -37,7 +37,9 @@ export async function POST(req: Request) {
 
     // const cookieStore = await cookies();
     // const verify_device_fingerprint_session_token = cookieStore.get("verify_device_fingerprint_session_token")?.value;
-    const verify_device_fingerprint_session_token = (await cookies()).get("verify_device_fingerprint_session_token")?.value
+    const verify_device_fingerprint_session_token = (await cookies()).get(
+      "verify_device_fingerprint_session_token"
+    )?.value;
 
     if (!verify_device_fingerprint_session_token) {
       return NextResponse.json(
@@ -52,8 +54,8 @@ export async function POST(req: Request) {
 
     const resquestBody = {
       verify_device_fingerprint_session_token,
-      otp
-    }
+      otp,
+    };
 
     const backendResponse = await fetch(
       `${process.env.BACKEND_BASE_URL}/auth/2fa/fingerprint-trust`,
@@ -69,14 +71,11 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.log("this is backendResponse for login", backendResponse);
+    // console.log(`${pathname} error:`, backendResponse);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error(
-        "/api/auth/verify-login backend error:",
-        error || backendResponse.statusText
-      );
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -88,7 +87,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.log("this is response from login", response);
+    // console.log(`${pathname}:`, response);
 
     if (
       response.success &&
@@ -152,7 +151,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   } catch (error) {
-    console.error("/api/auth/login handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

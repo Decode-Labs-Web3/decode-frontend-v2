@@ -42,14 +42,11 @@ export async function POST(req: Request) {
       }
     );
 
-    // console.log("this is backendResponse for login", backendResponse);
+    // console.log(`${pathname} error:`, backendResponse);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error(
-        "/api/auth/verify-register backend error:",
-        error || backendResponse.statusText
-      );
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -61,7 +58,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.log("this is response from verify register", response);
+    // console.log(`${pathname} :`, response);
 
     return NextResponse.json(
       {
@@ -72,7 +69,7 @@ export async function POST(req: Request) {
       { status: backendResponse.status || 200 }
     );
   } catch (error) {
-    console.error("/api/auth/verify-register handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

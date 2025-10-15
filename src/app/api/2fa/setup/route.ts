@@ -46,11 +46,11 @@ export async function GET(req: Request) {
       }
     );
 
-    console.log(`this is backend response from ${pathname}`,  backendRes)
+    // console.log(`${pathname} error:`,  backendRes)
 
     if (!backendRes.ok) {
       const errorData = await backendRes.json().catch(() => ({}));
-      console.error("2FA status fetch error:", errorData);
+      console.error(`${pathname} error:`, errorData);
       return NextResponse.json(
         {
           success: false,
@@ -74,7 +74,7 @@ export async function GET(req: Request) {
     // }
 
     const response = await backendRes.json();
-    console.log("2FA data:", response);
+    // console.log(`${pathname} :`, response);
     return NextResponse.json(
       {
         success: true,
@@ -85,7 +85,7 @@ export async function GET(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("2FA API error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

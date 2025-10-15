@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   try {
     // const cookieStore = await cookies();
     // const accessToken = cookieStore.get("accessToken")?.value;
-    const accessToken = (await cookies()).get("accessToken")?.value
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -48,6 +48,7 @@ export async function GET(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -58,35 +59,35 @@ export async function GET(req: Request) {
       );
     }
 
-    const responseData = await backendRes.json();
-    console.log("Response Fingerprints API:", responseData);
+    const response = await backendRes.json();
+    // console.log(`${pathname} error:`, response);
 
     if (
-      responseData.success &&
-      responseData.statusCode === 200 &&
-      responseData.message === "Device fingerprint fetched"
+      response.success &&
+      response.statusCode === 200 &&
+      response.message === "Device fingerprint fetched"
     ) {
       return NextResponse.json(
         {
           success: true,
-          statusCode: responseData.statusCode || 200,
-          message: responseData.message || "Device fingerprint fetched",
-          data: responseData.data,
+          statusCode: response.statusCode || 200,
+          message: response.message || "Device fingerprint fetched",
+          data: response.data,
         },
-        { status: responseData.statusCode || 200 }
+        { status: response.statusCode || 200 }
       );
     }
 
     return NextResponse.json(
       {
         success: false,
-        statusCode: responseData.statusCode || 400,
-        message: responseData.message || "Failed to fetch fingerprints",
+        statusCode: response.statusCode || 400,
+        message: response.message || "Failed to fetch fingerprints",
       },
-      { status: responseData.statusCode || 400 }
+      { status: response.statusCode || 400 }
     );
   } catch (error) {
-    console.error("Fingerprints API error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

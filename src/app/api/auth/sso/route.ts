@@ -60,15 +60,16 @@ export async function POST(req: Request) {
       }
     );
 
-    console.log("backendRes", backendRes);
+    // console.log(`${pathname} error:`, backendRes);
 
     if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => null);
+      const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error:`, error)
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 401,
-          message: err?.message || "SSO failed",
+          message: error?.message || "SSO failed",
         },
         { status: backendRes.status || 401 }
       );
@@ -87,7 +88,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("/api/auth/sso handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

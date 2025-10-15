@@ -1,16 +1,20 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { guardInternal, apiPathName, generateRequestId } from "@/utils/index.utils"
+import {
+  guardInternal,
+  apiPathName,
+  generateRequestId,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
-  const requestId = generateRequestId()
-  const pathname = apiPathName(req)
-  const denied = guardInternal(req)
-  if (denied) return denied
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
   try {
     // const cookieStore = cookies();
     // const reg = (await cookieStore).get("registration_data")?.value;
-    const reg = (await cookies()).get("registration_data")?.value
+    const reg = (await cookies()).get("registration_data")?.value;
 
     if (!reg) {
       return NextResponse.json(
@@ -59,7 +63,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-Id": requestId
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -69,6 +73,7 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -89,10 +94,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error(
-      "/api/auth/resend-verification-register handler error:",
-      error
-    );
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

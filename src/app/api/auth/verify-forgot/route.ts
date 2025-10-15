@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         {
           success: false,
           statusCode: 400,
-          message: "Code are required"
+          message: "Code are required",
         },
         { status: 400 }
       );
@@ -36,20 +36,17 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
           "X-Request-Id": requestId,
         },
-        body: JSON.stringify({code}),
+        body: JSON.stringify({ code }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }
     );
 
-    // console.log("this is backendResponse for login", backendResponse);
+    // console.log(`${pathname} error:`, backendResponse);
 
     if (!backendResponse.ok) {
       const error = await backendResponse.json().catch(() => null);
-      console.error(
-        "/api/auth/verify-forgot backend error:",
-        error || backendResponse.statusText
-      );
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -61,7 +58,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    // console.log("this is response from verify-forgot", response);
+    // console.log(`${pathname}:`, response);
 
     const res = NextResponse.json(
       {
@@ -78,7 +75,7 @@ export async function POST(req: Request) {
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 5,
-    })
+    });
 
     res.cookies.set("gate-key-for-change-password", "true", {
       httpOnly: false,
@@ -88,9 +85,9 @@ export async function POST(req: Request) {
       maxAge: 60 * 5,
     });
 
-    return res
+    return res;
   } catch (error) {
-    console.error("/api/auth/verify-forgot handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

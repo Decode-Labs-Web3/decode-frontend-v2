@@ -51,15 +51,16 @@ export async function POST(req: Request) {
       }
     );
 
-    console.log("backendRes status: from logout", backendRes);
+    // console.log(`${pathname} error:`, backendRes);
 
     if (!backendRes.ok) {
-      const err = await backendRes.json().catch(() => null);
+      const error = await backendRes.json().catch(() => null);
+      console.log(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 401,
-          message: err?.message || "Logout failed",
+          message: error?.message || "Logout failed",
         },
         { status: backendRes.status || 401 }
       );
@@ -86,7 +87,7 @@ export async function POST(req: Request) {
 
     return res;
   } catch (error) {
-    console.error("/api/auth/logout handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

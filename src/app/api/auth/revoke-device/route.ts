@@ -31,8 +31,8 @@ export async function POST(req: Request) {
     // const cookieStore = await cookies();
     // const sessionId = cookieStore.get("sessionId")?.value;
     // const accessToken = cookieStore.get("accessToken")?.value;
-    const sessionId = (await cookies()).get("sessionId")?.value
-    const accessToken = (await cookies()).get("accessToken")?.value
+    const sessionId = (await cookies()).get("sessionId")?.value;
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!sessionId) {
       return NextResponse.json(
@@ -87,6 +87,8 @@ export async function POST(req: Request) {
     );
 
     if (!backendResponse.ok) {
+      const error = await backendResponse.json().catch(() => null);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -98,7 +100,7 @@ export async function POST(req: Request) {
     }
 
     const response = await backendResponse.json();
-    console.log("Backend response Revoke All API:", response);
+    // console.log(`${pathname} :`, response);
 
     const res = NextResponse.json(
       {
@@ -137,7 +139,7 @@ export async function POST(req: Request) {
 
     return res;
   } catch (error) {
-    console.error("/api/auth/revoke-device handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

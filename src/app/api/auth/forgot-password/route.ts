@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
-import { generateRequestId, guardInternal, apiPathName } from "@/utils/index.utils";
+import {
+  generateRequestId,
+  guardInternal,
+  apiPathName,
+} from "@/utils/index.utils";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
-  const pathname =  apiPathName(req)
+  const pathname = apiPathName(req);
   const denied = guardInternal(req);
   if (denied) return denied;
 
@@ -32,7 +36,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-Id": requestId
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -42,10 +46,7 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
-      console.error(
-        "/api/auth/forgot-password backend error:",
-        error || backendRes.statusText
-      );
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -91,7 +92,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   } catch (error) {
-    console.error("/api/auth/forgot-password handler error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
@@ -100,8 +101,8 @@ export async function POST(req: Request) {
       },
       { status: 500 }
     );
-  } finally{
-    console.info(`${pathname}: ${requestId}`)
+  } finally {
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 
