@@ -147,7 +147,7 @@ export default function PageFollow() {
                           alt={"Avatar"}
                           width={56}
                           height={56}
-                          className="w-full h-full"
+                          className="w-full h-full object-contain"
                         />
                       </div>
                       <div className="flex flex-col min-w-0">
@@ -175,7 +175,7 @@ export default function PageFollow() {
                           alt={"Avatar"}
                           width={64}
                           height={64}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                           unoptimized
                         />
                       </div>
@@ -240,7 +240,7 @@ export default function PageFollow() {
                                 alt={"Avatar"}
                                 width={20}
                                 height={20}
-                                className="h-5 w-5 rounded-full border border-[color:var(--border)] object-cover bg-[color:var(--surface)]"
+                                className="h-5 w-5 rounded-full border border-[color:var(--border)] object-contain bg-[color:var(--surface)]"
                                 unoptimized
                               />
                             ))}

@@ -79,7 +79,7 @@ export default function OverviewPage() {
                   alt={"Avatar"}
                   width={80}
                   height={80}
-                  className="w-full h-full"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </div>

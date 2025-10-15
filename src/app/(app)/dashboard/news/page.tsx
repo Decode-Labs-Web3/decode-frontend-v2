@@ -108,7 +108,7 @@ export default function NewsPage() {
                   alt={post.title}
                   width={400}
                   height={225}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0" />

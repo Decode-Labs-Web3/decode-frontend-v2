@@ -238,7 +238,7 @@ export default function Page() {
                   alt={"Avatar"}
                   width={80}
                   height={80}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   unoptimized
                 />
               </div>
@@ -374,7 +374,7 @@ export default function Page() {
                           alt={mutualFollower.display_name}
                           width={40}
                           height={40}
-                          className="w-10 h-10 rounded-xl object-cover border border-[color:var(--border)]"
+                          className="w-10 h-10 rounded-xl object-contain border border-[color:var(--border)]"
                           unoptimized
                         />
                       </div>
@@ -402,7 +402,7 @@ export default function Page() {
                               alt={"Avatar"}
                               width={64}
                               height={64}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-contain"
                               unoptimized
                             />
                           </div>

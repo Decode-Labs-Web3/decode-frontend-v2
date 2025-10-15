@@ -235,7 +235,7 @@ export default function PersonalPage() {
                   alt="Avatar"
                   width={50}
                   height={50}
-                  className="w-full h-full"
+                  className="w-full h-full object-contain"
                 />
               </div>
             </div>
@@ -328,7 +328,7 @@ export default function PersonalPage() {
                         alt={"Avatar"}
                         width={20}
                         height={20}
-                        className="w-full h-full"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
                       <Image
@@ -340,7 +340,7 @@ export default function PersonalPage() {
                         alt={"Avatar"}
                         width={20}
                         height={20}
-                        className="w-full h-full"
+                        className="w-full h-full object-contain"
                       />
                     )}
                   </>

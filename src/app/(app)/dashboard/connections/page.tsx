@@ -258,7 +258,7 @@ export default function ConnectionsIndex() {
                     alt={user.username || "Avatar"}
                     width={64}
                     height={64}
-                    className="w-full h-full"
+                    className="w-full h-full object-contain"
                     unoptimized
                   />
                 </div>
@@ -339,7 +339,7 @@ export default function ConnectionsIndex() {
                     alt={user.username || "Avatar"}
                     width={64}
                     height={64}
-                    className="w-full h-full"
+                    className="w-full h-full object-contain"
                     unoptimized
                   />
                 </div>

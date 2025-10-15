@@ -1,14 +1,19 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function Logo() {
-    return (
-        <div className="flex items-center space-x-2 mb-8">
-            <Image src="/images/tokens/3d_token_nobg.png" width={50} height={50} alt="Logo Icon" className="w-12 h-12" unoptimized />
-            <span className="text-2xl font-semibold">decode account center</span>
-        </div>
-    );
+  return (
+    <div className="flex items-center space-x-2 mb-8">
+      <Image
+        src="/images/tokens/3d_token_nobg.png"
+        width={50}
+        height={50}
+        alt="Logo Icon"
+        className="w-12 h-12 object-contain"
+        unoptimized
+      />
+      <span className="text-2xl font-semibold">decode account center</span>
+    </div>
+  );
 }
-
-

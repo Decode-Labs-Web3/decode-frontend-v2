@@ -18,36 +18,42 @@ export default function BrandLogos() {
           width={120}
           height={40}
           alt="DeCareer logo"
+          className="object-contain"
         />
         <Image
           src="/images/logos/decourse.png"
           width={120}
           height={40}
           alt="DeCourse logo"
+          className="object-contain"
         />
         <Image
           src="/images/logos/dedao.png"
           width={150}
           height={60}
           alt="DeDao logo"
+          className="object-contain"
         />
         <Image
           src="/images/logos/defuel.png"
           width={120}
           height={60}
           alt="DeFuel logo"
+          className="object-contain"
         />
         <Image
           src="/images/logos/dehive.png"
           width={120}
           height={60}
           alt="DeHive logo"
+          className="object-contain"
         />
         <Image
           src="/images/logos/deid.png"
           width={60}
           height={20}
           alt="DEiD logo"
+          className="object-contain"
         />
       </div>
 

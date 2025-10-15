@@ -104,7 +104,7 @@ export default function Navbar() {
                 width={28}
                 height={28}
                 alt="Logo Icon"
-                className="w-7 h-7"
+                className="w-7 h-7 object-contain"
                 unoptimized
               />
             </button>
