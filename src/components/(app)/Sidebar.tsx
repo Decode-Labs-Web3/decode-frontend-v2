@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNotificationContext } from "@/contexts/NotificationContext.contexts";
 import {
   faGaugeHigh,
   faUserShield,
@@ -38,39 +39,13 @@ const items = [
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const [unread, setUnread] = useState<number>(0);
+  const { unread } = useNotificationContext();
   const [mobileOpen, setMobileOpen] = useState(false);
   // const [notifications, setNotifications] = useState<NotificationReceived[]>(
   //   []
   // );
 
   const active = pathname.replace(/\/+$/, "").split("/")[2] || "overview";
-
-  const getUnread = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/users/unread", {
-        method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-      if (!apiResponse.ok) {
-        console.log("Follow API error:", response);
-        return;
-      }
-      console.log("this is sidebar count notification", response);
-      setUnread(response.data.count);
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
-
-  useEffect(() => {
-    getUnread();
-  }, [getUnread]);
 
   useEffect(() => {
     const handler = () => setMobileOpen((v) => !v);
@@ -79,41 +54,37 @@ export default function Sidebar() {
       window.removeEventListener("toggle-sidebar", handler as EventListener);
   }, []);
 
-  const Nav = (
-    <nav className="p-3 space-y-1">
-      {items.map((item) => (
-        <button
-          key={item.key}
-          onClick={() => {
-            router.push(`/dashboard/${item.key}`);
-            setMobileOpen(false);
-          }}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-            active === item.key
-              ? "bg-[color:var(--surface)] text-[color:var(--foreground)] border-l-6 border-[color:var(--border)]"
-              : "text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface)] hover:text-[color:var(--foreground)]"
-          }`}
-        >
-          <div className="flex justify-between w-full">
-            <div className="flex items-center gap-2">
-              <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-              <span>{item.label}</span>
-            </div>
-            {item.key === "notifications" && unread > 0 && (
-              <span className="text-xs text-[color:var(--muted-foreground-2)]">
-                {unread}
-              </span>
-            )}
-          </div>
-        </button>
-      ))}
-    </nav>
-  );
-
   return (
     <>
       <aside className="fixed top-16 left-0 bottom-0 w-64 bg-[color:var(--surface-muted)] backdrop-blur-xl border-r border-[color:var(--border)] hidden md:flex flex-col">
-        {Nav}
+        <nav className="p-3 space-y-1">
+          {items.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => {
+                router.push(`/dashboard/${item.key}`);
+                setMobileOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                active === item.key
+                  ? "bg-[color:var(--surface)] text-[color:var(--foreground)] border-l-6 border-[color:var(--border)]"
+                  : "text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface)] hover:text-[color:var(--foreground)]"
+              }`}
+            >
+              <div className="flex justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </div>
+                {item.key === "notifications" && unread > 0 && (
+                  <span className="text-xs text-[color:var(--muted-foreground-2)]">
+                    {unread}
+                  </span>
+                )}
+              </div>
+            </button>
+          ))}
+        </nav>
       </aside>
 
       {/* Mobile drawer */}
@@ -124,7 +95,34 @@ export default function Sidebar() {
             onClick={() => setMobileOpen(false)}
           />
           <div className="absolute top-16 left-0 bottom-0 w-64 bg-[color:var(--surface-muted)] border-r border-[color:var(--border)] shadow-xl">
-            {Nav}
+            <nav className="p-3 space-y-1">
+              {items.map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => {
+                    router.push(`/dashboard/${item.key}`);
+                    setMobileOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    active === item.key
+                      ? "bg-[color:var(--surface)] text-[color:var(--foreground)] border-l-6 border-[color:var(--border)]"
+                      : "text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface)] hover:text-[color:var(--foreground)]"
+                  }`}
+                >
+                  <div className="flex justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+                      <span>{item.label}</span>
+                    </div>
+                    {item.key === "notifications" && unread > 0 && (
+                      <span className="text-xs text-[color:var(--muted-foreground-2)]">
+                        {unread}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </nav>
           </div>
         </div>
       )}

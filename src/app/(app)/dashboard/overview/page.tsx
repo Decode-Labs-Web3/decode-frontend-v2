@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useUserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { useNotificationContext } from "@/contexts/NotificationContext.contexts";
 import {
   faShieldHalved,
   faWallet,
@@ -26,7 +27,7 @@ interface NotificationReceived {
 export default function OverviewPage() {
   const router = useRouter();
   const { userInfo } = useUserInfoContext() || {};
-
+  const { setUnread } = useNotificationContext();
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
     []
   );
@@ -41,11 +42,12 @@ export default function OverviewPage() {
         : [];
       if (notificationsData.length > notifications.length) {
         setNotifications(notificationsData);
+        setUnread((prev) => prev + 1);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [notifications.length, router]);
+  }, [notifications.length, router, setUnread]);
 
   return (
     <>

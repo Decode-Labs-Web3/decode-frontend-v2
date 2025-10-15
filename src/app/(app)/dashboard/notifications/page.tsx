@@ -1,9 +1,10 @@
 "use client";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import Loading from "@/components/(loading)";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { useNotificationContext } from "@/contexts/NotificationContext.contexts";
 
 interface NotificationReceived {
   _id: string;
@@ -20,6 +21,8 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
     []
   );
+  const { setUnread } = useNotificationContext();
+
 
   const getNotifications = useCallback(async () => {
     if (endOfData) return;
@@ -73,7 +76,7 @@ export default function NotificationsPage() {
   //     if (!apiResponse.ok) {
   //       return;
   //     }
-  //     // setNotifications(responseJson.data.notifications);
+  //     setNotifications(responseJson.data.notifications);
   //   } catch (error) {}
   // };
 
@@ -100,6 +103,7 @@ export default function NotificationsPage() {
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, read: true }))
       );
+      setUnread(0)
       console.log("All notifications marked as read");
     } catch (error) {
       console.error("Error marking all as read:", error);
@@ -113,7 +117,7 @@ export default function NotificationsPage() {
   //     if (!apiResponse.ok) {
   //       return;
   //     }
-  //     // setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  //    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   //   } catch (error) {}
   // };
 
@@ -145,6 +149,7 @@ export default function NotificationsPage() {
             : notification
         )
       );
+      setUnread(prev => prev - 1)
       console.log("Notification marked as read:", id);
     } catch (error) {
       console.error("Error marking notification as read:", error);

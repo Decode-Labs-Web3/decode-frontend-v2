@@ -1,12 +1,13 @@
 "use client";
 
 import App from "@/components/(app)";
-import Loading from "@/components/(loading)";
-import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Loading from "@/components/(loading)";
 import { UserProfile } from "@/interfaces/index.interfaces";
-import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
+import { NotificationProvider } from "@/contexts/NotificationContext.contexts";
 
 interface NotificationReceived {
   _id: string;
@@ -250,23 +251,27 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
-        <App.Navbar />
-        <App.Sidebar />
-        <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-          <Loading.OverviewCard />
+      <NotificationProvider>
+        <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
+          <App.Navbar />
+          <App.Sidebar />
+          <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
+            <Loading.OverviewCard />
+          </div>
         </div>
-      </div>
+      </NotificationProvider>
     );
   }
 
   return (
     <UserInfoContext.Provider value={{ userInfo, fetchUserInfo }}>
-      <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
-        <App.Navbar />
-        <App.Sidebar />
-        <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>
-      </div>
+      <NotificationProvider>
+        <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
+          <App.Navbar />
+          <App.Sidebar />
+          <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>
+        </div>
+      </NotificationProvider>
     </UserInfoContext.Provider>
   );
 }
