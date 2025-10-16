@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     if (!accessToken) {
       return NextResponse.json(
         {
-          status: false,
+          success: false,
           statusCode: 401,
           message: "No access token found",
         },
@@ -37,13 +37,13 @@ export async function POST(req: Request) {
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
-    const backendResponse = await fetch(
+    const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/notifications/${id}/read`,
       {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "X-Fingerprint-Hashed":fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint_hashed,
           "X-Request-Id": requestId,
         },
         cache: "no-cache",
@@ -51,23 +51,23 @@ export async function POST(req: Request) {
       }
     );
 
-    if (!backendResponse.ok) {
-      const errorMessage = await backendResponse.json().catch(() => ({}));
-      console.log("this is follow and unfollow ", errorMessage);
+    if (!backendRes.ok) {
+      const error = await backendRes.json().catch(() => ({}));
+      console.log(`${pathname} error: `, error);
       return NextResponse.json(
         {
-          status: false,
-          statusCode: backendResponse.status || 400,
-          message: errorMessage.message || `Backend API error: ${pathname}`,
+          success: false,
+          statusCode: backendRes.status || 400,
+          message: error.message || `Backend API error: ${pathname}`,
         },
-        { status: backendResponse.status }
+        { status: backendRes.status }
       );
     }
 
-    const response = await backendResponse.json();
+    const response = await backendRes.json();
     return NextResponse.json(
       {
-        status: true,
+        success: true,
         statusCode: 200,
         message: response.message || "Notification marked as read successfully",
         data: response.data || null,
@@ -75,10 +75,10 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    console.log(`${pathname} error: `, error);
     return NextResponse.json(
       {
-        status: false,
+        success: false,
         statusCode: 500,
         message: "Internal Server Error",
       },

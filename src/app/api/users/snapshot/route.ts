@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { id } = body;
 
-    console.log("this is id from snapshot", id);
+    // console.log(`${pathname} id: `, id);
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
@@ -52,34 +52,34 @@ export async function POST(req: Request) {
     );
 
     if (!backendRes.ok && backendRes.status !== 403) {
-      const errorData = await backendRes.json().catch(() => ({}));
-      console.error("Overview fetch error:", errorData);
+      const error = await backendRes.json().catch(() => ({}));
+      console.error(`${pathname} error: `, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status,
-          message:
-            errorData.message || `Backend API error: ${backendRes.status}`,
+          message: error.message || `Backend API error: ${backendRes.status}`,
         },
         { status: backendRes.status }
       );
     }
 
-    const data = await backendRes.json();
-    // console.log("Overview data:", data);
+    const response = await backendRes.json();
+    // console.log(`${pathname} : `, response);
+
     return NextResponse.json(
       {
         success: true,
-        statusCode: data.statusCode || 200,
+        statusCode: response.statusCode || 200,
         message:
-          data.message ||
+          response.message ||
           "Followers snapshot data last month fetched successfully",
-        data: data.data,
+        data: response.data,
       },
-      { status: data.statusCode || 200 }
+      { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error("Snapshot API error:", error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,

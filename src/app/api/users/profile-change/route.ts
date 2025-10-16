@@ -90,6 +90,8 @@ export async function PUT(req: Request) {
       );
 
       if (!backendRes.ok) {
+        const error = await backendRes.json().catch(() => ({}));
+        console.error(`${pathname} error: `, error);
         return NextResponse.json(
           {
             success: false,
@@ -134,10 +136,10 @@ export async function PUT(req: Request) {
       );
     }
   } catch (error) {
-    console.error(error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
-        status: false,
+        success: false,
         statusCode: 500,
         message: "Server change profile error",
       },

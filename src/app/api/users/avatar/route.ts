@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { generateRequestId, apiPathName, guardInternal} from "@/utils/index.utils"
+import {
+  generateRequestId,
+  apiPathName,
+  guardInternal,
+} from "@/utils/index.utils";
 
 // Allowed file types and configurations
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -32,13 +36,13 @@ const validateFile = (file: File): boolean => {
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
-  const pathname = apiPathName(req)
-  const denied = guardInternal(req)
-  if (denied) return denied
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
   try {
     // const cookieStore = await cookies();
     // const accessToken = cookieStore.get("accessToken")?.value;
-    const accessToken = (await cookies()).get("accessToken")?.value
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -53,7 +57,11 @@ export async function POST(req: Request) {
 
     if (!file) {
       return NextResponse.json(
-        { success: false, message: "No file provided" },
+        {
+          success: false,
+          statusCode: 400,
+          message: "No file provided",
+        },
         { status: 400 }
       );
     }
@@ -61,7 +69,11 @@ export async function POST(req: Request) {
     // File validation
     if (!validateFile(file)) {
       return NextResponse.json(
-        { success: false, message: "Invalid file type or size" },
+        {
+          success: false,
+          statusCode: 400,
+          message: "Invalid file type or size",
+        },
         { status: 400 }
       );
     }
@@ -71,7 +83,7 @@ export async function POST(req: Request) {
     const body = new FormData();
     body.append("file", file);
 
-    const res = await fetch(url, {
+    const backendRes = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.PINATA_JWT}`,
@@ -81,28 +93,35 @@ export async function POST(req: Request) {
       signal: AbortSignal.timeout(20000),
     });
 
-    if (!res.ok) {
-      console.error("Pinata upload failed:", res.status);
+    if (!backendRes.ok) {
+      console.error(`${pathname} error: `, backendRes.status);
       return NextResponse.json(
-        { success: false, message: "File upload failed" },
+        {
+          success: false,
+          statusCode: 500,
+          message: "File upload failed",
+        },
         { status: 500 }
       );
     }
 
-    const data = await res.json();
+    const response = await backendRes.json();
 
     return NextResponse.json({
       success: true,
-      ipfsHash: data.IpfsHash,
+      ipfsHash: response.IpfsHash,
     });
-  } catch (err: unknown) {
-    console.error("Avatar upload error:", err);
+  } catch (error) {
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
-      { success: false, message: "Internal server error" },
+      {
+        success: false,
+        statusCode: 500,
+        message: "Internal server error",
+      },
       { status: 500 }
     );
-  }
-  finally {
+  } finally {
     console.info(`${pathname}: ${requestId}`);
   }
 }

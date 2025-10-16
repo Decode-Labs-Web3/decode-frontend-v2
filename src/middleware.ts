@@ -220,7 +220,7 @@ export async function middleware(request: NextRequest) {
             Cookie: request.headers.get("cookie") || "",
           },
           cache: "no-store",
-          signal: AbortSignal.timeout(10_000),
+          signal: AbortSignal.timeout(10000),
         });
         if (!apiResponse.ok)
           return NextResponse.redirect(new URL("/", request.url));

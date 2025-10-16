@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { guardInternal, apiPathName, generateRequestId } from "@/utils/index.utils"
+import {
+  guardInternal,
+  apiPathName,
+  generateRequestId,
+} from "@/utils/index.utils";
 
 export async function POST(request: NextRequest) {
-  const requestId = generateRequestId()
-  const pathname = apiPathName(request)
-  const denied = guardInternal(request)
-  if(denied) return denied
+  const requestId = generateRequestId();
+  const pathname = apiPathName(request);
+  const denied = guardInternal(request);
+  if (denied) return denied;
 
   try {
     const body = await request.json();
@@ -32,7 +36,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-Id": requestId
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
         cache: "no-store",
@@ -41,6 +45,8 @@ export async function POST(request: NextRequest) {
     );
 
     if (!backendRes.ok) {
+      const error = await backendRes.json().catch(() => ({}));
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -52,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await backendRes.json();
-    console.log("Auth challenge response:", response);
+    // console.log(`${pathname}:`, response);
 
     return NextResponse.json(
       {
@@ -64,7 +70,7 @@ export async function POST(request: NextRequest) {
       { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error("Auth challenge error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

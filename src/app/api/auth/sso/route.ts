@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
-      console.error(`${pathname} error:`, error)
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,

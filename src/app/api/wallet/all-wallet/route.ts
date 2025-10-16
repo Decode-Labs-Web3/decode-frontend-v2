@@ -43,7 +43,7 @@ export async function GET(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => ({}));
-      console.error("Backend API error:", error);
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -54,19 +54,19 @@ export async function GET(req: Request) {
       );
     }
 
-    const data = await backendRes.json();
-    console.log("link all wallet data:", data);
+    const response = await backendRes.json();
+    // console.log(`${pathname} error:`, response);
     return NextResponse.json(
       {
         success: true,
-        statusCode: data.statusCode || 200,
-        message: data.message || "Overview fetched successfully",
-        data: data.data,
+        statusCode: response.statusCode || 200,
+        message: response.message || "Overview fetched successfully",
+        data: response.data,
       },
-      { status: data.statusCode || 200 }
+      { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error("All wallet API error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

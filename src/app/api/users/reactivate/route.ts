@@ -73,17 +73,17 @@ export async function DELETE(request: NextRequest) {
     );
 
     // const alternateReactivate = async () => {
-    //   // return fetch(`${process.env.BACKEND_BASE_URL}/users/account/reactivate?lite=true`, { method: "PATCH" });
+    // return fetch(`${process.env.BACKEND_BASE_URL}/users/account/reactivate?lite=true`, { method: "PATCH" });
     // };
 
-    const response = await backendRes.json().catch(() => ({}));
     if (!backendRes.ok) {
-      console.log("this is api/users/deactivate response", response);
+      const error = await backendRes.json().catch(() => ({}));
+      console.log(`${pathname} error: `, error);
       const res = NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 400,
-          message: response?.message || "Account reactivation failed",
+          message: error?.message || "Account reactivation failed",
         },
         { status: backendRes.status || 400 }
       );
@@ -96,6 +96,8 @@ export async function DELETE(request: NextRequest) {
       return res;
     }
 
+    const response = await backendRes.json();
+
     return NextResponse.json(
       {
         success: true,
@@ -106,7 +108,7 @@ export async function DELETE(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Link challenge error:", error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,

@@ -1,20 +1,28 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { generateRequestId, guardInternal, apiPathName } from "@/utils/index.utils"
+import {
+  generateRequestId,
+  guardInternal,
+  apiPathName,
+} from "@/utils/index.utils";
 
 export async function POST(req: NextRequest) {
-  const requestId = generateRequestId()
-  const pathname = apiPathName(req)
-  const denied = guardInternal(req)
-  if (denied) return denied
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
   try {
     // const cookieStore = await cookies();
     // const refreshToken = cookieStore.get("refreshToken")?.value;
-    const refreshToken = (await cookies()).get("refreshToken")?.value
+    const refreshToken = (await cookies()).get("refreshToken")?.value;
 
     if (!refreshToken) {
       return NextResponse.json(
-        { error: "Refresh token not found" },
+        {
+          success: false,
+          statusCode: 401,
+          message: "No refresh token found",
+        },
         { status: 401 }
       );
     }
@@ -24,7 +32,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Request-Id": requestId
+          "X-Request-Id": requestId,
         },
         body: JSON.stringify({ refreshToken }),
         cache: "no-store",
@@ -33,8 +41,8 @@ export async function POST(req: NextRequest) {
     );
 
     if (!backendRes.ok) {
-      const error = await backendRes.json().catch(() => null)
-      console.error(`${pathname} error:`, error)
+      const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error:`, error);
       const res = NextResponse.json(
         {
           success: false,
@@ -82,17 +90,6 @@ export async function POST(req: NextRequest) {
 
     return res;
   } finally {
-    console.info(`${pathname}: $requestId}`);
+    console.info(`${pathname}: ${requestId}`);
   }
-}
-
-export async function GET() {
-  return NextResponse.json(
-    {
-      success: false,
-      statusCode: 405,
-      message: "Method Not Allowed",
-    },
-    { status: 405 }
-  );
 }

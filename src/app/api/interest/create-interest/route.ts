@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     if (!accessToken) {
       return NextResponse.json(
         {
-          status: false,
+          success: false,
           statusCode: 401,
           message: "No access token found",
         },
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { interest } = body;
 
-    console.log("Interest list form create interest route", interest);
+    // console.log(`${pathname} :`, interest);
 
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
@@ -53,14 +53,16 @@ export async function POST(req: Request) {
       }
     );
 
+    // console.log(`${pathname} error:`, backendResponse);
+
     if (!backendResponse.ok) {
-      const errorData = await backendResponse.json().catch(() => ({}));
-      console.error("Followers fetch error:", errorData);
+      const error = await backendResponse.json().catch(() => ({}));
+      console.error(`${pathname} :`, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendResponse.status || 400,
-          message: errorData.message || `Backend API error: ${pathname}`,
+          message: error.message || `Backend API error: ${pathname}`,
         },
         { status: backendResponse.status || 400 }
       );
@@ -68,12 +70,11 @@ export async function POST(req: Request) {
 
     const response = await backendResponse.json();
 
-    console.log("Create interest route backend response", backendResponse);
-    console.log("Create interest route response", response);
+    // console.log(`${pathname} :`, response);
 
     return NextResponse.json(
       {
-        success: response.sucess || true,
+        success: response.success || true,
         statusCode: response.statusCode || 200,
         message: response.message || "User interests created successfully",
         data: response.data || [],
@@ -81,12 +82,12 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error fetching followers:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
     );
   } finally {
-    console.info(`${pathname}: [${requestId}]`);
+    console.info(`${pathname}: ${requestId}]`);
   }
 }

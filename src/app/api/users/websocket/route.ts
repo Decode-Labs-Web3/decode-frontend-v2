@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error in notification route:", error);
+    console.error("Error in websocket route:", error);
     return NextResponse.json(
       {
         success: false,

@@ -18,12 +18,16 @@ export async function POST(request: NextRequest) {
     const { address } = body || {};
     if (!address) {
       return NextResponse.json(
-        { success: false, statusCode: 400, message: "Missing address" },
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing address",
+        },
         { status: 400 }
       );
     }
 
-    console.info("this is api/wallet/primary-challenge response", address);
+    // console.info(`${pathname} address:`, address);
 
     // const cookieStore = await cookies();
     // const accessToken = cookieStore.get("accessToken")?.value;
@@ -31,7 +35,11 @@ export async function POST(request: NextRequest) {
 
     if (!accessToken) {
       return NextResponse.json(
-        { success: false, statusCode: 401, message: "No access token found" },
+        {
+          success: false,
+          statusCode: 401,
+          message: "No access token found",
+        },
         { status: 401 }
       );
     }
@@ -55,17 +63,20 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const response = await backendRes.json().catch(() => ({}));
     if (!backendRes.ok) {
+      const error = await backendRes.json().catch(() => ({}));
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 400,
-          message: response?.message || "Link challenge failed",
+          message: error?.message || "Link challenge failed",
         },
         { status: backendRes.status || 400 }
       );
     }
+
+    const response = await backendRes.json();
 
     return NextResponse.json(
       {
@@ -77,7 +88,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Link challenge error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
@@ -93,7 +104,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json(
-    { success: false, statusCode: 405, message: "Method Not Allowed" },
+    {
+      success: false,
+      statusCode: 405,
+      message: "Method Not Allowed",
+    },
     { status: 405 }
   );
 }

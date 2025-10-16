@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     if (!accessToken) {
       return NextResponse.json(
         {
-          status: false,
+          success: false,
           statusCode: 401,
           message: "No access token found",
         },
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       user_id_to: id,
     };
 
-    console.log("this is backend response ", requestBody);
+    console.log(`${pathname} : `, requestBody);
 
     const backendResponse = await fetch(
       `${process.env.BACKEND_BASE_URL}/relationship/block/blocking`,
@@ -58,13 +58,13 @@ export async function POST(req: Request) {
     );
 
     if (!backendResponse.ok) {
-      const errorMessage = await backendResponse.json().catch(() => ({}));
-      console.log("this is follow and unfollow ", errorMessage);
+      const error = await backendResponse.json().catch(() => ({}));
+      console.log(`${pathname} error: `, error);
       return NextResponse.json(
         {
-          status: false,
+          success: false,
           statusCode: backendResponse.status || 400,
-          message: errorMessage.message || `Backend API error: ${pathname}`,
+          message: error.message || `Backend API error: ${pathname}`,
         },
         { status: backendResponse.status }
       );
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     const response = await backendResponse.json();
     return NextResponse.json(
       {
-        status: true,
+        success: true,
         statusCode: 200,
         message: response.message || "Block action successful",
         data: response.data || null,
@@ -80,10 +80,10 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    console.log(`${pathname} error: `, error);
     return NextResponse.json(
       {
-        status: false,
+        success: false,
         statusCode: 500,
         message: "Internal Server Error",
       },
@@ -108,7 +108,7 @@ export async function DELETE(req: Request) {
     if (!accessToken) {
       return NextResponse.json(
         {
-          status: false,
+          success: false,
           statusCode: 401,
           message: "No access token found",
         },
@@ -122,7 +122,7 @@ export async function DELETE(req: Request) {
     const userAgent = req.headers.get("user-agent") || "";
     const { fingerprint_hashed } = await fingerprintService(userAgent);
 
-    console.log("this is id", id);
+    // console.log(`${pathname} id: `, id);
 
     const backendResponse = await fetch(
       `${process.env.BACKEND_BASE_URL}/relationship/block/unblocking/${id}`,
@@ -138,22 +138,22 @@ export async function DELETE(req: Request) {
       }
     );
     if (!backendResponse.ok) {
-      const errorMessage = await backendResponse.json().catch(() => ({}));
-      console.log("this is follow and unfollow ", errorMessage);
+      const error = await backendResponse.json().catch(() => ({}));
+      console.log(`${pathname} error: `, error);
       return NextResponse.json(
         {
-          status: false,
+          success: false,
           statusCode: backendResponse.status || 400,
-          message: errorMessage.message || `Backend API error: ${pathname}`,
+          message: error.message || `Backend API error: ${pathname}`,
         },
         { status: backendResponse.status }
       );
     }
     const response = await backendResponse.json();
-    console.log("this is response from follow and unfollow", response);
+    console.log(`${pathname} : `, response);
     return NextResponse.json(
       {
-        status: true,
+        success: true,
         statusCode: 200,
         message: response.message || "Unblock action successful",
         data: response.data || null,
@@ -161,10 +161,10 @@ export async function DELETE(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error);
+    console.log(`${pathname} error: `, error);
     return NextResponse.json(
       {
-        status: false,
+        success: false,
         statusCode: 500,
         message: "Internal Server Error",
       },

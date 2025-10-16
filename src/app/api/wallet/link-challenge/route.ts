@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // console.log("Link challenge address:", address.toLowerCase());
+    // console.log(`${pathname} :`, address.toLowerCase());
 
     // const cookieStore = await cookies();
     // const accessToken = cookieStore.get("accessToken")?.value;
@@ -55,18 +55,19 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const response = await backendRes.json().catch(() => ({}));
     if (!backendRes.ok) {
-      console.log("this is api/wallet/link-challenge response", response);
+      const error = await backendRes.json().catch(() => ({}));
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 400,
-          message: response?.message || "Link challenge failed",
+          message: error?.message || "Link challenge failed",
         },
         { status: backendRes.status || 400 }
       );
     }
+    const response = await backendRes.json();
 
     return NextResponse.json(
       {
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Link challenge error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
@@ -94,7 +95,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json(
-    { success: false, statusCode: 405, message: "Method Not Allowed" },
+    {
+      success: false,
+      statusCode: 405,
+      message: "Method Not Allowed",
+    },
     { status: 405 }
   );
 }

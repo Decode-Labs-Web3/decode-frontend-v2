@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     if (!accessToken) {
       return NextResponse.json(
         {
-          status: false,
+          success: false,
           statusCode: 401,
           message: "No access token found",
         },
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        success: response.sucess || true,
+        success: response.success || true,
         statusCode: response.statusCode || 200,
         message: response.message || "OTP enabled successfully",
         data: response.data || [],

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       browser,
     };
 
-    console.log("Request body from auth validation:", requestBody);
+    // console.log(`${pathname}:`, requestBody);
 
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/wallets/auth/validation`,
@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
     );
 
     if (!backendRes.ok) {
+      const error = await backendRes.json().catch(() => ({}));
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
@@ -121,7 +123,7 @@ export async function POST(request: NextRequest) {
       return res;
     }
   } catch (error) {
-    console.error("Auth challenge error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

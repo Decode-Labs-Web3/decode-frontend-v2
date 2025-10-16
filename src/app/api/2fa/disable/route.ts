@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   try {
     // const cookieStore = await cookies();
     // const accessToken = cookieStore.get("accessToken")?.value;
-    const accessToken = (await cookies()).get("accessToken")?.value
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
@@ -85,7 +85,7 @@ export async function GET(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("2FA API error:", error);
+    console.error(`${pathname}: error:`, error);
     return NextResponse.json(
       {
         success: false,

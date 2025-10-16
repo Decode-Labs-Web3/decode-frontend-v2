@@ -47,14 +47,13 @@ export async function GET(req: Request) {
     );
 
     if (!backendRes.ok && backendRes.status !== 404) {
-      const errorData = await backendRes.json().catch(() => ({}));
-      console.error("Overview fetch error:", errorData);
+      const error = await backendRes.json().catch(() => ({}));
+      console.error(`${pathname} error:`, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status,
-          message:
-            errorData.message || `Backend API error: ${backendRes.status}`,
+          message: error.message || `Backend API error: ${backendRes.status}`,
         },
         { status: backendRes.status }
       );
@@ -71,19 +70,19 @@ export async function GET(req: Request) {
       );
     }
 
-    const data = await backendRes.json();
-    console.log("User interests fetched:", data);
+    const response = await backendRes.json();
+    console.log(`${pathname} :`, response);
     return NextResponse.json(
       {
         success: true,
-        statusCode: data.statusCode || 200,
-        message: data.message || "User interests fetched successfully",
-        data: data.data,
+        statusCode: response.statusCode || 200,
+        message: response.message || "User interests fetched successfully",
+        data: response.data,
       },
-      { status: data.statusCode || 200 }
+      { status: response.statusCode || 200 }
     );
   } catch (error) {
-    console.error("Get Interest API error:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,

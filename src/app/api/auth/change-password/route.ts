@@ -103,7 +103,7 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   } finally {
-    console.info(`${pathname}: $requestId}`);
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 

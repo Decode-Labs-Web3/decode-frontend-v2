@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     if (!accessToken) {
       return NextResponse.json(
         {
-          status: false,
+          success: false,
           statusCode: 401,
           message: "No access token found",
         },
@@ -51,13 +51,13 @@ export async function POST(req: Request) {
     );
 
     if (!backendResponse.ok) {
-      const errorData = await backendResponse.json().catch(() => ({}));
-      console.error("Followers fetch error:", errorData);
+      const error = await backendResponse.json().catch(() => ({}));
+      console.error(`${pathname} error: `, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendResponse.status || 400,
-          message: errorData.message || `Backend API error: ${pathname}`,
+          message: error.message || `Backend API error: ${pathname}`,
         },
         { status: backendResponse.status || 400 }
       );
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        success: response.sucess || true,
+        success: response.success || true,
         statusCode: response.statusCode || 200,
         message: response.message || "Followers fetched successfully",
         data: response.data || [],
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error fetching followers:", error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

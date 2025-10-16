@@ -20,7 +20,11 @@ export async function DELETE(request: NextRequest) {
 
     if (!accessToken) {
       return NextResponse.json(
-        { success: false, statusCode: 401, message: "No access token found" },
+        {
+          success: false,
+          statusCode: 401,
+          message: "No access token found",
+        },
         { status: 401 }
       );
     }
@@ -43,21 +47,23 @@ export async function DELETE(request: NextRequest) {
     );
 
     // const softDeactivateToggle = async (toggle: boolean) => {
-    //   // return fetch(`${process.env.BACKEND_BASE_URL}/users/account/deactivate?soft=${toggle}`, { method: "PATCH" });
+    // return fetch(`${process.env.BACKEND_BASE_URL}/users/account/deactivate?soft=${toggle}`, { method: "PATCH" });
     // };
 
-    const response = await backendRes.json().catch(() => ({}));
     if (!backendRes.ok) {
-      console.log("this is api/users/deactivate response", response);
+      const error = await backendRes.json().catch(() => ({}));
+      console.log(`${pathname} error: `, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status || 400,
-          message: response?.message || "Account deactivation failed",
+          message: error?.message || "Account deactivation failed",
         },
         { status: backendRes.status || 400 }
       );
     }
+
+    const response = await backendRes.json();
 
     const res = NextResponse.json(
       {
@@ -78,7 +84,7 @@ export async function DELETE(request: NextRequest) {
 
     return res;
   } catch (error) {
-    console.error("Link challenge error:", error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,

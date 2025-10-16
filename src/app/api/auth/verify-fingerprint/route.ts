@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         {
           success: false,
           statusCode: 400,
-          message: "Code are required",
+          message: "Code is required",
         },
         { status: 400 }
       );

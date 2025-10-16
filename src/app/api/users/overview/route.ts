@@ -47,14 +47,13 @@ export async function GET(req: Request) {
     );
 
     if (!backendRes.ok && backendRes.status !== 403) {
-      const errorData = await backendRes.json().catch(() => ({}));
-      console.error("Overview fetch error:", errorData);
+      const error = await backendRes.json().catch(() => ({}));
+      console.error(`${pathname} error: `, error);
       return NextResponse.json(
         {
           success: false,
           statusCode: backendRes.status,
-          message:
-            errorData.message || `Backend API error: ${backendRes.status}`,
+          message: error.message || `Backend API error: ${backendRes.status}`,
         },
         { status: backendRes.status }
       );
@@ -72,7 +71,7 @@ export async function GET(req: Request) {
     }
 
     const data = await backendRes.json();
-    // console.log("Overview data:", data);
+    // console.log(`${pathname}: `, data);
     return NextResponse.json(
       {
         success: true,
@@ -83,7 +82,7 @@ export async function GET(req: Request) {
       { status: data.statusCode || 200 }
     );
   } catch (error) {
-    console.error("Overview API error:", error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,

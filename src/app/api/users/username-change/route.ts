@@ -33,11 +33,9 @@ export async function GET(req: Request) {
       );
     }
 
-    console.log("this is api/users/username-change response", accessToken);
-    console.log(
-      "this is api/users/username-change response",
-      fingerprint_hashed
-    );
+    // console.log(`${pathname} : `, accessToken);
+    // console.log(`${pathname} : `,fingerprint_hashed);
+
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/users/username/change/initiate`,
       {
@@ -54,6 +52,7 @@ export async function GET(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error: `, error);
       return NextResponse.json(
         {
           success: false,
@@ -74,7 +73,7 @@ export async function GET(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Username change error:", error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,
@@ -115,11 +114,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { username, username_code } = body;
-    console.log(
-      "this is api/users/username-change response method post",
-      username,
-      username_code
-    );
+    // console.log(`${pathname} username and code: `, username,username_code);
 
     if (!username || !username_code) {
       return NextResponse.json(
@@ -155,6 +150,7 @@ export async function POST(req: Request) {
 
     if (!backendRes.ok) {
       const error = await backendRes.json().catch(() => null);
+      console.error(`${pathname} error: `, error);
       return NextResponse.json(
         {
           success: false,
@@ -166,10 +162,8 @@ export async function POST(req: Request) {
     }
 
     const response = await backendRes.json().catch(() => ({}));
-    console.log(
-      "this is api/users/username-change response method post",
-      response
-    );
+    // console.log(`${pathname}: `, response);
+
     return NextResponse.json(
       {
         success: true,
@@ -179,7 +173,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Username change error:", error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,
