@@ -214,8 +214,11 @@ export async function middleware(request: NextRequest) {
 
       try {
         const apiResponse = await fetch(`${origin}/api/auth/refresh`, {
-          method: "GET",
-          headers: { "X-Frontend-Internal-Request": "true" },
+          method: "POST",
+          headers: {
+            "X-Frontend-Internal-Request": "true",
+            Cookie: request.headers.get("cookie") || "",
+          },
           cache: "no-store",
           signal: AbortSignal.timeout(10_000),
         });
@@ -246,8 +249,11 @@ export async function middleware(request: NextRequest) {
 
     try {
       const apiResponse = await fetch(`${origin}/api/auth/refresh`, {
-        method: "GET",
-        headers: { "X-Frontend-Internal-Request": "true" },
+        method: "POST",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+          Cookie: request.headers.get("cookie") || "",
+        },
         cache: "no-store",
         signal: AbortSignal.timeout(10_000),
       });
