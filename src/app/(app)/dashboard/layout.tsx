@@ -85,12 +85,13 @@ export default function DashboardLayout({
         setUserInfo(parsedUser);
         setLoading(false);
       } catch (error) {
+        router.push("/")
         console.error("Failed to parse stored user data:", error);
         localStorage.removeItem("user");
       }
     }
     fetchUserInfo();
-  }, [fetchUserInfo]);
+  }, [fetchUserInfo, router]);
 
   const [logs, setLogs] = useState<NotificationReceived[]>([]);
   console.log("logs", logs);

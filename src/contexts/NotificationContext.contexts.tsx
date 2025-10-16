@@ -40,7 +40,6 @@ export function NotificationProvider({
       });
 
       if (!apiResponse.ok) {
-        // Don't log 401 errors (user not authenticated yet)
         if (apiResponse.status !== 401) {
           const response = await apiResponse.json();
           console.log("Follow API error:", response);
@@ -52,7 +51,6 @@ export function NotificationProvider({
       console.log("this is sidebar count notification", response);
       setUnread(response.data.count);
     } catch (error) {
-      // Silently handle errors - notification count is not critical
       console.log(error);
     }
   }, []);
