@@ -38,14 +38,21 @@ export function NotificationProvider({
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
-      const response = await apiResponse.json();
+
       if (!apiResponse.ok) {
-        console.log("Follow API error:", response);
+        // Don't log 401 errors (user not authenticated yet)
+        if (apiResponse.status !== 401) {
+          const response = await apiResponse.json();
+          console.log("Follow API error:", response);
+        }
         return;
       }
+
+      const response = await apiResponse.json();
       console.log("this is sidebar count notification", response);
       setUnread(response.data.count);
     } catch (error) {
+      // Silently handle errors - notification count is not critical
       console.log(error);
     }
   }, []);

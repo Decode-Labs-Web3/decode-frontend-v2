@@ -68,6 +68,8 @@ export default function DashboardLayout({
     } catch (error) {
       console.error("User data fetch error:", error);
       toastError("Failed to load user data");
+      // Clear invalid data from localStorage
+      localStorage.removeItem("user");
     } finally {
       setLoading(false);
       // setLoading(true);
@@ -77,9 +79,15 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUserInfo(JSON.parse(storedUser));
-      setLoading(false);
+    if (storedUser && storedUser !== "undefined") {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUserInfo(parsedUser);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to parse stored user data:", error);
+        localStorage.removeItem("user");
+      }
     }
     fetchUserInfo();
   }, [fetchUserInfo]);
