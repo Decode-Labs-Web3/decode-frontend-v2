@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/auth/session/refresh`,
       {

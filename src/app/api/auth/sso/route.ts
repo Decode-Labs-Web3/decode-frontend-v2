@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/index.services";
 import {
   generateRequestId,
   guardInternal,
@@ -29,8 +28,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
 
     const body = await req.json();
     const { app } = body;
@@ -39,7 +48,7 @@ export async function POST(req: Request) {
 
     const requestBody = {
       app,
-      fingerprint_hashed,
+      fingerprint_hashed: fingerprint,
     };
 
     console.log(requestBody);
@@ -50,7 +59,7 @@ export async function POST(req: Request) {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint,
           "Content-Type": "application/json",
           "X-Request-Id": requestId,
         },

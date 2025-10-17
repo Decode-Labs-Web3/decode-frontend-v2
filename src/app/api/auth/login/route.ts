@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { fingerprintService } from "@/services/index.services";
 import {
@@ -31,14 +32,27 @@ export async function POST(req: Request) {
 
     const userAgent = req.headers.get("user-agent") || "";
     const fingerprintResult = await fingerprintService(userAgent);
-    const { fingerprint_hashed, device, browser } = fingerprintResult;
+    const { device, browser } = fingerprintResult;
 
-    console.log("fingerprint_hashed", fingerprint_hashed);
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log("fingerprint_hashed", fingerprint);
 
     const requestBody = {
       email_or_username,
       password,
-      fingerprint_hashed,
+      fingerprint_hashed: fingerprint,
       browser,
       device,
     };

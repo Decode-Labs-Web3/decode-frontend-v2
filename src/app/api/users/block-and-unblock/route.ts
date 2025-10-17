@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import {
   guardInternal,
   apiPathName,
   generateRequestId,
 } from "@/utils/index.utils";
-import { fingerprintService } from "@/services/index.services";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
@@ -32,8 +31,18 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { id } = body;
 
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
 
     const requestBody = {
       user_id_to: id,
@@ -48,7 +57,7 @@ export async function POST(req: Request) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
-          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint,
           "X-Request-Id": requestId,
         },
         body: JSON.stringify(requestBody),
@@ -119,9 +128,18 @@ export async function DELETE(req: Request) {
     const body = await req.json();
     const { id } = body;
 
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
 
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
     // console.log(`${pathname} id: `, id);
 
     const backendResponse = await fetch(
@@ -130,7 +148,7 @@ export async function DELETE(req: Request) {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint,
           "X-Request-Id": requestId,
         },
         cache: "no-cache",

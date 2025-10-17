@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import {
   guardInternal,
   apiPathName,
   generateRequestId,
 } from "@/utils/index.utils";
-import { fingerprintService } from "@/services/index.services";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
@@ -34,8 +33,18 @@ export async function POST(req: Request) {
 
     // console.log(`${pathname} id: `,id)
 
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
 
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/users/profile/${id}`,
@@ -43,7 +52,7 @@ export async function POST(req: Request) {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint,
           "X-Request-Id": requestId,
         },
         cache: "no-cache",

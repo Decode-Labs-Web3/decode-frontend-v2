@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import { NotificationProvider } from "@/contexts/NotificationContext.contexts";
+import { fingerprintService } from "@/services/index.services";
 
 interface NotificationReceived {
   _id: string;
@@ -33,6 +34,13 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<UserProfile>();
   const [isDeactivated, setIsDeactivated] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { fingerprint_hashed } = await fingerprintService();
+      document.cookie = `fingerprint=${fingerprint_hashed}; path=/; max-age=31536000; SameSite=Lax`;
+    })();
+  }, []);
 
   const fetchUserInfo = useCallback(async () => {
     try {
@@ -85,7 +93,7 @@ export default function DashboardLayout({
         setUserInfo(parsedUser);
         setLoading(false);
       } catch (error) {
-        router.push("/")
+        router.push("/");
         console.error("Failed to parse stored user data:", error);
         localStorage.removeItem("user");
       }

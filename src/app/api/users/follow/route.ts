@@ -5,7 +5,6 @@ import {
   guardInternal,
   apiPathName,
 } from "@/utils/index.utils";
-import { fingerprintService } from "@/services/index.services";
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
@@ -32,9 +31,19 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { tab, page } = body;
 
-    console.log("this is page", page);
-    const userAgent = req.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    // console.log("this is page", page);
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
 
     const backendResponse = await fetch(
       `${process.env.BACKEND_BASE_URL}/relationship/follow/${tab}/me?page=${page}&limit=15`,
@@ -42,7 +51,7 @@ export async function POST(req: Request) {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint,
           "X-Request-Id": requestId,
         },
         cache: "no-store",

@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { fingerprintService } from "@/services/index.services";
 import {
   guardInternal,
   apiPathName,
@@ -42,8 +41,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userAgent = request.headers.get("user-agent") || "";
-    const { fingerprint_hashed } = await fingerprintService(userAgent);
+    const fingerprint = (await cookies()).get("fingerprint")?.value;
+
+    if (!fingerprint) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 400,
+          message: "Missing fingerprint header",
+        },
+        { status: 400 }
+      );
+    }
 
     const backendRes = await fetch(
       `${process.env.BACKEND_BASE_URL}/wallets/link/validation`,
@@ -52,7 +61,7 @@ export async function POST(request: NextRequest) {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
-          "X-Fingerprint-Hashed": fingerprint_hashed,
+          "X-Fingerprint-Hashed": fingerprint,
           "X-Request-Id": requestId,
         },
         body: JSON.stringify({ address, signature }),
