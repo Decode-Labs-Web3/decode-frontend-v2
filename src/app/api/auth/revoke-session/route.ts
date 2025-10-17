@@ -14,13 +14,14 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { sessionId } = body;
-    console.log("Request body Revoke API:", body);
+    // console.log("Request body Revoke API:", body);
 
     // const cookieStore = await cookies();
     // const deviceId = cookieStore.get("sessionId")?.value;
     // const accessToken = cookieStore.get("accessToken")?.value;
 
-    const deviceId = (await cookies()).get("deviceId")?.value;
+    const deviceId = (await cookies()).get("sessionId")?.value;
+    // console.log("this is device id",deviceId)
     const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!sessionId || !deviceId) {
