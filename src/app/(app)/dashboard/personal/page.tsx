@@ -277,10 +277,10 @@ export default function PersonalPage() {
       {modal.edit && (
         <div
           role="dialog"
-          tabIndex={-1}
-          ref={(element: HTMLDivElement) => {
-            element?.focus();
-          }}
+          // tabIndex={-1}
+          // ref={(element: HTMLDivElement) => {
+          //   element?.focus();
+          // }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               setModal((prev) => ({
