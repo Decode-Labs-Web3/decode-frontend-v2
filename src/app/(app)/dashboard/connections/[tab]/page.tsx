@@ -136,29 +136,29 @@ export default function PageFollow() {
                   href={`/dashboard/connections/${tab}/${user.user_id}`}
                   className="text-white text-sm font-medium px-3 py-1.5 rounded-lg w-full h-full"
                 >
-                    <div className="flex flex-row gap-3 min-w-0">
-                      <div className="  w-14 h-14 rounded-xl border-2 border-[color:var(--border)] overflow-hidden shadow-sm">
-                        <Image
-                          src={
-                            user.avatar_ipfs_hash
-                              ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                          }
-                          alt={"Avatar"}
-                          width={56}
-                          height={56}
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <h3 className="text-[color:var(--foreground)] truncate font-medium">
-                          {user.display_name}
-                        </h3>
-                        <p className="text-sm text-[color:var(--muted-foreground)] truncate">
-                          @{user.username}
-                        </p>
-                      </div>
+                  <div className="flex flex-row gap-3 min-w-0">
+                    <div className="  w-14 h-14 rounded-xl border-2 border-[color:var(--border)] overflow-hidden shadow-sm">
+                      <Image
+                        src={
+                          user.avatar_ipfs_hash
+                            ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
+                            : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        }
+                        alt={"Avatar"}
+                        width={56}
+                        height={56}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
+                    <div className="flex flex-col min-w-0">
+                      <h3 className="text-[color:var(--foreground)] truncate font-medium">
+                        {user.display_name}
+                      </h3>
+                      <p className="text-sm text-[color:var(--muted-foreground)] truncate">
+                        @{user.username}
+                      </p>
+                    </div>
+                  </div>
                 </Link>
                 {/* hover card */}
                 <div className="absolute z-50 left-1/2 top-full mt-2 -translate-x-1/2 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] opacity-100 group-hover:opacity-100 p-4">
@@ -169,8 +169,8 @@ export default function PageFollow() {
                         <Image
                           src={
                             user.avatar_ipfs_hash
-                              ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                              ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
+                              : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                           }
                           alt={"Avatar"}
                           width={64}
@@ -234,8 +234,8 @@ export default function PageFollow() {
                                 key={mutualFollower.user_id}
                                 src={
                                   mutualFollower.avatar_ipfs_hash
-                                    ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                    ? `https://gateway.pinata.cloud/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                    : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                                 }
                                 alt={"Avatar"}
                                 width={20}

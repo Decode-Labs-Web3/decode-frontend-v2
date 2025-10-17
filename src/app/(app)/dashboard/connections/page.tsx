@@ -252,8 +252,8 @@ export default function ConnectionsIndex() {
                   <Image
                     src={
                       user.avatar_ipfs_hash
-                        ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
+                        : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                     }
                     alt={user.username || "Avatar"}
                     width={64}
@@ -333,8 +333,8 @@ export default function ConnectionsIndex() {
                   <Image
                     src={
                       user.avatar_ipfs_hash
-                        ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
+                        : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                     }
                     alt={user.username || "Avatar"}
                     width={64}
