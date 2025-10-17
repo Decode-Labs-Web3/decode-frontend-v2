@@ -141,8 +141,8 @@ export default function PageFollow() {
                       <Image
                         src={
                           user.avatar_ipfs_hash
-                            ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                            : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                            ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
+                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                         }
                         alt={"Avatar"}
                         width={56}
@@ -169,8 +169,8 @@ export default function PageFollow() {
                         <Image
                           src={
                             user.avatar_ipfs_hash
-                              ? `https://gateway.pinata.cloud/ipfs/${user.avatar_ipfs_hash}`
-                              : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                              ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
+                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                           }
                           alt={"Avatar"}
                           width={64}
@@ -234,8 +234,8 @@ export default function PageFollow() {
                                 key={mutualFollower.user_id}
                                 src={
                                   mutualFollower.avatar_ipfs_hash
-                                    ? `https://gateway.pinata.cloud/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                    : "https://gateway.pinata.cloud/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                    ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                                 }
                                 alt={"Avatar"}
                                 width={20}
