@@ -4,12 +4,6 @@ import { fingerprintService } from "@/services/fingerprint.services";
 import { authExpire, httpStatus } from "@/constants/index.constants";
 import { guardInternal, apiPathName, generateRequestId } from "@/utils/index.utils"
 
-function isoToMaxAgeSeconds(expiresAtISO: string): number {
-  const now = Date.now();
-  const expMs = Date.parse(expiresAtISO);
-  return Math.max(0, Math.floor((expMs - now) / 1000));
-}
-
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId()
   const pathname = apiPathName(request)
@@ -92,9 +86,6 @@ export async function POST(request: NextRequest) {
       response.statusCode === 200 &&
       response.message === "Challenge validated successfully"
     ) {
-      const accessExpISO = response.data.expires_at as string;
-      const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
-      const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
 
       const res = NextResponse.json({
         success: true,
@@ -119,7 +110,7 @@ export async function POST(request: NextRequest) {
         maxAge: authExpire.accessToken,
       });
 
-      res.cookies.set("accessExp", String(accessExpSec), {
+      res.cookies.set("accessExp", String(Math.floor(Date.now() / 1000) + authExpire.accessToken), {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",

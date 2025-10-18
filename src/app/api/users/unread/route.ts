@@ -6,7 +6,6 @@ import {
   guardInternal,
   generateRequestId,
 } from "@/utils/index.utils";
-import { RESPONSE_LIMIT_DEFAULT } from "next/dist/server/api-utils";
 
 export async function GET(req: Request) {
   const requestId = generateRequestId();
