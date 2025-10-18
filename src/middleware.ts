@@ -55,59 +55,6 @@ const GATE_RULES: GateRule[] = [
   },
 ];
 
-function isoToMaxAgeSeconds(expiresAtISO: string): number {
-  const now = Date.now();
-  const expMs = Date.parse(expiresAtISO);
-  return Math.max(0, Math.floor((expMs - now) / 1000));
-}
-
-// Helper function to set authentication cookies
-function setAuthCookies(
-  response: NextResponse,
-  data: {
-    _id: string;
-    access_token: string;
-    session_token: string;
-    expires_at: string;
-  }
-) {
-  const accessExpISO = data.expires_at as string;
-  const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
-  const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
-
-  response.cookies.set("sessionId", data._id, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 15,
-  });
-
-  response.cookies.set("accessToken", data.access_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: accessMaxAge,
-  });
-
-  response.cookies.set("accessExp", String(accessExpSec), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: accessMaxAge,
-  });
-
-  response.cookies.set("refreshToken", data.session_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-}
-
 // Handle gate rules for specific routes, checking for required cookies and clearing them after use
 function handleGate(
   request: NextRequest,
@@ -226,9 +173,13 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL("/", request.url));
 
         const response = await apiResponse.json();
-        const res = NextResponse.redirect(new URL("/dashboard", request.url));
-        setAuthCookies(res, response.data);
-        return res;
+        if (
+          response.success &&
+          response.statusCode === 200
+        ) {
+          return NextResponse.redirect(new URL("/dashboard", request.url));
+        }
+        return NextResponse.redirect(new URL("/", request.url));
       } catch {
         return NextResponse.redirect(new URL("/", request.url));
       }
@@ -261,9 +212,13 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/", request.url));
 
       const response = await apiResponse.json();
-      const res = NextResponse.next();
-      setAuthCookies(res, response.data);
-      return res;
+      if (
+        response.success &&
+        response.statusCode === 200
+      ) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+      return NextResponse.redirect(new URL("/", request.url));
     } catch {
       return NextResponse.redirect(new URL("/", request.url));
     }

@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { UserProfile } from "@/interfaces/index.interfaces";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { fingerprintService } from "@/services/fingerprint.services";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import { NotificationProvider } from "@/contexts/NotificationContext.contexts";
-import { fingerprintService } from "@/services/index.services";
 
 interface NotificationReceived {
   _id: string;

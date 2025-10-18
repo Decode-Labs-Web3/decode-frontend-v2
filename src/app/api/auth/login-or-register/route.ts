@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
@@ -19,10 +20,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing email or username",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -50,10 +51,11 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status,
-          message: error?.message || `HTTP ${backendResponse.status}`,
+          statusCode:
+            backendResponse.status || httpStatus.INTERNAL_SERVER_ERROR,
+          message: error?.message || "Failed to check if user exists",
         },
-        { status: backendResponse.status }
+        { status: backendResponse.status || httpStatus.INTERNAL_SERVER_ERROR }
       );
     }
 
@@ -118,7 +120,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: false,
-      statusCode: response.statusCode || 400,
+      statusCode: response.statusCode || httpStatus.BAD_REQUEST,
       message: response.message || "Login or register failed",
     });
   } catch (error) {
@@ -126,10 +128,10 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: 400,
-        message: "Server error from login or register",
+        statusCode: httpStatus.BAD_REQUEST,
+        message: "Failed to login or register",
       },
-      { status: 400 }
+      { status: httpStatus.BAD_REQUEST }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -140,9 +142,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

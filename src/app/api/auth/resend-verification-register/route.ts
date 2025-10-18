@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   guardInternal,
   apiPathName,
@@ -20,10 +21,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "No pending registration data",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -34,10 +35,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Corrupted registration data",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
           statusCode: 400,
           message: "Email not found in cookie",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -77,10 +78,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 400,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
           message: error?.message || "Resend failed",
         },
-        { status: backendRes.status || 400 }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -88,20 +89,20 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "Verification email resent",
       },
-      { status: 200 }
+      { status: httpStatus.OK }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: error instanceof Error ? error.message : "Server error",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -112,9 +113,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

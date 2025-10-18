@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import Loading from "@/components/(loading)";
-import { fingerprintService } from "@/services/index.services";
+import { fingerprintService } from "@/services/fingerprint.services";
 
 // Dynamically import the AppKit wrapper to prevent SSR issues
 const AppKitWrapper = dynamic(() => import("@/components/AppKitWrapper"), {

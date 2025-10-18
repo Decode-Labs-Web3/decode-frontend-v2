@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
@@ -21,10 +22,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing verification code",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -35,10 +36,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing new password",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -67,17 +68,17 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 400,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
           message: error?.message || "Password change failed",
         },
-        { status: backendRes.status || 400 }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
     }
 
     const response = await backendRes.json().catch(() => ({}));
     const res = NextResponse.json({
       success: true,
-      statusCode: response.statusCode || 200,
+      statusCode: response.statusCode || httpStatus.OK,
       message: response.message || "Password changed successfully",
     });
 
@@ -94,13 +95,13 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message:
           error instanceof Error
             ? error.message
-            : "Server error from change password",
+            : "Failed to change password",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -111,9 +112,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

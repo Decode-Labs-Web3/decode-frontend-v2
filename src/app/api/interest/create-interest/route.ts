@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
@@ -21,10 +22,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No access token found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -39,10 +40,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -70,10 +71,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 400,
-          message: error.message || `Backend API error: ${pathname}`,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
+          message: error.message || "Failed to create interest",
         },
-        { status: backendResponse.status || 400 }
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -84,17 +85,21 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: response.success || true,
-        statusCode: response.statusCode || 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "User interests created successfully",
         data: response.data || [],
       },
-      { status: 200 }
+      { status: httpStatus.OK }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      {
+        success: false,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Internal Server Error",
+      },
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}]`);

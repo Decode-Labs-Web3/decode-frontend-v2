@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
@@ -21,10 +22,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -34,10 +35,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -61,10 +62,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status,
+          statusCode: backendRes.status || httpStatus.INTERNAL_SERVER_ERROR,
           message: error?.message || "Failed to fetch fingerprints",
         },
-        { status: backendRes.status }
+        { status: backendRes.status || httpStatus.INTERNAL_SERVER_ERROR }
       );
     }
 
@@ -79,34 +80,34 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: true,
-          statusCode: response.statusCode || 200,
+          statusCode: response.statusCode || httpStatus.OK,
           message: response.message || "Device fingerprint fetched",
           data: response.data,
         },
-        { status: response.statusCode || 200 }
+        { status: response.statusCode || httpStatus.OK }
       );
     }
 
     return NextResponse.json(
       {
         success: false,
-        statusCode: response.statusCode || 400,
+        statusCode: response.statusCode || httpStatus.BAD_REQUEST,
         message: response.message || "Failed to fetch fingerprints",
       },
-      { status: response.statusCode || 400 }
+      { status: response.statusCode || httpStatus.BAD_REQUEST }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message:
           error instanceof Error
             ? error.message
-            : "Failed to fetch fingerprints",
+            : "Failed to fetch device fingerprints",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

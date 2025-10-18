@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { authExpire, httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
@@ -12,18 +13,16 @@ export async function POST(req: NextRequest) {
   const denied = guardInternal(req);
   if (denied) return denied;
   try {
-    // const cookieStore = await cookies();
-    // const refreshToken = cookieStore.get("refreshToken")?.value;
     const refreshToken = (await cookies()).get("refreshToken")?.value;
 
     if (!refreshToken) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No refresh token found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -47,10 +46,10 @@ export async function POST(req: NextRequest) {
       const res = NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 401,
+          statusCode: backendRes.status || httpStatus.UNAUTHORIZED,
           message: "Invalid session token",
         },
-        { status: backendRes.status || 401 }
+        { status: backendRes.status || httpStatus.UNAUTHORIZED }
       );
 
       res.cookies.delete("accessToken");
@@ -63,25 +62,65 @@ export async function POST(req: NextRequest) {
 
     const response = await backendRes.json();
 
-    return NextResponse.json(
-      {
+    if (
+      response.success &&
+      response.statusCode === 200 &&
+      response.message === "Session refreshed"
+    ) {
+      const res = NextResponse.json({
         success: true,
         statusCode: response.statusCode || 200,
         message: response.message || "Session refreshed",
-        data: response.data,
-      },
-      { status: response.statusCode || 200 }
-    );
+      });
+
+      res.cookies.set("sessionId", response.data._id, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: authExpire.accessToken,
+      });
+
+      res.cookies.set("accessToken", response.data.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: authExpire.accessToken,
+      });
+
+      res.cookies.set(
+        "accessExp",
+        String(Math.floor(Date.now() / 1000) + authExpire.accessToken),
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: authExpire.accessToken,
+        }
+      );
+
+      res.cookies.set("refreshToken", response.data.session_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: authExpire.refreshToken,
+      });
+
+      return res;
+    }
   } catch (error) {
     console.error(`${pathname} error:`, error);
     const res = NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message:
           error instanceof Error ? error.message : "Invalid session token",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
 
     res.cookies.delete("accessToken");

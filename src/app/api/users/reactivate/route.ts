@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   guardInternal,
   apiPathName,
@@ -25,10 +26,10 @@ export async function DELETE(request: NextRequest) {
       const res = NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "You will be redirected to the login page",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
 
       res.cookies.delete("sessionId");
@@ -47,10 +48,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No access token found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -60,10 +61,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -91,10 +92,10 @@ export async function DELETE(request: NextRequest) {
       const res = NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 400,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
           message: error?.message || "Account reactivation failed",
         },
-        { status: backendRes.status || 400 }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
 
       res.cookies.delete("sessionId");
@@ -110,24 +111,24 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "Account reactivated successfully",
         data: response.data,
       },
-      { status: 200 }
+      { status: httpStatus.OK }
     );
   } catch (error) {
     console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message:
           error instanceof Error
             ? error.message
             : "Account deactivation failed",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -136,7 +137,11 @@ export async function DELETE(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json(
-    { success: false, statusCode: 405, message: "Method Not Allowed" },
-    { status: 405 }
+    {
+      success: false,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
+      message: "Method Not Allowed",
+    },
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

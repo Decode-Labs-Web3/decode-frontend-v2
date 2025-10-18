@@ -1,10 +1,12 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   apiPathName,
   guardInternal,
   generateRequestId,
 } from "@/utils/index.utils";
+import { RESPONSE_LIMIT_DEFAULT } from "next/dist/server/api-utils";
 
 export async function GET(req: Request) {
   const requestId = generateRequestId();
@@ -21,10 +23,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No access token found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -34,10 +36,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -61,10 +63,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 400,
-          message: error.message || `Backend API error: ${pathname}`,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
+          message: error.message || "Failed to fetch unread count",
         },
-        { status: backendRes.status }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -72,23 +74,26 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "Unread count retrieved successfully",
         data: response.data || null,
       },
-      { status: 200 }
+      { status: response.status || httpStatus.OK }
     );
   } catch (error) {
-    console.log(`${pathname} error: `, error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
-        message: "Internal Server Error",
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch unread count",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
-    console.log(`${pathname}: ${requestId}`);
+    console.info(`${pathname}: ${requestId}`);
   }
 }

@@ -1,17 +1,12 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { fingerprintService } from "@/services/index.services";
+import { fingerprintService } from "@/services/fingerprint.services";
+import { authExpire, httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
   apiPathName,
 } from "@/utils/index.utils";
-
-function isoToMaxAgeSeconds(expiresAtISO: string): number {
-  const now = Date.now();
-  const expMs = Date.parse(expiresAtISO);
-  return Math.max(0, Math.floor((expMs - now) / 1000));
-}
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
@@ -25,8 +20,12 @@ export async function POST(req: Request) {
 
     if (!email_or_username || !password) {
       return NextResponse.json(
-        { success: false, message: "Email/username and password are required" },
-        { status: 400 }
+        {
+          success: false,
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Email/username and password are required",
+        },
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -40,14 +39,14 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
-    console.log("fingerprint_hashed", fingerprint);
+    // console.log("fingerprint_hashed", fingerprint);
 
     const requestBody = {
       email_or_username,
@@ -79,10 +78,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 401,
-          message: error?.message || "Login failed",
+          statusCode: backendResponse.status || httpStatus.UNAUTHORIZED,
+          message: error?.message || "Failed to login",
         },
-        { status: backendResponse.status || 401 }
+        { status: backendResponse.status || httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -96,23 +95,16 @@ export async function POST(req: Request) {
     ) {
       const res = NextResponse.json({
         success: true,
-        statusCode: response.statusCode || 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "Login successful",
       });
-
-      const accessExpISO = response.data.expires_at as string;
-      const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
-      const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
-      // console.log("this is accessMaxAge", accessMaxAge);
-      // console.log("this is accessExpSec", accessExpSec);
-      // console.log(`this is login ${pathname}`, response.data);
 
       res.cookies.set("sessionId", response.data._id, {
         httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: accessMaxAge,
+        maxAge: authExpire.sessionToken,
       });
 
       res.cookies.set("accessToken", response.data.access_token, {
@@ -120,23 +112,27 @@ export async function POST(req: Request) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: accessMaxAge,
+        maxAge: authExpire.accessToken,
       });
 
-      res.cookies.set("accessExp", String(accessExpSec), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: accessMaxAge,
-      });
+      res.cookies.set(
+        "accessExp",
+        String(Math.floor(Date.now() / 1000) + authExpire.accessToken),
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: authExpire.accessToken,
+        }
+      );
 
       res.cookies.set("refreshToken", response.data.session_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24 * 7,
+        maxAge: authExpire.refreshToken,
       });
 
       return res;
@@ -220,12 +216,12 @@ export async function POST(req: Request) {
       const res = NextResponse.json(
         {
           success: true,
-          statusCode: response.statusCode || 400,
+          statusCode: response.statusCode || httpStatus.BAD_REQUEST,
           message:
             response.message ||
             "Device fingerprint not trusted, send email verification",
         },
-        { status: 200 }
+        { status: httpStatus.OK }
       );
 
       res.cookies.set("gate-key-for-verify-login", "true", {
@@ -242,20 +238,20 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: response.statusCode || 400,
+        statusCode: response.statusCode || httpStatus.BAD_REQUEST,
         message: response.message || "Login failed",
       },
-      { status: 400 }
+      { status: httpStatus.BAD_REQUEST }
     );
   } catch (error) {
     console.error("/api/auth/login handler error:", error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
-        message: "Server error from login",
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Failed to login",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -266,9 +262,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

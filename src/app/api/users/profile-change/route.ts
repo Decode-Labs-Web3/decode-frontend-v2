@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   guardInternal,
   apiPathName,
@@ -55,10 +56,10 @@ export async function PUT(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "Missing current or origin",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -69,10 +70,10 @@ export async function PUT(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
     const changeData = diffProfileChanges(current, original);
@@ -103,10 +104,10 @@ export async function PUT(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            statusCode: backendRes.status || 400,
-            message: backendRes.statusText,
+            statusCode: backendRes.status || httpStatus.BAD_REQUEST,
+            message: error.message || "Failed to change profile",
           },
-          { status: backendRes.status || 400 }
+          { status: backendRes.status || httpStatus.BAD_REQUEST }
         );
       }
 
@@ -126,10 +127,10 @@ export async function PUT(req: Request) {
       return NextResponse.json(
         {
           success: true,
-          statusCode: 200,
+          statusCode: httpStatus.OK,
           message: "Profile updated",
         },
-        { status: 200 }
+        { status: httpStatus.OK }
       );
     }
 
@@ -137,10 +138,10 @@ export async function PUT(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 207,
+          statusCode: httpStatus.PARTIAL_CONTENT,
           message: "Partial update",
         },
-        { status: 207 }
+        { status: httpStatus.PARTIAL_CONTENT }
       );
     }
   } catch (error) {
@@ -148,10 +149,10 @@ export async function PUT(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
-        message: "Server change profile error",
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Failed to change profile",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

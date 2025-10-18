@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
@@ -21,10 +22,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No refresh token provided",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -34,10 +35,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -68,10 +69,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 401,
+          statusCode: backendRes.status || httpStatus.UNAUTHORIZED,
           message: error?.message || "Logout failed",
         },
-        { status: backendRes.status || 401 }
+        { status: backendRes.status || httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -83,10 +84,10 @@ export async function POST(req: Request) {
     const res = NextResponse.json(
       {
         success: true,
-        statusCode: 200,
+        statusCode: httpStatus.OK,
         message: "Logout successful",
       },
-      { status: 200 }
+      { status: httpStatus.OK }
     );
 
     res.cookies.delete("accessToken");
@@ -100,10 +101,10 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: error instanceof Error ? error.message : "Failed to logout",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -114,9 +115,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

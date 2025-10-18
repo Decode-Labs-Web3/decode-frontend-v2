@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   apiPathName,
   guardInternal,
@@ -21,10 +22,10 @@ export async function PATCH(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No access token found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -34,10 +35,10 @@ export async function PATCH(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -61,10 +62,10 @@ export async function PATCH(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 400,
-          message: error.message || `Backend API error: ${pathname}`,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
+          message: error.message || "Failed to mark all notifications as read",
         },
-        { status: backendRes.status }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -72,23 +73,23 @@ export async function PATCH(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: 200,
+        statusCode: httpStatus.OK,
         message: response.message || "All notifications marked as read",
         data: response.data || null,
       },
-      { status: 200 }
+      { status: httpStatus.OK }
     );
   } catch (error) {
-    console.log(`${pathname} error: `, error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
-        message: "Internal Server Error",
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Failed to mark all notifications as read",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
-    console.log(`${pathname}: ${requestId}`);
+    console.info(`${pathname}: [${requestId}]`);
   }
 }

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   guardInternal,
   apiPathName,
@@ -21,10 +22,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No access token found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -37,10 +38,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -70,10 +71,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 400,
-          message: error.message || `Backend API error: ${pathname}`,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
+          message: error.message || "Failed to follow/unfollow user",
         },
-        { status: backendResponse.status }
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -81,24 +82,24 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "Follow/unfollow action successful",
-        data: response.data || null,
+        data: response.data,
       },
-      { status: 200 }
+      { status: response.statusCode || httpStatus.OK }
     );
   } catch (error) {
-    console.log(`${pathname} error: `, error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
-        message: "Internal Server Error",
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Failed to follow/unfollow user",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
-    console.log(`${pathname}: ${requestId}`);
+    console.info(`${pathname}: ${requestId}`);
   }
 }
 
@@ -117,10 +118,10 @@ export async function DELETE(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No access token found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -133,10 +134,10 @@ export async function DELETE(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -161,34 +162,46 @@ export async function DELETE(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 400,
-          message: error.message || `Backend API error: ${pathname}`,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
+          message: error.message || "Failed to unfollow user",
         },
-        { status: backendResponse.status }
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
     }
     const response = await backendResponse.json();
-    console.log(`${pathname} error: `, response);
+    // console.log(`${pathname} error: `, response);
+
     return NextResponse.json(
       {
         success: true,
-        statusCode: 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "Unfollow action successful",
-        data: response.data || null,
+        data: response.data,
       },
-      { status: 200 }
+      { status: response.statusCode || httpStatus.OK }
     );
   } catch (error) {
-    console.log(`${pathname} error: `, error);
+    console.error(`${pathname} error: `, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
-        message: "Internal Server Error",
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Failed to unfollow user",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
-    console.log(`${pathname}: ${requestId}`);
+    console.info(`${pathname}: ${requestId}`);
   }
+}
+
+export async function GET() {
+  return NextResponse.json(
+    {
+      success: false,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
+      message: "Method Not Allowed",
+    },
+    { status: httpStatus.METHOD_NOT_ALLOWED }
+  );
 }

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   apiPathName,
@@ -21,10 +22,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 401,
+          statusCode: httpStatus.UNAUTHORIZED,
           message: "No access token found",
         },
-        { status: 401 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
 
@@ -34,10 +35,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -61,10 +62,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status,
-          message: error.message || `Backend API error: ${backendRes.status}`,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
+          message: error.message || "Failed to fetch interests",
         },
-        { status: backendRes.status }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -72,10 +73,10 @@ export async function GET(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 404,
+          statusCode: httpStatus.NOT_FOUND,
           message: "User interests not found",
         },
-        { status: 200 }
+        { status: httpStatus.NOT_FOUND }
       );
     }
 
@@ -84,22 +85,22 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: response.statusCode || 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "User interests fetched successfully",
         data: response.data,
       },
-      { status: response.statusCode || 200 }
+      { status: response.statusCode || httpStatus.OK }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message:
-          error instanceof Error ? error.message : "Failed to fetch overview",
+          error instanceof Error ? error.message : "Failed to fetch interests",
       },
-      { status: 500 }
+        { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);

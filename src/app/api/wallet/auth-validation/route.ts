@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { fingerprintService } from "@/services/index.services";
+import { fingerprintService } from "@/services/fingerprint.services";
+import { authExpire, httpStatus } from "@/constants/index.constants";
 import { guardInternal, apiPathName, generateRequestId } from "@/utils/index.utils"
 
 function isoToMaxAgeSeconds(expiresAtISO: string): number {
@@ -23,10 +24,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing address or signature",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -40,10 +41,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -77,10 +78,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendRes.status || 401,
+          statusCode: backendRes.status || httpStatus.BAD_REQUEST,
           message: "Invalid address or signature",
         },
-        { status: backendRes.status || 401 }
+        { status: backendRes.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: accessMaxAge,
+        maxAge: authExpire.sessionToken,
       });
 
       res.cookies.set("accessToken", response.data.access_token, {
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: accessMaxAge,
+        maxAge: authExpire.accessToken,
       });
 
       res.cookies.set("accessExp", String(accessExpSec), {
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: '/',
-        maxAge: accessMaxAge,
+        maxAge: authExpire.accessToken,
       });
 
       res.cookies.set("refreshToken", response.data.session_token, {
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24 * 7,
+        maxAge: authExpire.refreshToken,
       });
 
       return res;
@@ -141,10 +142,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: error instanceof Error ? error.message : "Invalid address",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -155,9 +156,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

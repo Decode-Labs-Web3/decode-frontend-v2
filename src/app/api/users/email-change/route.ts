@@ -1,17 +1,18 @@
+import { httpStatus } from "@/constants/index.constants";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   return NextResponse.json({
     success: false,
-    statusCode: 404,
+    statusCode: httpStatus.NOT_FOUND,
     message: "Not Found"
-  }, { status: 404 });
+  }, { status: httpStatus.NOT_FOUND });
 }
 
 export async function POST() {
   return NextResponse.json({
     success: false,
-    statusCode: 404,
+    statusCode: httpStatus.NOT_FOUND,
     message: "Not Found"
-  }, { status: 404 });
+  }, { status: httpStatus.NOT_FOUND });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
@@ -21,10 +22,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Code is required",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -50,10 +51,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 400,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
           message: error?.message || "Invalid email verification code",
         },
-        { status: backendResponse.status || 400 }
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -63,20 +64,20 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        statusCode: backendResponse.status || 200,
+        statusCode: backendResponse.status || httpStatus.OK,
         message: response.message || "User created successfully",
       },
-      { status: backendResponse.status || 200 }
+      { status: backendResponse.status || httpStatus.OK }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Server error from login",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -87,9 +88,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }

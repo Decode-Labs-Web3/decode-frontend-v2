@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
+import { authExpire, httpStatus } from "@/constants/index.constants";
 import {
   generateRequestId,
   guardInternal,
   apiPathName,
 } from "@/utils/index.utils";
-
-function isoToMaxAgeSeconds(expiresAtISO: string): number {
-  const now = Date.now();
-  const expMs = Date.parse(expiresAtISO);
-  return Math.max(0, Math.floor((expMs - now) / 1000));
-}
 
 export async function POST(req: Request) {
   const requestId = generateRequestId();
@@ -27,10 +22,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
+          statusCode: httpStatus.BAD_REQUEST,
           message: "Code is required",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
@@ -56,10 +51,10 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: backendResponse.status || 400,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
           message: error?.message || "Invalid email verification code",
         },
-        { status: backendResponse.status || 400 }
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
       );
     }
 
@@ -73,23 +68,16 @@ export async function POST(req: Request) {
     ) {
       const res = NextResponse.json({
         success: true,
-        statusCode: response.statusCode || 200,
+        statusCode: response.statusCode || httpStatus.OK,
         message: response.message || "Login successful",
       });
-
-      const accessExpISO = response.data.expires_at as string;
-      const accessMaxAge = isoToMaxAgeSeconds(accessExpISO);
-      const accessExpSec = Math.floor(Date.parse(accessExpISO) / 1000);
-      // console.log("this is accessMaxAge", accessMaxAge);
-      // console.log("this is accessExpSec", accessExpSec);
-      // console.log(`this is login ${pathname}`, response.data);
 
       res.cookies.set("sessionId", response.data._id, {
         httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: accessMaxAge,
+        maxAge: authExpire.sessionToken,
       });
 
       res.cookies.set("accessToken", response.data.access_token, {
@@ -97,23 +85,27 @@ export async function POST(req: Request) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: accessMaxAge,
+        maxAge: authExpire.accessToken,
       });
 
-      res.cookies.set("accessExp", String(accessExpSec), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: accessMaxAge,
-      });
+      res.cookies.set(
+        "accessExp",
+        String(Math.floor(Date.now() / 1000) + authExpire.accessToken),
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: authExpire.accessToken,
+        }
+      );
 
       res.cookies.set("refreshToken", response.data.session_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24 * 7,
+        maxAge: authExpire.refreshToken,
       });
 
       return res;
@@ -125,17 +117,17 @@ export async function POST(req: Request) {
         statusCode: response.statusCode || 400,
         message: response.message || "Login failed",
       },
-      { status: 400 }
+      { status: httpStatus.BAD_REQUEST }
     );
   } catch (error) {
     console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
         message: "Server error from login",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
   } finally {
     console.info(`${pathname}: ${requestId}`);
@@ -146,9 +138,9 @@ export async function GET() {
   return NextResponse.json(
     {
       success: false,
-      statusCode: 405,
+      statusCode: httpStatus.METHOD_NOT_ALLOWED,
       message: "Method Not Allowed",
     },
-    { status: 405 }
+    { status: httpStatus.METHOD_NOT_ALLOWED }
   );
 }
