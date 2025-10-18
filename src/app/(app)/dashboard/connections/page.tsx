@@ -112,7 +112,7 @@ export default function ConnectionsIndex() {
     handleSearch();
   }, [handleSearch]);
 
-  const handleSameInterest = useCallback(async () => {
+  const handleUserSuggestSameInterest = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/interest/same-interest", {
         method: "GET",
@@ -123,64 +123,21 @@ export default function ConnectionsIndex() {
         signal: AbortSignal.timeout(10000),
       });
       const response = await apiResponse.json();
-      // console.log("apiResponse",apiResponse);
+
       if (!apiResponse.ok) {
         console.error(response);
-        // setModalOpen(true)
         toastError("Failed to fetch interests");
         return;
       }
+
       console.log("Response from suggest", response.data.users);
       setUserSuggest(response.data.users);
+
     } catch (error) {
       console.error("Fetch interests error:", error);
       toastError("Failed to fetch interests");
     }
   }, []);
-
-  const handleGetInterest = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/interest/get-interest", {
-        method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-      // console.log("apiResponse",apiResponse);
-      if (!apiResponse.ok) {
-        console.error(response);
-        // setModalOpen(true)
-        toastError("Failed to fetch interests");
-        return;
-      }
-      if (
-        response.statusCode === 404 &&
-        response.message === "User interests not found"
-      ) {
-        setModalOpen(true);
-        return;
-      }
-      if (response.message === "User interests fetched successfully") {
-        setModalOpen(false);
-        handleSameInterest();
-        return;
-      }
-    } catch (error) {
-      console.error("Fetch interests error:", error);
-      toastError("Failed to fetch interests");
-    }
-  }, [handleSameInterest]);
-
-  useEffect(() => {
-    handleGetInterest();
-  }, [handleGetInterest]);
-
-  useEffect(() => {
-    handleSameInterest();
-  }, [handleSameInterest]);
 
   const handleInterest = async () => {
     setModalOpen(true);
@@ -196,16 +153,16 @@ export default function ConnectionsIndex() {
         signal: AbortSignal.timeout(10000),
       });
       const response = await apiResponse.json();
-      console.log("apiResponse", apiResponse);
+
       if (!apiResponse.ok) {
         console.error(response);
-        // setModalOpen(true)
         toastError("Failed to create interests");
         return;
       }
+
       if (response.message === "User interests created successfully") {
         setModalOpen(false);
-        handleSameInterest();
+        handleUserSuggestSameInterest();
         return;
       }
     } catch (error) {
@@ -215,6 +172,48 @@ export default function ConnectionsIndex() {
       setModalOpen(false);
     }
   };
+
+  const handleGetInterest = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/interest/get-interest", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+
+      if (!apiResponse.ok) {
+        console.error(response);
+        toastError("Failed to fetch interests");
+        return;
+      }
+
+      if (
+        response.statusCode === 404 &&
+        response.message === "User interests not found"
+      ) {
+        setModalOpen(true);
+        return;
+      }
+
+      if (response.message === "User interests fetched successfully") {
+        setModalOpen(false);
+        // console.log("Response from get interest", response);
+        handleUserSuggestSameInterest()
+        return;
+      }
+    } catch (error) {
+      console.error("Fetch interests error:", error);
+      toastError("Failed to fetch interests");
+    }
+  }, [handleUserSuggestSameInterest]);
+
+  useEffect(() => {
+    handleGetInterest();
+  }, [handleGetInterest]);
 
   return (
     <main className="p-6 space-y-6 max-w-4xl mx-auto">
