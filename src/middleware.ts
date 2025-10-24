@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authExpire } from "@/constants/index.constants";
 
 type GateRule = {
   prefix: string;
@@ -55,7 +56,6 @@ const GATE_RULES: GateRule[] = [
   },
 ];
 
-// Handle gate rules for specific routes, checking for required cookies and clearing them after use
 function handleGate(
   request: NextRequest,
   pathname: string
@@ -81,12 +81,11 @@ function handleGate(
   return null;
 }
 
-// Check if a JWT token is still valid
 function getRemainingFromAccessExpCookie(
   request: NextRequest,
   skewSeconds = 10
 ): number {
-  const expStr = request.cookies.get("accessExp")?.value; // "1761631300"
+  const expStr = request.cookies.get("accessExp")?.value;
   if (!expStr) return -1;
   const exp = Number(expStr);
   if (!Number.isFinite(exp)) return -1;
@@ -94,11 +93,78 @@ function getRemainingFromAccessExpCookie(
   return exp - now - skewSeconds;
 }
 
-// Main middleware function for handling authentication, gate rules, and API/dashboard access
+async function refreshTokens(
+  request: NextRequest,
+  origin: string
+): Promise<{ success: boolean; response?: NextResponse }> {
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+  if (!refreshToken) return { success: false };
+
+  try {
+    const apiResponse = await fetch(`${origin}/api/auth/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Frontend-Internal-Request": "true",
+        Cookie: request.headers.get("cookie") || "",
+      },
+      body: JSON.stringify({ refreshToken }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!apiResponse.ok) return { success: false };
+
+    const response = await apiResponse.json();
+    if (response.success && response.statusCode === 200) {
+      const res = NextResponse.next();
+
+      res.cookies.set("sessionId", response.data._id, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: authExpire.accessToken,
+      });
+
+      res.cookies.set("accessToken", response.data.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: authExpire.accessToken,
+      });
+
+      res.cookies.set(
+        "accessExp",
+        String(Math.floor(Date.now() / 1000) + authExpire.accessToken),
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: authExpire.accessToken,
+        }
+      );
+
+      res.cookies.set("refreshToken", response.data.session_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: authExpire.refreshToken,
+      });
+
+      return { success: true, response: res };
+    }
+  } catch (error) {
+    console.error("Token refresh error:", error);
+  }
+  return { success: false };
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname, origin } = request.nextUrl;
-
-  // Handle static files and public routes first
   if (
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
@@ -114,7 +180,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Special handling for API routes
   if (pathname.startsWith("/api")) {
     if (pathname === "/api/users/websocket") {
       return NextResponse.next();
@@ -126,7 +191,30 @@ export async function middleware(request: NextRequest) {
     const internal =
       request.headers.get("X-Frontend-Internal-Request") === "true";
 
-    if (internal) return NextResponse.next();
+    if (internal) {
+      // For internal API calls, check and refresh tokens if needed
+      const refreshToken = request.cookies.get("refreshToken")?.value;
+      if (refreshToken) {
+        const remaining = getRemainingFromAccessExpCookie(request);
+        if (remaining <= 0) {
+          const refreshResult = await refreshTokens(request, origin);
+          if (refreshResult.success && refreshResult.response) {
+            return refreshResult.response;
+          } else {
+            // Refresh failed, return unauthorized
+            return NextResponse.json(
+              {
+                success: false,
+                statusCode: 401,
+                message: "Session expired, please login again",
+              },
+              { status: 401 }
+            );
+          }
+        }
+      }
+      return NextResponse.next();
+    }
 
     const isNavigation = mode === "navigate" || dest === "document" || userNav;
     if (isNavigation) {
@@ -142,11 +230,9 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  // Handle gate rules for certain routes
   const gated = handleGate(request, pathname);
   if (gated) return gated;
 
-  // Check if user is already authenticated and trying to access home page
   if (pathname === "/") {
     const accessToken = request.cookies.get("accessToken")?.value;
     const refreshToken = request.cookies.get("refreshToken")?.value;
@@ -159,30 +245,11 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
 
-      try {
-        const apiResponse = await fetch(`${origin}/api/auth/refresh`, {
-          method: "POST",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-            Cookie: request.headers.get("cookie") || "",
-          },
-          cache: "no-store",
-          signal: AbortSignal.timeout(10000),
-        });
-        if (!apiResponse.ok)
-          return NextResponse.redirect(new URL("/", request.url));
-
-        const response = await apiResponse.json();
-        if (
-          response.success &&
-          response.statusCode === 200
-        ) {
-          return NextResponse.redirect(new URL("/dashboard", request.url));
-        }
-        return NextResponse.redirect(new URL("/", request.url));
-      } catch {
-        return NextResponse.redirect(new URL("/", request.url));
+      const refreshResult = await refreshTokens(request, origin);
+      if (refreshResult.success && refreshResult.response) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
       }
+      return NextResponse.redirect(new URL("/", request.url));
     }
 
     return NextResponse.next();
@@ -198,33 +265,13 @@ export async function middleware(request: NextRequest) {
     const stillValid = !!accessToken && remaining > 0;
     if (stillValid) return NextResponse.next();
 
-    try {
-      const apiResponse = await fetch(`${origin}/api/auth/refresh`, {
-        method: "POST",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-          Cookie: request.headers.get("cookie") || "",
-        },
-        cache: "no-store",
-        signal: AbortSignal.timeout(10_000),
-      });
-      if (!apiResponse.ok)
-        return NextResponse.redirect(new URL("/", request.url));
-
-      const response = await apiResponse.json();
-      if (
-        response.success &&
-        response.statusCode === 200
-      ) {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
-      }
-      return NextResponse.redirect(new URL("/", request.url));
-    } catch {
-      return NextResponse.redirect(new URL("/", request.url));
+    const refreshResult = await refreshTokens(request, origin);
+    if (refreshResult.success && refreshResult.response) {
+      return refreshResult.response;
     }
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Default redirect to home for all other cases
   return NextResponse.redirect(new URL("/", request.url));
 }
 
@@ -283,7 +330,7 @@ export const config = {
 //   return Math.max(0, Math.floor((expMs - now) / 1000));
 // }
 
-// // Handle gate rules for specific routes, checking for required cookies and clearing them after use
+// Handle gate rules for specific routes, checking for required cookies and clearing them after use
 // function handleGate(
 //   request: NextRequest,
 //   pathname: string
@@ -336,7 +383,7 @@ export const config = {
 //   return null;
 // }
 
-// // Check if a JWT token is still valid
+// Check if a JWT token is still valid
 // function getRemainingFromAccessExpCookie(
 //   request: NextRequest,
 //   skewSeconds = 10
@@ -349,7 +396,7 @@ export const config = {
 //   return exp - now - skewSeconds;
 // }
 
-// // Main middleware function for handling authentication, gate rules, and API/dashboard access
+// Main middleware function for handling authentication, gate rules, and API/dashboard access
 // export async function middleware(request: NextRequest) {
 //   const { pathname, origin } = request.nextUrl;
 
