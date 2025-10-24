@@ -81,7 +81,6 @@ export default function SnapshotChart({ userId }: Props) {
         new Date(a.snapshot_at).getTime() - new Date(b.snapshot_at).getTime()
     );
 
-    // giữ 1 snapshot / ngày (ưu tiên cái mới nhất theo sort)
     const byDay = new Map<string, SnapshotData>();
     for (const s of sorted) {
       byDay.set(s.snapshot_at.slice(0, 10), s);

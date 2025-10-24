@@ -8,12 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default function TermsPage() {
-  const lastUpdated = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
   const ecosystemComponents = [
     "Job and contribution platform for Web3 talent",
     "Crowdfunding platform with milestone-based smart contracts",
@@ -62,8 +56,7 @@ export default function TermsPage() {
   ];
 
   return (
-    <Legal.LegalPageLayout title="Terms of Service" lastUpdated={lastUpdated}>
-      {/* Introduction */}
+    <Legal.LegalPageLayout title="Terms of Service">
       <Legal.LegalContent title="1. Introduction">
         <p className="leading-relaxed mb-4">
           Welcome to Decode Network (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or

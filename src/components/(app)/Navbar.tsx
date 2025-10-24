@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 // import { toastError } from "@/utils/index.utils";
+import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSun,
@@ -94,9 +95,11 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Navbar */}
           <div className="flex items-center gap-3">
-            <button
+            <Button
               onClick={handleToggleSidebar}
-              className="bg-[color:var(--surface-muted)] border border-[color:var(--border)] rounded-lg p-1.5 backdrop-blur-sm md:pointer-events-none"
+              variant="outline"
+              size="icon"
+              className="md:pointer-events-none"
               aria-label="Open sidebar"
             >
               <Image
@@ -107,7 +110,7 @@ export default function Navbar() {
                 className="w-7 h-7 object-contain"
                 unoptimized
               />
-            </button>
+            </Button>
             <h1 className="text-sm md:text-base font-semibold">
               Decode Protocol
             </h1>
@@ -115,29 +118,37 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3">
             {theme && (
-              <button
+              <Button
                 onClick={handleTheme}
-                className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors"
+                variant="outline"
+                size="sm"
+                className="gap-2"
               >
-                Dark Mode <FontAwesomeIcon icon={faMoon} className="w-4 h-4" />
-              </button>
+                <FontAwesomeIcon icon={faMoon} className="w-4 h-4" />
+                Dark Mode
+              </Button>
             )}
             {!theme && (
-              <button
+              <Button
                 onClick={handleTheme}
-                className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors"
+                variant="outline"
+                size="sm"
+                className="gap-2"
               >
-                Light Mode <FontAwesomeIcon icon={faSun} className="w-4 h-4" />
-              </button>
+                <FontAwesomeIcon icon={faSun} className="w-4 h-4" />
+                Light Mode
+              </Button>
             )}
 
-            <button
+            <Button
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-3 rounded-lg transition-colors"
+              variant="destructive"
+              size="sm"
+              className="gap-2"
             >
-              Logout{" "}
               <FontAwesomeIcon icon={faRightFromBracket} className="w-4 h-4" />
-            </button>
+              Logout
+            </Button>
           </div>
         </div>
       </div>

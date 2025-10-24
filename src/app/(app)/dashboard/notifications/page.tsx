@@ -5,6 +5,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { useNotificationContext } from "@/contexts/NotificationContext.contexts";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface NotificationReceived {
   _id: string;
@@ -204,61 +206,56 @@ export default function NotificationsPage() {
   }, [endOfData, loading]);
 
   return (
-    <div className="flex flex-col justify-start gap-2">
-      <button
-        onClick={() => markAllAsRead()}
-        className="bg-blue-700 p-2 rounded-lg text-white w-40"
-      >
+    <div className="flex flex-col justify-start gap-4">
+      <Button onClick={() => markAllAsRead()} className="w-40">
         Mark all as read
-      </button>
+      </Button>
       {loading && <Loading.NotificationCard />}
       {!loading &&
         notifications.map((notification) => (
-          <div
-            key={notification._id}
-            className="flex items-center justify-between p-4 border border-[color:var(--border)] rounded-lg my-2 bg-[color:var(--surface)] hover-card"
-          >
-            <div className="flex items-center gap-3">
-              {notification.read ? (
-                <FontAwesomeIcon
-                  icon={faCircleCheck}
-                  className="text-green-600 dark:text-green-400"
-                />
-              ) : (
-                <FontAwesomeIcon
-                  icon={faBell}
-                  className="text-yellow-600 dark:text-yellow-400"
-                />
-              )}
+          <Card key={notification._id} className="hover-card">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {notification.read ? (
+                    <FontAwesomeIcon
+                      icon={faCircleCheck}
+                      className="text-green-600 dark:text-green-400"
+                    />
+                  ) : (
+                    <FontAwesomeIcon
+                      icon={faBell}
+                      className="text-yellow-600 dark:text-yellow-400"
+                    />
+                  )}
 
-              <div>
-                <p className="text-sm text-[color:var(--foreground)]">
-                  {notification.title}
-                </p>
-                <p className="text-xs text-[color:var(--muted-foreground)]">
-                  {notification.createdAt}
-                </p>
+                  <div>
+                    <p className="text-sm">{notification.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {notification.createdAt}
+                    </p>
+                  </div>
+                </div>
+                {!notification.read && (
+                  <Button
+                    onClick={() => markAsRead(notification._id)}
+                    size="sm"
+                    className="w-20"
+                  >
+                    Read
+                  </Button>
+                )}
               </div>
-            </div>
-            {!notification.read && (
-              <button
-                onClick={() => markAsRead(notification._id)}
-                className="bg-blue-700 p-2 rounded-lg text-white w-20"
-              >
-                Read
-              </button>
-            )}
-          </div>
+            </CardContent>
+          </Card>
         ))}
       {endOfData && (
-        <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
-          End of data
-        </div>
+        <p className="text-muted-foreground text-sm mt-2">End of data</p>
       )}
       {!endOfData && (
-        <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
+        <p className="text-muted-foreground text-sm mt-2">
           Current page: {page}
-        </div>
+        </p>
       )}
     </div>
   );

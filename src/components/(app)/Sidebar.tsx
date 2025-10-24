@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNotificationContext } from "@/contexts/NotificationContext.contexts";
 import {
@@ -59,30 +61,25 @@ export default function Sidebar() {
       <aside className="fixed top-16 left-0 bottom-0 w-64 bg-[color:var(--surface-muted)] backdrop-blur-xl border-r border-[color:var(--border)] hidden md:flex flex-col">
         <nav className="p-3 space-y-1">
           {items.map((item) => (
-            <button
+            <Button
               key={item.key}
               onClick={() => {
                 router.push(`/dashboard/${item.key}`);
                 setMobileOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                active === item.key
-                  ? "bg-[color:var(--surface)] text-[color:var(--foreground)] border-l-6 border-[color:var(--border)]"
-                  : "text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface)] hover:text-[color:var(--foreground)]"
+              variant={active === item.key ? "secondary" : "ghost"}
+              className={`w-full justify-start gap-3 px-3 py-2 h-auto ${
+                active === item.key ? "border-l-4 border-primary" : ""
               }`}
             >
-              <div className="flex justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </div>
-                {item.key === "notifications" && unread > 0 && (
-                  <span className="text-xs text-[color:var(--muted-foreground-2)]">
-                    {unread}
-                  </span>
-                )}
-              </div>
-            </button>
+              <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.key === "notifications" && unread > 0 && (
+                <Badge variant="destructive" className="ml-auto text-xs">
+                  {unread}
+                </Badge>
+              )}
+            </Button>
           ))}
         </nav>
       </aside>
@@ -97,30 +94,25 @@ export default function Sidebar() {
           <div className="absolute top-16 left-0 bottom-0 w-64 bg-[color:var(--surface-muted)] border-r border-[color:var(--border)] shadow-xl">
             <nav className="p-3 space-y-1">
               {items.map((item) => (
-                <button
+                <Button
                   key={item.key}
                   onClick={() => {
                     router.push(`/dashboard/${item.key}`);
                     setMobileOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    active === item.key
-                      ? "bg-[color:var(--surface)] text-[color:var(--foreground)] border-l-6 border-[color:var(--border)]"
-                      : "text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface)] hover:text-[color:var(--foreground)]"
+                  variant={active === item.key ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 px-3 py-2 h-auto ${
+                    active === item.key ? "border-l-4 border-primary" : ""
                   }`}
                 >
-                  <div className="flex justify-between w-full">
-                    <div className="flex items-center gap-2">
-                      <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.key === "notifications" && unread > 0 && (
-                      <span className="text-xs text-[color:var(--muted-foreground-2)]">
-                        {unread}
-                      </span>
-                    )}
-                  </div>
-                </button>
+                  <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {item.key === "notifications" && unread > 0 && (
+                    <Badge variant="destructive" className="ml-auto text-xs">
+                      {unread}
+                    </Badge>
+                  )}
+                </Button>
               ))}
             </nav>
           </div>

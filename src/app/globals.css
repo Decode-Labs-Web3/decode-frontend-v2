@@ -1,52 +1,74 @@
 @import "tailwindcss";
 
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
   --surface: #ffffff;
   --surface-muted: #f6f7f8;
   --navbar-bg: rgba(255, 255, 255, 0.8);
-  --border: rgba(0, 0, 0, 0.08);
-  --muted-foreground: #6b7280;
+  --border: oklch(0.922 0 0);
+  --muted-foreground: oklch(0.556 0 0);
   --muted-foreground-2: #9ca3af;
   --shadow: rgba(0, 0, 0, 0.15);
-  --w3m-font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
-    sans-serif;
+  --radius: 0.625rem;
+
+  /* shadcn/ui required */
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(224 71.4% 4.1%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(224 71.4% 4.1%);
+  --primary: hsl(220.9 39.3% 11%);
+  --primary-foreground: hsl(210 20% 98%);
+  --secondary: hsl(220 14.3% 95.9%);
+  --secondary-foreground: hsl(220.9 39.3% 11%);
+  --muted: hsl(220 14.3% 95.9%);
+  --accent: hsl(220 14.3% 95.9%);
+  --accent-foreground: hsl(220.9 39.3% 11%);
+  --destructive: hsl(0 100% 50%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --input: hsl(220 13% 91%);
+  --ring: hsl(224 71.4% 4.1%);
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
   --surface: #111214;
   --surface-muted: #15171a;
   --navbar-bg: rgba(0, 0, 0, 0.8);
-  --border: rgba(255, 255, 255, 0.1);
-  --muted-foreground: #9ca3af;
+  --border: oklch(0.3 0 0);
+  --muted-foreground: oklch(0.6 0 0);
   --muted-foreground-2: #6b7280;
-  /* Use a soft white glow for hover in dark mode */
   --shadow: rgba(255, 255, 255, 0.12);
+
+  /* shadcn/ui required */
+  --card: hsl(224 71.4% 4.1%);
+  --card-foreground: hsl(210 20% 98%);
+  --popover: hsl(224 71.4% 4.1%);
+  --popover-foreground: hsl(210 20% 98%);
+  --primary: hsl(210 20% 98%);
+  --primary-foreground: hsl(220.9 39.3% 11%);
+  --secondary: hsl(215 27.9% 16.9%);
+  --secondary-foreground: hsl(210 20% 98%);
+  --muted: hsl(215 27.9% 16.9%);
+  --accent: hsl(215 27.9% 16.9%);
+  --accent-foreground: hsl(210 20% 98%);
+  --destructive: hsl(0 75% 40%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --input: hsl(215 27.9% 16.9%);
+  --ring: hsl(216 12.2% 83.9%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Reusable hover shadow for cards */
-.hover-card {
-  transition: box-shadow 200ms ease, transform 200ms ease,
-    background-color 200ms ease, border-color 200ms ease;
-}
-.hover-card:hover {
-  /* add a thin ring plus ambient shadow; works in both themes */
-  box-shadow: 0 0 0 1px var(--border), 0 10px 28px var(--shadow);
-  transform: translateY(-2px);
+@layer base {
+  * {
+    @apply outline-gray-300/50;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
 }

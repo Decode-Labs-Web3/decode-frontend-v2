@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { toastError } from "@/utils/index.utils";
 import Loading from "@/components/(loading)";
@@ -12,6 +11,9 @@ import {
   faComment,
   faShare,
 } from "@fortawesome/free-solid-svg-icons";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface BlogPost {
   _id: string;
@@ -96,73 +98,82 @@ export default function NewsPage() {
       {loading ? (
         <Loading.NewsCard />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <article
-              key={post._id}
-              className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm shadow-xl"
-            >
-              <div className="relative aspect-video overflow-hidden">
-                <Image
-                  src={getImageUrl(post)}
-                  alt={post.title}
-                  width={400}
-                  height={225}
-                  className="w-full h-full object-contain"
-                  unoptimized
+            <Card key={post._id} className="overflow-hidden hover-card">
+              <div className="relative aspect-video overflow-hidden bg-muted">
+                <div
+                  className="w-full h-full bg-cover bg-center bg-no-repeat"
+                  style={{ backgroundImage: `url(${getImageUrl(post)})` }}
+                  role="img"
+                  aria-label={post.title}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0" />
-                <span className="absolute left-3 top-3 text-xs px-2 py-1 rounded-md bg-blue-700/80 text-white capitalize">
+                <Badge className="absolute left-3 top-3 text-xs capitalize">
                   {post.category}
-                </span>
+                </Badge>
               </div>
 
-              <div className="p-4">
-                <div className="flex items-center gap-2 text-[11px] text-gray-400 mb-1">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <FontAwesomeIcon icon={faNewspaper} />
                   <span className="uppercase tracking-wide">Community</span>
                   <span>•</span>
                   <FontAwesomeIcon icon={faClock} />
                   <span>{formatTime(post.createdAt)}</span>
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold leading-snug mb-1">
+                <h3 className="text-lg font-semibold leading-snug mb-2 line-clamp-2">
                   {post.title}
                 </h3>
-                <p className="text-sm text-gray-300 line-clamp-3">
+                <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
                   {post.content}
                 </p>
                 {post.keywords && post.keywords.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1">
                     {post.keywords.slice(0, 3).map((keyword, index) => (
-                      <span
+                      <Badge
                         key={index}
-                        className="text-xs px-2 py-1 bg-gray-700/50 text-gray-300 rounded"
+                        variant="secondary"
+                        className="text-xs"
                       >
                         {keyword}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
                 )}
-              </div>
+              </CardContent>
 
-              <div className="px-4 pb-4">
-                <div className="flex items-center justify-between border-t border-white/10 pt-3">
-                  <div className="flex items-center gap-4 text-gray-300">
-                    <button className="flex items-center gap-1.5 text-xs hover:text-white">
-                      <FontAwesomeIcon icon={faThumbsUp} />
+              <CardFooter className="px-4 pb-4 pt-0">
+                <div className="flex items-center justify-between w-full border-t border-border pt-3">
+                  <div className="flex items-center gap-4 text-muted-foreground">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 text-xs hover:text-foreground"
+                    >
+                      <FontAwesomeIcon icon={faThumbsUp} className="mr-1.5" />
                       <span>{number(post.upvote)}</span>
-                    </button>
-                    <button className="flex items-center gap-1.5 text-xs hover:text-white">
-                      <FontAwesomeIcon icon={faComment} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto p-0 text-xs hover:text-foreground"
+                    >
+                      <FontAwesomeIcon icon={faComment} className="mr-1.5" />
                       <span>0</span>
-                    </button>
+                    </Button>
                   </div>
-                  <button className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
-                    <FontAwesomeIcon icon={faShare} /> Share
-                  </button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 text-xs text-primary hover:text-primary/80"
+                  >
+                    <FontAwesomeIcon icon={faShare} className="mr-1.5" />
+                    Share
+                  </Button>
                 </div>
-              </div>
-            </article>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       )}

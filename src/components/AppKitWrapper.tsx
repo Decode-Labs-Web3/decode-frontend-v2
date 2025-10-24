@@ -5,7 +5,6 @@ import { AppKitProvider } from "@reown/appkit/react";
 import { mainnet, arbitrum } from "@reown/appkit/networks";
 import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 
-// Global type declarations for wallet detection
 declare global {
   interface Window {
     okxwallet?: Record<string, unknown>;
@@ -24,7 +23,6 @@ import {
   useAppKitProvider,
 } from "@reown/appkit/react";
 
-// AppKit configuration
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID!;
 if (!projectId) console.error("REOWN_PROJECT_ID is missing");
 
@@ -42,7 +40,6 @@ const metadata = {
   icons: ["/images/tokens/3d_token_nobg.png"],
 };
 
-// Inner component that uses AppKit hooks
 function WalletContent() {
   const router = useRouter();
   const [formData, setFormData] = useState<{ email_or_username: string }>({

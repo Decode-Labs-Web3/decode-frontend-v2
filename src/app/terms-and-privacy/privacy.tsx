@@ -8,12 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
-  const lastUpdated = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
   const personalInfo = [
     "Username, email address, password (encrypted)",
     "Display name, bio, avatar, and other profile details",
@@ -75,7 +69,7 @@ export default function PrivacyPage() {
   ];
 
   return (
-    <Legal.LegalPageLayout title="Privacy Policy" lastUpdated={lastUpdated}>
+    <Legal.LegalPageLayout title="Privacy Policy">
       {/* Introduction */}
       <Legal.LegalContent title="1. Introduction">
         <p className=" leading-relaxed mb-4">
@@ -228,7 +222,6 @@ export default function PrivacyPage() {
         </p>
       </Legal.LegalContent>
 
-      {/* Contact Information, Academic Notice, and Footer */}
       <Legal.LegalInfoCard />
     </Legal.LegalPageLayout>
   );

@@ -1,11 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface UserFollow {
   followers_number: number;
@@ -118,128 +125,140 @@ export default function Page() {
 
       {userFollow.length > 0 &&
         userFollow.map((user) => (
-          <div
-            key={user.user_id}
-            id={user.user_id}
-            className="flex items-center justify-between w-full px-3 py-2 rounded-2xl bg-[color:var(--surface)] border border-[color:var(--border)] hover-card"
-          >
-            <Link
-              href={`/dashboard/connections/followings/${user.user_id}`}
-              className="w-full h-full"
-            >
-              <div className="flex flex-row gap-3 min-w-0">
-                <div className="w-14 h-14 rounded-xl border-2 border-[color:var(--border)] overflow-hidden shadow-sm">
-                  <div className="relative">
-                    <Image
+          <HoverCard key={user.user_id}>
+            <HoverCardTrigger asChild>
+              <Card className="hover-card cursor-pointer">
+                <CardContent className="p-4">
+                  <Link
+                    href={`/dashboard/connections/followings/${user.user_id}`}
+                    className="flex items-center gap-3 min-w-0"
+                  >
+                    <Avatar className="w-14 h-14 border-2 border-border">
+                      <AvatarImage
+                        src={
+                          user.avatar_ipfs_hash
+                            ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
+                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                        }
+                        alt={user.display_name || "Avatar"}
+                        className="object-contain"
+                      />
+                      <AvatarFallback>
+                        {user.display_name?.charAt(0) ||
+                          user.username?.charAt(0) ||
+                          "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-foreground truncate font-medium">
+                          {user.display_name}
+                        </h3>
+                        {user.role && (
+                          <Badge variant="outline" className="text-xs">
+                            {user.role}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        @{user.username}
+                      </p>
+                    </div>
+                  </Link>
+                </CardContent>
+              </Card>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80 p-4" side="bottom" align="start">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <Avatar className="w-16 h-16 border-2 border-border">
+                    <AvatarImage
                       src={
                         user.avatar_ipfs_hash
                           ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
                           : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                       }
-                      alt={"Avatar"}
-                      width={56}
-                      height={56}
-                      className="w-full h-full object-contain"
-                      unoptimized
+                      alt={user.display_name || "Avatar"}
+                      className="object-contain"
                     />
-                  </div>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <h3 className="text-[color:var(--foreground)] truncate font-medium">
-                    {user.display_name}
-                  </h3>
-                  <p className="text-sm text-[color:var(--muted-foreground)] truncate">
-                    @{user.username}
-                  </p>
-                </div>
-              </div>
-            </Link>
-            {/* hover part */}
-            <div className="absolute z-50 left-1/2 -translate-x-1/2 top-[calc(100%+10px)] w-[420px] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-2xl p-4">
-              <div className="flex flex-col">
-                {/* image section */}
-                <div className="flex flex-row gap-4">
-                  <div className="w-25 h-25 rounded-xl overflow-hidden border border-[color:var(--border)] flex-shrink-0">
-                    <Image
-                      src={
-                        user.avatar_ipfs_hash
-                          ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                          : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                      }
-                      alt={"Avatar"}
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-contain"
-                      unoptimized
-                    />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-[color:var(--foreground)] truncate">
+                    <AvatarFallback>
+                      {user.display_name?.charAt(0) ||
+                        user.username?.charAt(0) ||
+                        "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-medium text-foreground truncate">
                         {user.display_name}
                       </p>
                       {user.role && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color:var(--surface)] border border-[color:var(--border)] text-[color:var(--muted-foreground)] whitespace-nowrap">
+                        <Badge variant="outline" className="text-xs">
                           {user.role}
-                        </span>
+                        </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-[color:var(--muted-foreground)] truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       @{user.username}
                     </p>
-
-                    <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                      <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                        <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                          Following
-                        </p>
-                        <p className="text-sm font-medium text-[color:var(--foreground)]">
-                          {user.following_number}
-                        </p>
-                      </div>
-                      <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                        <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                          Followers
-                        </p>
-                        <p className="text-sm font-medium text-[color:var(--foreground)]">
-                          {user.followers_number}
-                        </p>
-                      </div>
-                      <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                        <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                          Mutual
-                        </p>
-                        <p className="text-sm font-medium text-[color:var(--foreground)]">
-                          {user.mutual_followers_number}
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
-                {/* mutual followers compact row */}
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <Card>
+                    <CardContent className="p-3">
+                      <p className="text-xs text-muted-foreground">Following</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {user.following_number}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3">
+                      <p className="text-xs text-muted-foreground">Followers</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {user.followers_number}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3">
+                      <p className="text-xs text-muted-foreground">Mutual</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {user.mutual_followers_number}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
                 {user.mutual_followers_number > 0 && (
-                  <div className="mt-3 flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <div className="flex -space-x-2">
                       {user.mutual_followers_list
                         .slice(0, 3)
                         .map((mutualFollower) => (
-                          <Image
+                          <Avatar
                             key={mutualFollower.user_id}
-                            src={
-                              mutualFollower.avatar_ipfs_hash
-                                ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                            }
-                            alt={"Avatar"}
-                            width={20}
-                            height={20}
-                            className="w-full h-full rounded-full object-contain"
-                            unoptimized
-                          />
+                            className="w-5 h-5 border border-border"
+                          >
+                            <AvatarImage
+                              src={
+                                mutualFollower.avatar_ipfs_hash
+                                  ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                  : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                              }
+                              alt={mutualFollower.display_name || "Avatar"}
+                              className="object-contain"
+                            />
+                            <AvatarFallback className="text-xs">
+                              {mutualFollower.display_name?.charAt(0) ||
+                                mutualFollower.username?.charAt(0) ||
+                                "?"}
+                            </AvatarFallback>
+                          </Avatar>
                         ))}
                     </div>
-                    <p className="text-xs text-[color:var(--muted-foreground)] truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       Followed by{" "}
                       {user.mutual_followers_list
                         .slice(0, 2)
@@ -253,16 +272,14 @@ export default function Page() {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+            </HoverCardContent>
+          </HoverCard>
         ))}
       {endOfData && (
-        <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
-          End of data
-        </div>
+        <div className="text-muted-foreground text-sm mt-2">End of data</div>
       )}
       {!endOfData && (
-        <div className="text-[color:var(--muted-foreground)] text-sm mt-2">
+        <div className="text-muted-foreground text-sm mt-2">
           Current page: {page}
         </div>
       )}

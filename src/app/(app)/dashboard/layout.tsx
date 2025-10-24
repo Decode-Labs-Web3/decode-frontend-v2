@@ -9,6 +9,14 @@ import { fingerprintService } from "@/services/fingerprint.services";
 import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import { NotificationProvider } from "@/contexts/NotificationContext.contexts";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface NotificationReceived {
   _id: string;
@@ -204,65 +212,30 @@ export default function DashboardLayout({
 
   if (isDeactivated) {
     return (
-      <div
-        role="dialog"
-        tabIndex={-1}
-        ref={(el: HTMLDivElement | null) => el?.focus()}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            handleReactivateAccount(false);
-          }
-        }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      >
-        <div
-          className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
-          onClick={() => handleReactivateAccount(false)}
-        />
-        <div className="relative z-10 w-full max-w-md rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-xl">
-          <div className="px-5 py-4 border-b border-[color:var(--border)]">
-            <h3 className="text-base font-semibold text-[color:var(--foreground)]">
-              Confirm account deactivation
-            </h3>
-          </div>
-          {/*
-          <div className="p-4 border-b">
-            <div className="text-sm">deactivate?</div>
-          </div>
-          */}
-          <div className="px-5 py-4 space-y-2">
-            <p className="text-sm text-[color:var(--foreground)]">
-              Are you sure you want to deactivate your account?
-            </p>
-            <p className="text-sm text-[color:var(--muted-foreground)]">
-              Account deactivated successfully, it will be permanently deleted
-              after 1 month.
-            </p>
-          </div>
-          <div className="px-5 py-4 border-t border-[color:var(--border)] flex items-center justify-end gap-3">
-            {/*
-            <div className="flex gap-2 p-4">
-              <button className="px-3 py-1.5 border rounded">back</button>
-              <button className="px-3 py-1.5 bg-red-600 text-white rounded">reactivate</button>
-            </div>
-            */}
-            <button
-              type="button"
+      <Dialog open={true} onOpenChange={() => handleReactivateAccount(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm account deactivation</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to deactivate your account? Account
+              deactivated successfully, it will be permanently deleted after 1
+              month.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
               onClick={() => handleReactivateAccount(false)}
-              className="px-4 py-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] text-[color:var(--foreground)] text-sm hover:bg-[color:var(--surface)] transition-colors"
             >
               Return to login
-            </button>
-            <button
-              type="button"
-              onClick={() => handleReactivateAccount(true)}
-              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-colors"
-            >
+            </Button>
+            <Button onClick={() => handleReactivateAccount(true)}>
               Reactivate account
-            </button>
+            </Button>
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 

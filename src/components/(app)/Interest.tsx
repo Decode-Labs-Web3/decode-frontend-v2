@@ -1,5 +1,14 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const INTERESTS = [
   "networking",
@@ -79,62 +88,36 @@ export default function InterestModal({
     txt.charAt(0).toUpperCase() + txt.slice(1).replace(/_/g, " ");
 
   return (
-    <div
-      id="interest-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="interest-dialog-title"
-      tabIndex={-1}
-      ref={(element:HTMLDivElement) => {
-        element?.focus()
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape"){
-          onCloseAction?.();
-        }
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-    >
-      <div className="absolute inset-0 bg-black/60" />
-
-      {/* Modal Panel */}
-      <div
-        ref={panelRef}
-        className="relative z-10 w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-950 shadow-2xl"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
-          <h2
-            id="interest-dialog-title"
-            className="text-sm font-medium text-zinc-100"
-          >
+    <Dialog open={true} onOpenChange={() => onCloseAction?.()}>
+      <DialogContent className="max-w-md max-h-[80vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
             Select at least 3 interests
-          </h2>
-          <span className="text-xs text-zinc-400">
-            {value.length}/{INTERESTS.length}
-          </span>
-        </div>
+            <Badge variant="secondary" className="text-xs">
+              {value.length}/{INTERESTS.length}
+            </Badge>
+          </DialogTitle>
+          <DialogDescription>
+            Choose your interests to personalize your experience
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Content */}
         <div className="max-h-80 overflow-auto">
-          <ul className="divide-y divide-zinc-800">
+          <ul className="space-y-1">
             {INTERESTS.map((interest) => {
               const selected = value.includes(interest);
               return (
                 <li key={interest}>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => toggle(interest)}
-                    className={[
-                      "w-full px-4 py-3 text-left text-sm",
-                      selected
-                        ? "bg-white text-black"
-                        : "text-zinc-200 hover:bg-zinc-900",
-                    ].join(" ")}
+                    variant={selected ? "default" : "ghost"}
+                    className="w-full justify-start text-left h-auto py-3 px-4"
                     aria-pressed={selected}
                   >
                     {formatLabel(interest)}
-                  </button>
+                  </Button>
                 </li>
               );
             })}
@@ -142,22 +125,17 @@ export default function InterestModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t border-zinc-800 px-4 py-3">
-          <button
+        <div className="flex items-center justify-end gap-2 pt-4 border-t">
+          <Button
             type="button"
             onClick={onCloseAction}
             disabled={!onCloseAction}
-            className={[
-              "rounded-lg border border-zinc-700 px-3 py-2 text-sm",
-              onCloseAction
-                ? "text-zinc-100 hover:bg-zinc-800"
-                : "opacity-50 cursor-not-allowed text-zinc-400",
-            ].join(" ")}
+            variant="outline"
           >
             Done
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

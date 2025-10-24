@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Auth from "@/components/(auth)";
 import { useState, useEffect } from "react";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,6 +10,18 @@ import {
   faTimes,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const categories = [
   { value: "decode", label: "Decode" },
@@ -183,147 +194,149 @@ export default function BlogPostPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Image Upload */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
-            Featured Image
-          </label>
-          <div className="border-2 border-dashed border-[color:var(--border)] rounded-lg p-6 text-center hover:border-[color:var(--foreground)]/30 transition-colors bg-[color:var(--surface)]">
-            {imagePreview ? (
-              <div className="relative">
-                <Image
-                  src={imagePreview}
-                  alt="Preview"
-                  width={400}
-                  height={256}
-                  className="max-h-64 mx-auto rounded-lg object-contain"
-                />
-                {uploadingImage && (
-                  <FontAwesomeIcon
-                    icon={faSpinner}
-                    className="w-12 h-12 text-[color:var(--muted-foreground)] mx-auto mb-4 animate-spin"
-                  />
-                )}
-                {formData.post_ipfs_hash && !uploadingImage && (
-                  <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded text-xs">
-                    IPFS ✓
+      <Card>
+        <CardHeader>
+          <CardTitle>Create New Blog Post</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="image-upload">Featured Image</Label>
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-foreground/30 transition-colors bg-muted/50">
+                {imagePreview ? (
+                  <div className="relative">
+                    <Image
+                      src={imagePreview || ""}
+                      alt="Preview"
+                      width={400}
+                      height={256}
+                      className="max-h-64 mx-auto rounded-lg object-contain"
+                    />
+                    {uploadingImage && (
+                      <FontAwesomeIcon
+                        icon={faSpinner}
+                        className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin"
+                      />
+                    )}
+                    {formData.post_ipfs_hash && !uploadingImage && (
+                      <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded text-xs">
+                        IPFS ✓
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      onClick={removeImage}
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2 rounded-full p-1 h-6 w-6"
+                    >
+                      <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <FontAwesomeIcon
+                      icon={faImage}
+                      className="w-12 h-12 text-muted-foreground mx-auto mb-4"
+                    />
+                    <p className="text-muted-foreground mb-2">
+                      Click to upload an image
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <Button asChild variant="outline">
+                      <label htmlFor="image-upload" className="cursor-pointer">
+                        <FontAwesomeIcon
+                          icon={faUpload}
+                          className="w-4 h-4 mr-2"
+                        />
+                        Choose Image
+                      </label>
+                    </Button>
                   </div>
                 )}
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
-                >
-                  <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
-                </button>
               </div>
-            ) : (
-              <div>
-                <FontAwesomeIcon
-                  icon={faImage}
-                  className="w-12 h-12 text-[color:var(--muted-foreground)] mx-auto mb-4"
-                />
-                <p className="text-[color:var(--muted-foreground)] mb-2">
-                  Click to upload an image
-                </p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label
-                  htmlFor="image-upload"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-                >
-                  <FontAwesomeIcon icon={faUpload} className="w-4 h-4" />
-                  Choose Image
-                </label>
-              </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Category Dropdown */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
-            Category <span className="text-red-500">*</span>
-          </label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg text-[color:var(--foreground)] focus:ring-2 focus:ring-blue-500 focus:border-blue-500/60"
-          >
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">
+                Category <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, category: value }))
+                }
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        {/* Keywords Field */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
-            Keywords
-          </label>
-          <input
-            type="text"
-            name="keywords"
-            value={formData.keywords}
-            onChange={handleChange}
-            placeholder="Enter keywords separated by commas (e.g., blockchain, web3, crypto)"
-            className="w-full px-4 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:ring-2 focus:ring-blue-500 focus:border-blue-500/60"
-          />
-          <p className="text-xs text-[color:var(--muted-foreground)]">
-            Separate multiple keywords with commas for better discoverability
-          </p>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="keywords">Keywords</Label>
+              <Input
+                id="keywords"
+                name="keywords"
+                value={formData.keywords}
+                onChange={handleChange}
+                placeholder="Enter keywords separated by commas (e.g., blockchain, web3, crypto)"
+              />
+              <p className="text-xs text-muted-foreground">
+                Separate multiple keywords with commas for better
+                discoverability
+              </p>
+            </div>
 
-        {/* Title Field */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
-            Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-            placeholder="Enter your blog post title"
-            className="w-full px-4 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:ring-2 focus:ring-blue-500 focus:border-blue-500/60"
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">
+                Title <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                placeholder="Enter your blog post title"
+              />
+            </div>
 
-        {/* Content Field */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[color:var(--muted-foreground)]">
-            Content <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            name="content"
-            value={formData.content}
-            onChange={handleChange}
-            required
-            rows={12}
-            placeholder="Write your blog post content here..."
-            className="w-full px-4 py-3 bg-[color:var(--surface)] border border-[color:var(--border)] rounded-lg text-[color:var(--foreground)] placeholder-[color:var(--muted-foreground)] focus:ring-2 focus:ring-blue-500 focus:border-blue-500/60 resize-vertical"
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="content">
+                Content <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="content"
+                name="content"
+                value={formData.content}
+                onChange={handleChange}
+                required
+                rows={12}
+                placeholder="Write your blog post content here..."
+              />
+            </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <Auth.SubmitButton className="px-8 py-3">
-            Create Post
-          </Auth.SubmitButton>
-        </div>
-      </form>
+            <div className="flex justify-end">
+              <Button type="submit">Create Post</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -12,6 +12,9 @@ import { useUserInfoContext } from "@/contexts/UserInfoContext.contexts";
 import { useCallback, useEffect, useState } from "react";
 import { toastError, toastSuccess, toastInfo } from "@/utils/index.utils";
 import { Wallet } from "@/interfaces/user.interfaces";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function WalletsPage() {
   const { open } = useAppKit();
@@ -114,7 +117,7 @@ export default function WalletsPage() {
       } catch (error) {
         console.error("Close modal error:", error);
       }
-      fetchUserInfo?.()
+      fetchUserInfo?.();
       handleGetAllWallets();
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
@@ -197,7 +200,7 @@ export default function WalletsPage() {
       } catch (error) {
         console.error("Close modal error:", error);
       }
-      fetchUserInfo?.()
+      fetchUserInfo?.();
       handleGetAllWallets();
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
@@ -259,104 +262,105 @@ export default function WalletsPage() {
     <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
-          <h2 className="text-xl font-semibold text-[color:var(--foreground)]">
-            Wallets
-          </h2>
-          <p className="text-sm text-[color:var(--muted-foreground)]">
+          <h2 className="text-xl font-semibold">Wallets</h2>
+          <p className="text-sm text-muted-foreground">
             Link multiple wallets and set a primary wallet for your account.
           </p>
         </div>
-        <button
-          onClick={handleAddWallet}
-          className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
-        >
+        <Button onClick={handleAddWallet} className="gap-2">
           <FontAwesomeIcon icon={faPlus} />
           Add wallets
-        </button>
+        </Button>
       </div>
 
       {allWallets.length > 0 &&
         !userInfo?.primary_wallet?.is_primary &&
         !userInfo?.primary_wallet?.address && (
-          <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex flex-col">
-                <p className="text-sm font-medium text-[color:var(--foreground)]">
-                  No primary wallet set
-                </p>
-                <p className="text-sm text-[color:var(--muted-foreground)]">
-                  Add your primary wallet to unlock more features.
-                </p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col">
+                  <p className="text-sm font-medium">No primary wallet set</p>
+                  <p className="text-sm text-muted-foreground">
+                    Add your primary wallet to unlock more features.
+                  </p>
+                </div>
+                <Button onClick={handleAddPrimaryWallet} className="gap-2">
+                  <FontAwesomeIcon icon={faPlus} />
+                  Add primary wallet
+                </Button>
               </div>
-              <button
-                onClick={handleAddPrimaryWallet}
-                className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 transition-colors"
-              >
-                <FontAwesomeIcon icon={faPlus} />
-                Add primary wallet
-              </button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
 
       {userInfo?.primary_wallet?.address && (
-        <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex flex-col">
-              <p className="text-xs uppercase tracking-wide text-[color:var(--muted-foreground)]">
-                Primary wallet
-              </p>
-              <h1 className="text-sm font-medium text-[color:var(--foreground)] truncate max-w-[70vw] md:max-w-[40vw]">
-                {userInfo?.primary_wallet?.address}
-              </h1>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-col">
+                <Badge
+                  variant="secondary"
+                  className="w-fit text-xs uppercase tracking-wide"
+                >
+                  Primary wallet
+                </Badge>
+                <h1 className="text-sm font-medium truncate max-w-[70vw] md:max-w-[40vw]">
+                  {userInfo?.primary_wallet?.address}
+                </h1>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {allWallets.length > 0 ? (
-        <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-[color:var(--foreground)]">
-              All wallets
-            </h3>
-            <span className="text-xs rounded-md border border-[color:var(--border)] px-2 py-0.5 text-[color:var(--muted-foreground)]">
-              {allWallets.length}
-            </span>
-          </div>
-          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {allWallets.map((wallet) => {
-              if (wallet.address !== userInfo?.primary_wallet?.address) {
-                return (
-                  <li
-                    key={wallet._id}
-                    className="group flex items-center justify-between gap-3 rounded-md border border-[color:var(--border)] bg-[color:var(--background)] px-3 py-2 hover:bg-[color:var(--surface)]"
-                  >
-                    <span className="text-[color:var(--foreground)] font-mono text-sm truncate">
-                      {wallet.address || "-"}
-                    </span>
-                    <button
-                      onClick={() => handleRemoveWallet(wallet.address)}
-                      className="text-xs px-2 py-1 rounded-md border border-red-200/30 text-red-600 dark:text-red-400 hover:bg-red-50/70 dark:hover:bg-red-900/20 transition-colors"
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">All wallets</CardTitle>
+              <Badge variant="outline">{allWallets.length}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {allWallets.map((wallet) => {
+                if (wallet.address !== userInfo?.primary_wallet?.address) {
+                  return (
+                    <div
+                      key={wallet._id}
+                      className="group flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 hover:bg-accent transition-colors"
                     >
-                      Remove
-                    </button>
-                  </li>
-                );
-              }
-            })}
-          </ul>
-        </div>
+                      <span className="font-mono text-sm truncate">
+                        {wallet.address || "-"}
+                      </span>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemoveWallet(wallet.address)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-8 text-center">
-          <p className="text-sm text-[color:var(--muted-foreground)]">
-            No wallets linked yet. Click
-            <span className="mx-1 inline-flex items-center gap-1 rounded-md border border-[color:var(--border)] px-2 py-0.5 text-[color:var(--foreground)]">
-              <FontAwesomeIcon icon={faPlus} /> Add wallets
-            </span>
-            to link your first wallet.
-          </p>
-        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="text-sm text-muted-foreground">
+              No wallets linked yet. Click
+              <Badge variant="outline" className="mx-1 gap-1">
+                <FontAwesomeIcon icon={faPlus} />
+                Add wallets
+              </Badge>
+              to link your first wallet.
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

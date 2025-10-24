@@ -1,12 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { useState, useEffect, useCallback } from "react";
 import SnapshotChart from "@/components/(app)/SnapshotChart";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface UserData {
   _id: string;
@@ -225,232 +233,233 @@ export default function Page() {
       )}
 
       {userData && (
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col mt-4 gap-4 p-4 rounded-2xl border-2 border-[color:var(--border)] bg-gradient-to-br from-blue-500/5 to-purple-500/5 shadow-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl overflow-hidden border border-[color:var(--border)] bg-black/5">
-                <Image
-                  src={
-                    userData.avatar_ipfs_hash
-                      ? `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`
-                      : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                  }
-                  alt={"Avatar"}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-contain"
-                  unoptimized
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex gap-2">
-                  <div className="text-lg font-semibold truncate">
-                    {userData.display_name || userData.username}
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color:var(--surface)] border border-[color:var(--border)] text-[color:var(--muted-foreground)] whitespace-nowrap">
-                    {userData.role}
-                  </span>
-                </div>
-                <div className="text-sm text-muted-foreground truncate">
-                  @{userData.username}
-                </div>
-                <div className="text-sm text-muted-foreground truncate">
-                  Wallet: {userData.primary_wallet?.address}
-                </div>
-                <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
-                  <Link href={`/dashboard/connections/${tab}/${id}/followers`}>
-                    <span>{userData.followers_number} followers</span>
-                  </Link>
-                  <span>•</span>
-                  <Link href={`/dashboard/connections/${tab}/${id}/followings`}>
-                    <span>{userData.following_number} following</span>
-                  </Link>
-                  {typeof userData.mutual_followers_number === "number" && (
-                    <>
-                      <span>•</span>
-                      <span>{userData.mutual_followers_number} mutual</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                {!userData.is_blocked && (
-                  <button
-                    onClick={
-                      userData.is_following ? handleUnFollow : handleFollow
+        <div className="flex flex-col gap-6">
+          <Card className="bg-gradient-to-br from-primary/5 to-secondary/5">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-6">
+                <Avatar className="w-20 h-20 border-2 border-border">
+                  <AvatarImage
+                    src={
+                      userData.avatar_ipfs_hash
+                        ? `https://ipfs.de-id.xyz/ipfs/${userData.avatar_ipfs_hash}`
+                        : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                     }
-                    disabled={loading || userData.is_blocked}
-                    className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
-                      userData.is_following
-                        ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
-                        : "bg-blue-700 hover:bg-blue-700 text-white border-blue-600"
-                    } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-                  >
-                    {userData.is_following
-                      ? loading
-                        ? "Unfollowing..."
-                        : "Unfollow"
-                      : loading
-                      ? "Following..."
-                      : "Follow"}
-                  </button>
-                )}
+                    alt={userData.display_name || "Avatar"}
+                    className="object-contain"
+                  />
+                  <AvatarFallback>
+                    {userData.display_name?.charAt(0) ||
+                      userData.username?.charAt(0) ||
+                      "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="text-xl font-semibold truncate">
+                      {userData.display_name || userData.username}
+                    </h1>
+                    <Badge variant="outline" className="text-xs">
+                      {userData.role}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground truncate mb-1">
+                    @{userData.username}
+                  </p>
+                  {userData.primary_wallet?.address && (
+                    <p className="text-sm text-muted-foreground truncate mb-3">
+                      Wallet: {userData.primary_wallet.address.slice(0, 6)}...
+                      {userData.primary_wallet.address.slice(-4)}
+                    </p>
+                  )}
+                  <div className="flex gap-3 text-xs text-muted-foreground">
+                    <Link
+                      href={`/dashboard/connections/${tab}/${id}/followers`}
+                      className="hover:text-foreground transition-colors"
+                    >
+                      <span>{userData.followers_number} followers</span>
+                    </Link>
+                    <span>•</span>
+                    <Link
+                      href={`/dashboard/connections/${tab}/${id}/followings`}
+                      className="hover:text-foreground transition-colors"
+                    >
+                      <span>{userData.following_number} following</span>
+                    </Link>
+                    {typeof userData.mutual_followers_number === "number" && (
+                      <>
+                        <span>•</span>
+                        <span>{userData.mutual_followers_number} mutual</span>
+                      </>
+                    )}
+                  </div>
+                </div>
 
-                <button
-                  onClick={userData.is_blocked ? handleUnBlock : handleBlock}
-                  disabled={loading}
-                  className={`px-4 py-2 rounded-lg transition-colors border text-sm ${
-                    userData.is_blocked
-                      ? "bg-transparent border-[color:var(--border)] hover:bg-white/5"
-                      : "bg-red-600 hover:bg-red-500 text-white border-red-600"
-                  } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-                >
-                  {userData.is_blocked
-                    ? loading
-                      ? "Unblocking..."
-                      : "Unblock"
-                    : loading
-                    ? "Blocking..."
-                    : "Block"}
-                </button>
+                <div className="flex flex-col gap-2">
+                  {!userData.is_blocked && (
+                    <Button
+                      onClick={
+                        userData.is_following ? handleUnFollow : handleFollow
+                      }
+                      disabled={loading || userData.is_blocked}
+                      variant={userData.is_following ? "outline" : "default"}
+                      size="sm"
+                    >
+                      {userData.is_following
+                        ? loading
+                          ? "Unfollowing..."
+                          : "Unfollow"
+                        : loading
+                        ? "Following..."
+                        : "Follow"}
+                    </Button>
+                  )}
+
+                  <Button
+                    onClick={userData.is_blocked ? handleUnBlock : handleBlock}
+                    disabled={loading}
+                    variant={userData.is_blocked ? "outline" : "destructive"}
+                    size="sm"
+                  >
+                    {userData.is_blocked
+                      ? loading
+                        ? "Unblocking..."
+                        : "Unblock"
+                      : loading
+                      ? "Blocking..."
+                      : "Block"}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           <SnapshotChart userId={id} />
 
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[color:var(--foreground)]">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">
               Mutual followers
             </h2>
             {typeof userData.mutual_followers_number === "number" && (
-              <span className="text-xs rounded-md border border-[color:var(--border)] px-2 py-0.5 text-[color:var(--muted-foreground)]">
+              <Badge variant="outline" className="text-xs">
                 {userData.mutual_followers_number}
-              </span>
+              </Badge>
             )}
           </div>
-          {/*
-            <div className="border rounded-lg p-3 mb-3">
-              <div className="text-sm font-medium mb-1">mutual followers</div>
-              <div className="text-xs text-muted-foreground">count</div>
-            </div>
-            */}
 
           {userData.mutual_followers_list.length === 0 ? (
-            <div className="flex items-center justify-center rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)] p-6 text-sm text-[color:var(--muted-foreground)]">
-              No mutual followers
-            </div>
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground text-sm">
+                  No mutual followers
+                </p>
+              </CardContent>
+            </Card>
           ) : (
-            <ul className="flex flex-col gap-2">
+            <div className="space-y-3">
               {userData.mutual_followers_list.map(
                 (mutualFollower: MutualFollower) => (
-                  <div
-                    key={mutualFollower.user_id}
-                    id={mutualFollower.user_id}
-                    className="flex gap-2 items-center justify-between w-full px-3 py-2 rounded-2xl bg-[color:var(--surface)] border border-[color:var(--border)] hover-card"
-                  >
-                    {/*
-                      <div className="flex items-center gap-2 p-2 border rounded">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                        <div className="flex-1">
-                          <div className="text-sm">name</div>
-                          <div className="text-xs text-muted-foreground">@username</div>
-                        </div>
-                        <button className="text-xs px-2 py-1 border rounded">view</button>
-                      </div>
-                      */}
-                    <Link
-                      href={`/dashboard/connections/followings/${mutualFollower.user_id}`}
-                      className="w-full h-full"
+                  <HoverCard key={mutualFollower.user_id}>
+                    <HoverCardTrigger asChild>
+                      <Card className="hover-card cursor-pointer">
+                        <CardContent className="p-4">
+                          <Link
+                            href={`/dashboard/connections/followings/${mutualFollower.user_id}`}
+                            className="flex items-center gap-3 min-w-0"
+                          >
+                            <Avatar className="w-10 h-10 border border-border">
+                              <AvatarImage
+                                src={
+                                  mutualFollower.avatar_ipfs_hash
+                                    ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
+                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                }
+                                alt={mutualFollower.display_name || "Avatar"}
+                                className="object-contain"
+                              />
+                              <AvatarFallback className="text-xs">
+                                {mutualFollower.display_name?.charAt(0) ||
+                                  mutualFollower.username?.charAt(0) ||
+                                  "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-foreground">
+                                {mutualFollower.display_name}
+                              </p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                @{mutualFollower.username}
+                              </p>
+                            </div>
+                          </Link>
+                        </CardContent>
+                      </Card>
+                    </HoverCardTrigger>
+                    <HoverCardContent
+                      className="w-80 p-4"
+                      side="bottom"
+                      align="start"
                     >
-                      <div className="relative">
-                        <Image
-                          src={
-                            mutualFollower.avatar_ipfs_hash
-                              ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                          }
-                          alt={mutualFollower.display_name}
-                          width={40}
-                          height={40}
-                          className="w-10 h-10 rounded-xl object-contain border border-[color:var(--border)]"
-                          unoptimized
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium text-[color:var(--foreground)]">
-                          {mutualFollower.display_name}
-                        </div>
-                        <div className="truncate text-xs text-[color:var(--muted-foreground)]">
-                          @{mutualFollower.username}
-                        </div>
-                      </div>
-                    </Link>
-                    {/* hover part */}
-                    <div className="absolute z-50 left-1/2 -translate-x-1/2 top-[calc(100%+10px)] w-[340px] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-2xl p-4">
-                      <div className="flex flex-col">
-                        {/* image section */}
-                        <div className="flex flex-row gap-4">
-                          <div className="w-25 h-25 rounded-xl overflow-hidden border border-[color:var(--border)] flex-shrink-0">
-                            <Image
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-start gap-3">
+                          <Avatar className="w-16 h-16 border-2 border-border">
+                            <AvatarImage
                               src={
                                 mutualFollower.avatar_ipfs_hash
                                   ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
                                   : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                               }
-                              alt={"Avatar"}
-                              width={64}
-                              height={64}
-                              className="w-full h-full object-contain"
-                              unoptimized
+                              alt={mutualFollower.display_name || "Avatar"}
+                              className="object-contain"
                             />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-[color:var(--foreground)] truncate">
+                            <AvatarFallback>
+                              {mutualFollower.display_name?.charAt(0) ||
+                                mutualFollower.username?.charAt(0) ||
+                                "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium text-foreground truncate">
                                 {mutualFollower.display_name}
                               </p>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[color:var(--surface)] border border-[color:var(--border)] text-[color:var(--muted-foreground)] whitespace-nowrap">
+                              <Badge variant="outline" className="text-xs">
                                 {mutualFollower.role}
-                              </span>
+                              </Badge>
                             </div>
-                            <p className="text-xs text-[color:var(--muted-foreground)] truncate">
+                            <p className="text-xs text-muted-foreground truncate">
                               @{mutualFollower.username}
                             </p>
-
-                            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                              <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                                <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                                  Following
-                                </p>
-                                <p className="text-sm font-medium text-[color:var(--foreground)]">
-                                  {mutualFollower.following_number}
-                                </p>
-                              </div>
-                              <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                                <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                                  Followers
-                                </p>
-                                <p className="text-sm font-medium text-[color:var(--foreground)]">
-                                  {mutualFollower.followers_number}
-                                </p>
-                              </div>
-                              {/* <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] p-2">
-                                  <p className="text-[10px] text-[color:var(--muted-foreground)]">
-                                    Mutual
-                                  </p>
-                                </div> */}
-                            </div>
                           </div>
                         </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-center">
+                          <Card>
+                            <CardContent className="p-3">
+                              <p className="text-xs text-muted-foreground">
+                                Following
+                              </p>
+                              <p className="text-sm font-medium text-foreground">
+                                {mutualFollower.following_number}
+                              </p>
+                            </CardContent>
+                          </Card>
+                          <Card>
+                            <CardContent className="p-3">
+                              <p className="text-xs text-muted-foreground">
+                                Followers
+                              </p>
+                              <p className="text-sm font-medium text-foreground">
+                                {mutualFollower.followers_number}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </HoverCardContent>
+                  </HoverCard>
                 )
               )}
-            </ul>
+            </div>
           )}
         </div>
       )}

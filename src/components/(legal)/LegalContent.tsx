@@ -14,7 +14,6 @@ export default function LegalContent({
   isSubSection = false,
   items,
 }: LegalContentProps) {
-  // If it's a list, render the list items
   if (items && items.length > 0) {
     return (
       <div>
@@ -41,7 +40,6 @@ export default function LegalContent({
     );
   }
 
-  // If it's a sub-section, render without the main container
   if (isSubSection) {
     return (
       <div>
@@ -51,7 +49,6 @@ export default function LegalContent({
     );
   }
 
-  // Default section rendering - with box for main sections
   return (
     <div className="bg-white/5 rounded-2xl p-6 border border-white/10 mb-6">
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
