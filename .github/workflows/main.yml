@@ -57,6 +57,7 @@ jobs:
             git fetch --all
             git reset --hard origin/main
 
+            rm -rf node_modules || true
             npm ci
             npm run build
 
