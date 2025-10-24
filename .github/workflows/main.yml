@@ -2,9 +2,9 @@ name: Frontend CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   lint_build:
@@ -32,7 +32,6 @@ jobs:
         run: npm run build
 
   deploy:
-    if: github.ref == 'refs/heads/main'
     needs: lint_build
     runs-on: ubuntu-latest
     steps:
