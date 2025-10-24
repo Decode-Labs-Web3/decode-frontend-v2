@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const db = await getDatabase(process.env.MONGODB_DB_BLOG!);
     const posts = await db
-      .collection("blogs")
+      .collection("posts")
       .find({})
       .sort({ createdAt: -1 })
       .limit(20)
