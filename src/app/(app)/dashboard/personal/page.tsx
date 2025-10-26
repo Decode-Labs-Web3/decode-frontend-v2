@@ -31,6 +31,7 @@ export default function PersonalPage() {
   const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
   const [modal, setModal] = useState({
     edit: false,
+    email: false,
     delete: false,
   });
 
@@ -38,6 +39,18 @@ export default function PersonalPage() {
     avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
     display_name: userInfo?.display_name,
     bio: userInfo?.bio,
+  });
+
+  const [emailChange, setEmailChange] = useState({
+    old_code: "",
+    new_email: "",
+    new_code: "",
+  });
+
+  const [emailStep, setEmailStep] = useState({
+    old_code: true,
+    new_email: false,
+    new_code: false,
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -207,6 +220,124 @@ export default function PersonalPage() {
   if (loading) {
     return <h1>Loading ....</h1>;
   }
+
+  const handleSendCodeOldEmail = async () => {
+    try {
+      const apiResponse = await fetch("/api/email/old-email", {
+        method: "GET",
+        headers: {
+          "X-Frontend-Internal-Request": "true",
+        },
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error("Send old email code API error:", apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (response.success && response.message === "Email verification sent") {
+        setModal((prev) => ({ ...prev, email: true }));
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Handle send old email code failed");
+    }
+  };
+
+  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEmailChange((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleVerifyCodeOldEmail = async (code: string) => {
+    try {
+      const apiResponse = await fetch("/api/email/old-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ code }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error("Send old email code API error:", apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.success &&
+        response.message === "Email change code verified"
+      ) {
+        setEmailStep((prev) => ({ ...prev, old_code: false, new_email: true }));
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Handle send old email code failed");
+    }
+  };
+
+  const handleSendCodeNewEmail = async (email: string) => {
+    try {
+      const apiResponse = await fetch("/api/email/new-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ email, code: emailChange.old_code }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error("Send old email code API error:", apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (
+        response.success &&
+        response.message === "New email change initiated successfully"
+      ) {
+        setEmailStep((prev) => ({ ...prev, new_code: true, new_email: false }));
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Handle send old email code failed");
+    }
+  };
+
+  const handleVerifyCodeNewEmail = async (code: string) => {
+    try {
+      const apiResponse = await fetch("/api/email/new-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ code }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!apiResponse.ok) {
+        console.error("Send old email code API error:", apiResponse);
+        return;
+      }
+      const response = await apiResponse.json();
+      if (response.success && response.message === "Email verification sent") {
+        setEmailStep((prev) => ({ ...prev, new_code: false, old_code: true }));
+        setEmailChange({ old_code: "", new_email: "", new_code: "" });
+        setModal((prev) => ({ ...prev, email: false }));
+        fetchUserInfo?.();
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Handle send old email code failed");
+    }
+  };
 
   return (
     <>
@@ -445,6 +576,119 @@ export default function PersonalPage() {
         onClick={() => setModal((prev) => ({ ...prev, delete: true }))}
       >
         Delete Account
+      </Button>
+
+      <Dialog
+        open={modal.email}
+        onOpenChange={(open) => setModal((prev) => ({ ...prev, email: open }))}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Email</DialogTitle>
+            <DialogDescription>
+              Update your email address associated with your account.
+            </DialogDescription>
+          </DialogHeader>
+
+          {emailStep.old_code && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="old_code">Verify code</Label>
+                <Input
+                  id="old_code"
+                  type="email"
+                  placeholder="decodenetwork@gmail.com"
+                  value={emailChange.old_code}
+                  onChange={handleEmailChange}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Button
+                  className="bg-[var(--primary)] text-[var(--primary-foreground)]"
+                  onClick={() => handleVerifyCodeOldEmail(emailChange.old_code)}
+                >
+                  Send Code To New Email
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {emailStep.new_email && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new_email">New Email</Label>
+                <Input
+                  id="new_email"
+                  type="email"
+                  placeholder="decodenetwork@gmail.com"
+                  value={emailChange.new_email}
+                  onChange={handleEmailChange}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Button
+                  onClick={() =>
+                    setEmailStep((prev) => ({
+                      ...prev,
+                      old_code: true,
+                      new_email: false,
+                    }))
+                  }
+                >
+                  Back
+                </Button>
+                <Button
+                  className="bg-[var(--primary)] text-[var(--primary-foreground)]"
+                  onClick={() => handleSendCodeNewEmail(emailChange.new_email)}
+                >
+                  Send Code To New Email
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {emailChange.new_code && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new_code">Verify New Email</Label>
+                <Input
+                  id="new_code"
+                  type="email"
+                  placeholder="decodenetwork@gmail.com"
+                  value={emailChange.new_code}
+                  onChange={handleEmailChange}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Button
+                  onClick={() =>
+                    setEmailStep((prev) => ({
+                      ...prev,
+                      new_code: false,
+                      new_email: true,
+                    }))
+                  }
+                >
+                 Back
+                </Button>
+                <Button
+                  className="bg-[var(--primary)] text-[var(--primary-foreground)]"
+                  onClick={() => handleVerifyCodeNewEmail(emailChange.new_code)}
+                >
+                 Complete Email Change
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Button
+        className="w-full mt-4 bg-[var(--destructive)] text-[var(--destructive-foreground)] shadow-sm hover:opacity-90"
+        onClick={handleSendCodeOldEmail}
+      >
+        Change Email
       </Button>
     </>
   );
