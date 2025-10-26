@@ -53,6 +53,8 @@ export default function PersonalPage() {
     new_code: false,
   });
 
+  const [errorEmail, setErrorEmail] = useState("");
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleUserInfoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -222,6 +224,7 @@ export default function PersonalPage() {
   }
 
   const handleSendCodeOldEmail = async () => {
+    setErrorEmail("");
     try {
       const apiResponse = await fetch("/api/email/old-email", {
         method: "GET",
@@ -253,6 +256,7 @@ export default function PersonalPage() {
   };
 
   const handleVerifyCodeOldEmail = async (code: string) => {
+    setErrorEmail("");
     try {
       const apiResponse = await fetch("/api/email/old-email", {
         method: "POST",
@@ -264,16 +268,19 @@ export default function PersonalPage() {
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
+      const response = await apiResponse.json();
       if (!apiResponse.ok) {
+        setErrorEmail(response.message);
         console.error("Send old email code API error:", apiResponse);
         return;
       }
-      const response = await apiResponse.json();
       if (
         response.success &&
         response.message === "Email change code verified"
       ) {
         setEmailStep((prev) => ({ ...prev, old_code: false, new_email: true }));
+      } else {
+        setErrorEmail(response.message);
       }
     } catch (error) {
       console.error(error);
@@ -282,6 +289,7 @@ export default function PersonalPage() {
   };
 
   const handleSendCodeNewEmail = async (email: string) => {
+    setErrorEmail("");
     try {
       const apiResponse = await fetch("/api/email/new-email", {
         method: "POST",
@@ -293,16 +301,19 @@ export default function PersonalPage() {
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
+      const response = await apiResponse.json();
       if (!apiResponse.ok) {
+        setErrorEmail(response.message);
         console.error("Send old email code API error:", apiResponse);
         return;
       }
-      const response = await apiResponse.json();
       if (
         response.success &&
         response.message === "New email change initiated successfully"
       ) {
         setEmailStep((prev) => ({ ...prev, new_code: true, new_email: false }));
+      } else {
+        setErrorEmail(response.message);
       }
     } catch (error) {
       console.error(error);
@@ -311,6 +322,7 @@ export default function PersonalPage() {
   };
 
   const handleVerifyCodeNewEmail = async (code: string) => {
+    setErrorEmail("");
     try {
       const apiResponse = await fetch("/api/email/new-code", {
         method: "POST",
@@ -322,16 +334,23 @@ export default function PersonalPage() {
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
+      const response = await apiResponse.json();
       if (!apiResponse.ok) {
+        setErrorEmail(response.message);
         console.error("Send old email code API error:", apiResponse);
         return;
       }
-      const response = await apiResponse.json();
-      if (response.success && response.message === "Email verification sent") {
+      if (
+        response.success &&
+        response.message === "Email changed successfully"
+      ) {
+        // console.log("hello minh");
         setEmailStep((prev) => ({ ...prev, new_code: false, old_code: true }));
         setEmailChange({ old_code: "", new_email: "", new_code: "" });
         setModal((prev) => ({ ...prev, email: false }));
         fetchUserInfo?.();
+      } else {
+        setErrorEmail(response.message);
       }
     } catch (error) {
       console.error(error);
@@ -591,43 +610,76 @@ export default function PersonalPage() {
           </DialogHeader>
 
           {emailStep.old_code && (
-            <div className="space-y-4">
+            <div className="space-y-6 px-1 py-2">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-1">
+                  Step 1: Verify your current email
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Enter the verification code sent to your current email
+                  address.
+                </p>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="old_code">Verify code</Label>
+                <Label htmlFor="old_code">Verification code</Label>
                 <Input
                   id="old_code"
-                  type="email"
-                  placeholder="decodenetwork@gmail.com"
+                  name="old_code"
+                  type="text"
+                  placeholder="e.g. 1a2b3c"
                   value={emailChange.old_code}
                   onChange={handleEmailChange}
+                  maxLength={6}
+                  inputMode="text"
+                  pattern=".{6}"
+                  autoComplete="one-time-code"
                 />
               </div>
-              <div className="flex items-center justify-between">
+              {errorEmail && (
+                <div className="text-center text-red-500 text-sm font-medium py-1">
+                  {errorEmail}
+                </div>
+              )}
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <Button
-                  className="bg-[var(--primary)] text-[var(--primary-foreground)]"
+                  className="bg-[var(--primary)] text-[var(--primary-foreground)] min-w-[140px]"
                   onClick={() => handleVerifyCodeOldEmail(emailChange.old_code)}
                 >
-                  Send Code To New Email
+                  Continue
                 </Button>
               </div>
             </div>
           )}
 
           {emailStep.new_email && (
-            <div className="space-y-4">
+            <div className="space-y-6 px-1 py-2">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-1">
+                  Step 2: Enter your new email
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Enter the new email address you want to use.
+                </p>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="new_email">New Email</Label>
+                <Label htmlFor="new_email">New email</Label>
                 <Input
                   id="new_email"
+                  name="new_email"
                   type="email"
-                  placeholder="decodenetwork@gmail.com"
+                  placeholder="e.g. decodenetwork@gmail.com"
                   value={emailChange.new_email}
                   onChange={handleEmailChange}
                 />
               </div>
-
-              <div className="flex items-center justify-between">
+              {errorEmail && (
+                <div className="text-center text-red-500 text-sm font-medium py-1">
+                  {errorEmail}
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-2 pt-2">
                 <Button
+                  variant="outline"
                   onClick={() =>
                     setEmailStep((prev) => ({
                       ...prev,
@@ -639,29 +691,48 @@ export default function PersonalPage() {
                   Back
                 </Button>
                 <Button
-                  className="bg-[var(--primary)] text-[var(--primary-foreground)]"
+                  className="bg-[var(--primary)] text-[var(--primary-foreground)] min-w-[140px]"
                   onClick={() => handleSendCodeNewEmail(emailChange.new_email)}
                 >
-                  Send Code To New Email
+                  Send verification code
                 </Button>
               </div>
             </div>
           )}
 
-          {emailChange.new_code && (
-            <div className="space-y-4">
+          {emailStep.new_code && (
+            <div className="space-y-6 px-1 py-2">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-1">
+                  Step 3: Verify your new email
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Enter the verification code sent to your new email address.
+                </p>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="new_code">Verify New Email</Label>
+                <Label htmlFor="new_code">New verification code</Label>
                 <Input
                   id="new_code"
-                  type="email"
-                  placeholder="decodenetwork@gmail.com"
+                  name="new_code"
+                  type="text"
+                  placeholder="e.g. 1a2b3c"
                   value={emailChange.new_code}
                   onChange={handleEmailChange}
+                  maxLength={6}
+                  inputMode="text"
+                  pattern=".{6}"
+                  autoComplete="one-time-code"
                 />
               </div>
-              <div className="flex items-center justify-between">
+              {errorEmail && (
+                <div className="text-center text-red-500 text-sm font-medium py-1">
+                  {errorEmail}
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-2 pt-2">
                 <Button
+                  variant="outline"
                   onClick={() =>
                     setEmailStep((prev) => ({
                       ...prev,
@@ -670,13 +741,13 @@ export default function PersonalPage() {
                     }))
                   }
                 >
-                 Back
+                  Back
                 </Button>
                 <Button
-                  className="bg-[var(--primary)] text-[var(--primary-foreground)]"
+                  className="bg-[var(--primary)] text-[var(--primary-foreground)] min-w-[140px]"
                   onClick={() => handleVerifyCodeNewEmail(emailChange.new_code)}
                 >
-                 Complete Email Change
+                  Complete change
                 </Button>
               </div>
             </div>
