@@ -253,7 +253,42 @@ export default function PersonalPage() {
       ...prev,
       [event.target.name]: event.target.value,
     }));
+    if(event.target.name === "new_email" && emailChange.new_email.trim().length >= 1){
+          setErrorEmail("");
+      handleEmailDebounce(event.target.value);
+    }
   };
+
+  const handleEmailDebounce = async(email: string) => {
+    setErrorEmail("");
+    try {
+      const apiResponse = await fetch("/api/email/email-debounce", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Frontend-Internal-Request": "true",
+        },
+        body: JSON.stringify({ email }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+      if (!apiResponse.ok) {
+        setErrorEmail(response.message);
+        console.error("Send old email code API error:", apiResponse);
+        return;
+      }
+      if (
+        response.success
+      ) {
+        console.log("Email is available");
+        setErrorEmail(response.message);
+      }
+    } catch (error) {
+      console.error(error);
+      console.log("Handle send old email code failed");
+    }
+  }
 
   const handleVerifyCodeOldEmail = async (code: string) => {
     setErrorEmail("");
@@ -599,7 +634,11 @@ export default function PersonalPage() {
 
       <Dialog
         open={modal.email}
-        onOpenChange={(open) => setModal((prev) => ({ ...prev, email: open }))}
+        onOpenChange={(open) => {
+          setErrorEmail("")
+          setEmailChange({ old_code: "", new_email: "", new_code: "" });
+          setEmailStep({ old_code: true, new_email: false, new_code: false });
+          setModal((prev) => ({ ...prev, email: open }))}}
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
