@@ -265,8 +265,10 @@ export default function SecurityPage() {
         {loading ? (
           <Card className="flex items-center justify-center py-12">
             <CardContent className="flex flex-col items-center space-y-4">
-              <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-              <p className="text-muted-foreground text-sm">Loading...</p>
+              <div className="w-8 h-8 border-4 border-[color:var(--muted-foreground-2)] border-t-[color:var(--ring)] rounded-full animate-spin" />
+              <p className="text-[var(--muted-foreground)] text-sm">
+                Loading...
+              </p>
             </CardContent>
           </Card>
         ) : setup ? (
@@ -313,7 +315,10 @@ export default function SecurityPage() {
                       autoComplete="one-time-code"
                     />
 
-                    <p id="code-help" className="text-sm text-muted-foreground">
+                    <p
+                      id="code-help"
+                      className="text-sm text-[var(--muted-foreground)]"
+                    >
                       Open your Authenticator app and enter the current 6-digit
                       code here.
                     </p>
@@ -332,10 +337,10 @@ export default function SecurityPage() {
                 </>
               ) : (
                 <div className="text-center space-y-6">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                  <div className="w-16 h-16 bg-[var(--surface-muted)] rounded-full flex items-center justify-center mx-auto">
                     <FontAwesomeIcon
                       icon={faLock}
-                      className="w-8 h-8 text-blue-600"
+                      className="w-8 h-8 text-[var(--primary)]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -461,7 +466,7 @@ export default function SecurityPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Code Verification Modal */}
+        {/* code modal */}
         <Dialog open={codeModalOpen} onOpenChange={setCodeModalOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -473,10 +478,10 @@ export default function SecurityPage() {
 
             <div className="space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-[var(--surface-muted)] rounded-full flex items-center justify-center">
                   <FontAwesomeIcon
                     icon={faLock}
-                    className="w-8 h-8 text-blue-600"
+                    className="w-8 h-8 text-[var(--primary)]"
                   />
                 </div>
               </div>
@@ -507,7 +512,7 @@ export default function SecurityPage() {
 
                 <p
                   id="code-help"
-                  className="text-sm text-muted-foreground text-center"
+                  className="text-sm text-[var(--muted-foreground)] text-center"
                 >
                   Open your authenticator app and enter the 6-digit code
                 </p>
@@ -530,7 +535,7 @@ export default function SecurityPage() {
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      <div className="w-4 h-4 border-2 border-[color:var(--card-foreground)] border-t-transparent rounded-full animate-spin mr-2" />
                       Verifying...
                     </>
                   ) : (

@@ -14,6 +14,7 @@ export interface UserProfile {
   wallets?: Wallet[];
   following_number: number;
   followers_number: number;
+  is_online: boolean;
 }
 
 export interface PrimaryWallet {

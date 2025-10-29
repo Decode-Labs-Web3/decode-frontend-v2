@@ -32,6 +32,10 @@
   --destructive-foreground: hsl(0 0% 100%);
   --input: hsl(220 13% 91%);
   --ring: hsl(224 71.4% 4.1%);
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #000000;
 }
 
 .dark {
@@ -61,6 +65,10 @@
   --destructive-foreground: hsl(0 0% 100%);
   --input: hsl(215 27.9% 16.9%);
   --ring: hsl(216 12.2% 83.9%);
+  --success: #4ade80;
+  --success-foreground: #000000;
+  --warning: #fbbf24;
+  --warning-foreground: #000000;
 }
 
 @layer base {

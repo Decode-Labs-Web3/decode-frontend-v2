@@ -213,25 +213,28 @@ export default function NotificationsPage() {
       {loading && <Loading.NotificationCard />}
       {!loading &&
         notifications.map((notification) => (
-          <Card key={notification._id} className="hover-card">
+          <Card
+            key={notification._id}
+            className="bg-(--card) border border-(--border) rounded-lg"
+          >
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {notification.read ? (
                     <FontAwesomeIcon
                       icon={faCircleCheck}
-                      className="text-green-600 dark:text-green-400"
+                      className="text-(--success)"
                     />
                   ) : (
                     <FontAwesomeIcon
                       icon={faBell}
-                      className="text-yellow-600 dark:text-yellow-400"
+                      className="text-(--warning)"
                     />
                   )}
 
                   <div>
                     <p className="text-sm">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-(--muted-foreground)">
                       {notification.createdAt}
                     </p>
                   </div>
