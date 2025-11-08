@@ -210,7 +210,7 @@ export default function DevicesPage() {
               <CardHeader className="pb-4">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
                       <FontAwesomeIcon
                         icon={
                           fingerprint.device === "iOS" ||
@@ -260,7 +260,7 @@ export default function DevicesPage() {
                         className="bg-muted border rounded-lg p-3 sm:p-4 hover:bg-background transition-colors"
                       >
                         <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-background border flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-background border flex items-center justify-center shrink-0 overflow-hidden">
                             <Image
                               src={getAppLogoSrc(session.app)}
                               alt={`${session.app} logo`}

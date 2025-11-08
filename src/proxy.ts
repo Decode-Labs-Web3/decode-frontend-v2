@@ -191,7 +191,6 @@ export async function proxy(request: NextRequest) {
       request.headers.get("X-Frontend-Internal-Request") === "true";
 
     if (internal) {
-      // For internal API calls, check and refresh tokens if needed
       const refreshToken = request.cookies.get("refreshToken")?.value;
       if (refreshToken) {
         const remaining = getRemainingFromAccessExpCookie(request);
@@ -200,7 +199,6 @@ export async function proxy(request: NextRequest) {
           if (refreshResult.success && refreshResult.response) {
             return refreshResult.response;
           } else {
-            // Refresh failed, return unauthorized
             return NextResponse.json(
               {
                 success: false,
@@ -248,7 +246,15 @@ export async function proxy(request: NextRequest) {
       if (refreshResult.success && refreshResult.response) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
-      return NextResponse.redirect(new URL("/", request.url));
+      const res = NextResponse.next();
+      ["accessToken", "accessExp", "refreshToken", "sessionId"].forEach(
+        (name) => {
+          if (request.cookies.get(name)) {
+            res.cookies.set(name, "", { maxAge: 0, path: "/" });
+          }
+        }
+      );
+      return res;
     }
 
     return NextResponse.next();
@@ -258,7 +264,9 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/dashboard")) {
     const accessToken = request.cookies.get("accessToken")?.value;
     const refreshToken = request.cookies.get("refreshToken")?.value;
-    if (!refreshToken) return NextResponse.redirect(new URL("/", request.url));
+    if (!refreshToken) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
 
     const remaining = getRemainingFromAccessExpCookie(request);
     const stillValid = !!accessToken && remaining > 0;
@@ -268,9 +276,18 @@ export async function proxy(request: NextRequest) {
     if (refreshResult.success && refreshResult.response) {
       return refreshResult.response;
     }
-    return NextResponse.redirect(new URL("/", request.url));
+    const failRes = NextResponse.redirect(new URL("/", request.url));
+    ["accessToken", "accessExp", "refreshToken", "sessionId"].forEach(
+      (name) => {
+        if (request.cookies.get(name)) {
+          failRes.cookies.set(name, "", { maxAge: 0, path: "/" });
+        }
+      }
+    );
+    return failRes;
   }
 
+  if (pathname === "/") return NextResponse.next();
   return NextResponse.redirect(new URL("/", request.url));
 }
 

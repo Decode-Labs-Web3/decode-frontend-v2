@@ -59,7 +59,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="fixed top-16 left-0 bottom-0 w-64 bg-[color:var(--surface-muted)] backdrop-blur-xl border-r border-[color:var(--border)] hidden md:flex flex-col">
+      <aside className="fixed top-16 left-0 bottom-0 w-64 bg-(--surface-muted) backdrop-blur-xl border-r border-(--border) hidden md:flex flex-col">
         <nav className="p-3 space-y-1">
           {items.map((item) => (
             <Button

@@ -108,7 +108,7 @@ export default function NewsPage() {
                   role="img"
                   aria-label={post.title}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0" />
                 <Badge className="absolute left-3 top-3 text-xs capitalize">
                   {post.category}
                 </Badge>

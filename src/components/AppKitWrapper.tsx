@@ -210,7 +210,7 @@ function WalletContent() {
       <Auth.AuthCard title="Get Started">
         <button
           onClick={openConnectModal}
-          className="group w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg mb-6 flex items-center justify-center gap-2 transition-all shadow-lg"
+          className="group w-full bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg mb-6 flex items-center justify-center gap-2 transition-all shadow-lg"
         >
           <FontAwesomeIcon icon={faWallet} className="opacity-90" />
           <span>Connect Wallet</span>

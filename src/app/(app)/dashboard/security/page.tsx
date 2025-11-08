@@ -265,10 +265,8 @@ export default function SecurityPage() {
         {loading ? (
           <Card className="flex items-center justify-center py-12">
             <CardContent className="flex flex-col items-center space-y-4">
-              <div className="w-8 h-8 border-4 border-[color:var(--muted-foreground-2)] border-t-[color:var(--ring)] rounded-full animate-spin" />
-              <p className="text-[var(--muted-foreground)] text-sm">
-                Loading...
-              </p>
+              <div className="w-8 h-8 border-4 border-(--muted-foreground-2) border-t-(--ring) rounded-full animate-spin" />
+              <p className="text-(--muted-foreground) text-sm">Loading...</p>
             </CardContent>
           </Card>
         ) : setup ? (
@@ -317,7 +315,7 @@ export default function SecurityPage() {
 
                     <p
                       id="code-help"
-                      className="text-sm text-[var(--muted-foreground)]"
+                      className="text-sm text-(--muted-foreground)"
                     >
                       Open your Authenticator app and enter the current 6-digit
                       code here.
@@ -337,17 +335,17 @@ export default function SecurityPage() {
                 </>
               ) : (
                 <div className="text-center space-y-6">
-                  <div className="w-16 h-16 bg-[var(--surface-muted)] rounded-full flex items-center justify-center mx-auto">
+                  <div className="w-16 h-16 bg-(--surface-muted) rounded-full flex items-center justify-center mx-auto">
                     <FontAwesomeIcon
                       icon={faLock}
-                      className="w-8 h-8 text-[var(--primary)]"
+                      className="w-8 h-8 text-(--primary)"
                     />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-semibold text-[var(--foreground)]">
+                    <h3 className="text-xl font-semibold text-(--foreground)">
                       Enable Two-Factor Authentication
                     </h3>
-                    <p className="text-[var(--muted-foreground)]">
+                    <p className="text-(--muted-foreground)">
                       Add an extra layer of security to your account
                     </p>
                   </div>
@@ -400,7 +398,7 @@ export default function SecurityPage() {
 
             <div className="space-y-6">
               <div className="flex justify-center">
-                <div className="rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-6 shadow-lg">
+                <div className="rounded-2xl border-2 border-(--border) bg-(--surface) p-6 shadow-lg">
                   <QRCode
                     value={(() => {
                       if (!otpData?.otp_secret) return "invalid-secret";
@@ -449,7 +447,7 @@ export default function SecurityPage() {
                     <FontAwesomeIcon icon={faCopy} className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-[var(--muted-foreground)]">
+                <p className="text-xs text-(--muted-foreground)">
                   If you can&apos;t scan the QR code, enter this key manually in
                   your authenticator app
                 </p>
@@ -478,10 +476,10 @@ export default function SecurityPage() {
 
             <div className="space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-[var(--surface-muted)] rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-(--surface-muted) rounded-full flex items-center justify-center">
                   <FontAwesomeIcon
                     icon={faLock}
-                    className="w-8 h-8 text-[var(--primary)]"
+                    className="w-8 h-8 text-(--primary)"
                   />
                 </div>
               </div>
@@ -512,7 +510,7 @@ export default function SecurityPage() {
 
                 <p
                   id="code-help"
-                  className="text-sm text-[var(--muted-foreground)] text-center"
+                  className="text-sm text-(--muted-foreground) text-center"
                 >
                   Open your authenticator app and enter the 6-digit code
                 </p>
@@ -535,7 +533,7 @@ export default function SecurityPage() {
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-[color:var(--card-foreground)] border-t-transparent rounded-full animate-spin mr-2" />
+                      <div className="w-4 h-4 border-2 border-(--card-foreground) border-t-transparent rounded-full animate-spin mr-2" />
                       Verifying...
                     </>
                   ) : (
