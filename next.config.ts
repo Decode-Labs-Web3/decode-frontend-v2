@@ -32,6 +32,9 @@ const nextConfig: NextConfig = {
     BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
   },
 
+  // Enable Turbopack with empty config for now
+  turbopack: {},
+
   // Build optimizations for memory-constrained environments
   experimental: {
     memoryBasedWorkersCount: true,
