@@ -56,6 +56,8 @@ const GATE_RULES: GateRule[] = [
   },
 ];
 
+const LOOSE_PREFIXES = new Set(GATE_RULES.map((r) => r.prefix));
+
 function handleGate(
   request: NextRequest,
   pathname: string
@@ -66,6 +68,10 @@ function handleGate(
       : pathname === rule.prefix || pathname.startsWith(rule.prefix + "/");
 
     if (!match) continue;
+
+    if (request.method === "GET" && LOOSE_PREFIXES.has(rule.prefix)) {
+      return NextResponse.next();
+    }
 
     const ok = request.cookies.get(rule.cookie)?.value === "true";
     if (!ok) {

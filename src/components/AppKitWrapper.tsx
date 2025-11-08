@@ -82,8 +82,28 @@ function WalletContent() {
       const data = await response.json();
       console.log("Login/Register response:", data);
 
+      const waitForCookie = async (name: string, timeoutMs = 800) => {
+        const started = Date.now();
+        while (Date.now() - started < timeoutMs) {
+          if (document.cookie.includes(name + "=")) return true;
+          await new Promise((r) => setTimeout(r, 25));
+        }
+        return false;
+      };
+
       if (data.success && data.message === "User found") {
         console.log("User found, redirecting to login...");
+        // Ensure gate cookie exists before navigating to avoid middleware race in production
+        try {
+          document.cookie = `gate-key-for-login=true; Max-Age=120; Path=/login; SameSite=Lax`;
+          if (formData.email_or_username) {
+            document.cookie = `email_or_username=${encodeURIComponent(
+              formData.email_or_username
+            )}; Max-Age=120; Path=/; SameSite=Lax`;
+          }
+        } catch {}
+        // Wait briefly until cookie is guaranteed visible to the outgoing /login request (prod race fix)
+        await waitForCookie("gate-key-for-login");
         toastSuccess("User found! Redirecting to login...");
         router.push("/login");
       } else if (
@@ -92,6 +112,16 @@ function WalletContent() {
         data.statusCode === 404
       ) {
         console.log("User not found, redirecting to register...");
+        // Ensure gate cookie exists before navigating to avoid middleware race in production
+        try {
+          document.cookie = `gate-key-for-register=true; Max-Age=120; Path=/register; SameSite=Lax`;
+          if (formData.email_or_username) {
+            document.cookie = `email_or_username=${encodeURIComponent(
+              formData.email_or_username
+            )}; Max-Age=120; Path=/; SameSite=Lax`;
+          }
+        } catch {}
+        await waitForCookie("gate-key-for-register");
         toastInfo("User not found. Redirecting to register...");
         router.push("/register");
       } else {
