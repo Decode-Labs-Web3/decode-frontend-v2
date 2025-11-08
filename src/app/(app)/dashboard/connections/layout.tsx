@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Auth from "@/components/(auth)";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function ConnectionsLayout({
   children,
 }: {
@@ -26,28 +27,17 @@ export default function ConnectionsLayout({
       <div>
         <Auth.BackButton text="Go to Back" />
       </div>
-      <nav className="mt-2 mb-4">
-        <div className="inline-flex items-center gap-2 rounded-xl bg-white/60 dark:bg-white/5 p-1 shadow-sm ring-1 ring-black/5 backdrop-blur">
-          {tabs.map((tab) => {
-            const isActive = pathname === tab.href;
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                aria-current={isActive ? "page" : undefined}
-                className={
-                  "group relative px-4 py-2 rounded-lg transition-colors " +
-                  (isActive
-                    ? "bg-blue-700 text-white shadow-sm"
-                    : "text-black hover:text-white hover:bg-blue-300 dark:text-gray-300 dark:hover:text-white")
-                }
-              >
-                <span className="font-medium">{tab.label}</span>
+      <Tabs value={pathname} className="mt-2 mb-4">
+        <TabsList className="bg-white/60 dark:bg-white/5 shadow-sm ring-1 ring-black/5 backdrop-blur">
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab.href} value={tab.href} asChild>
+              <Link href={tab.href} className="font-medium">
+                {tab.label}
               </Link>
-            );
-          })}
-        </div>
-      </nav>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       {children}
     </>
   );

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useUserInfoContext } from "@/contexts/UserInfoContext.contexts";
-import { useNotificationContext } from "@/contexts/NotificationContext.contexts";
+import { useUserInfoContext } from "@/contexts/UserInfoContext";
+import { useNotificationContext } from "@/contexts/NotificationContext";
 import {
   faShieldHalved,
   faWallet,

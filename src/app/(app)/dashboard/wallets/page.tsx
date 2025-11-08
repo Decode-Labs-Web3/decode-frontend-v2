@@ -8,7 +8,7 @@ import {
 import { ethers } from "ethers";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useUserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { useUserInfoContext } from "@/contexts/UserInfoContext";
 import { useCallback, useEffect, useState } from "react";
 import { toastError, toastSuccess, toastInfo } from "@/utils/index.utils";
 import { Wallet } from "@/interfaces/user.interfaces";

@@ -32,30 +32,45 @@ const nextConfig: NextConfig = {
     BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
   },
 
-  // Enable Turbopack with empty config for now
-  turbopack: {},
+  // Enable Turbopack with optimized config - temporarily disabled for build testing
+  // turbopack: {},
 
-  // Build optimizations for memory-constrained environments
-  experimental: {
-    memoryBasedWorkersCount: true,
-    // Reduce memory usage during build
-    workerThreads: false,
-    // Use fewer workers to reduce memory pressure
-    cpus: 1,
-  },
+  // Optimize build performance - temporarily disabled for build testing
+  // experimental: {
+  //   // Enable memory-based worker count for better performance
+  //   memoryBasedWorkersCount: true,
+  //   // Enable worker threads for parallel processing
+  //   workerThreads: true,
+  // },
 
-  // Additional memory optimizations
+  // Optimize output
+  output: "standalone",
+
+  // Compiler optimizations
   compiler: {
-    // Remove console.log in production
-    removeConsole: process.env.NODE_ENV === "production",
+    // Remove console.log in production only
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? {
+            exclude: ["error", "warn"],
+          }
+        : false,
   },
 
+  // Optimize images
   images: {
     unoptimized: true,
     domains: [],
     remotePatterns: [],
+    // Enable modern image formats
+    formats: ["image/webp", "image/avif"],
+    // Optimize image loading
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
+  // Temporarily disabled headers for build stability - causing serialization issues
+  /*
   async headers() {
     const connectSrc = [
       "'self'",
@@ -134,36 +149,20 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-  },
+  }
+  */
 
-  webpack: (config, { isServer }) => {
-    if (Array.isArray(config.externals)) {
-      config.externals.push("lokijs", "encoding");
-    } else {
-      config.externals = ["lokijs", "encoding"];
-    }
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    config.optimization.splitChunks = {
-      ...config.optimization.splitChunks,
-      cacheGroups: {
-        ...config.optimization.splitChunks?.cacheGroups,
-        appkit: {
-          test: /[\\/]node_modules[\\/]@reown[\\/]/,
-          name: "appkit",
-          chunks: "all",
-          priority: 10,
-        },
-      },
-    };
-    return config;
-  },
+  // webpack: (config, { isServer }) => {
+  //   if (!isServer) {
+  //     config.resolve.fallback = {
+  //       ...config.resolve.fallback,
+  //       fs: false,
+  //       net: false,
+  //       tls: false,
+  //     };
+  //   }
+  //   return config;
+  // },
 };
 
 export default nextConfig;

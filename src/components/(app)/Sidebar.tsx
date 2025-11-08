@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNotificationContext } from "@/contexts/NotificationContext.contexts";
+import { useNotificationContext } from "@/contexts/NotificationContext";
 import {
   faGaugeHigh,
   faUserShield,
@@ -85,39 +86,33 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="absolute top-16 left-0 bottom-0 w-64 bg-[color:var(--surface-muted)] border-r border-[color:var(--border)] shadow-xl">
-            <nav className="p-3 space-y-1">
-              {items.map((item) => (
-                <Button
-                  key={item.key}
-                  onClick={() => {
-                    router.push(`/dashboard/${item.key}`);
-                    setMobileOpen(false);
-                  }}
-                  variant={active === item.key ? "secondary" : "ghost"}
-                  className={`w-full justify-start gap-3 px-3 py-2 h-auto ${
-                    active === item.key ? "border-l-4 border-primary" : ""
-                  }`}
-                >
-                  <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.key === "notifications" && unread > 0 && (
-                    <Badge variant="destructive" className="ml-auto text-xs">
-                      {unread}
-                    </Badge>
-                  )}
-                </Button>
-              ))}
-            </nav>
-          </div>
-        </div>
-      )}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="w-64 p-0">
+          <nav className="p-3 space-y-1">
+            {items.map((item) => (
+              <Button
+                key={item.key}
+                onClick={() => {
+                  router.push(`/dashboard/${item.key}`);
+                  setMobileOpen(false);
+                }}
+                variant={active === item.key ? "secondary" : "ghost"}
+                className={`w-full justify-start gap-3 px-3 py-2 h-auto ${
+                  active === item.key ? "border-l-4 border-primary" : ""
+                }`}
+              >
+                <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.key === "notifications" && unread > 0 && (
+                  <Badge variant="destructive" className="ml-auto text-xs">
+                    {unread}
+                  </Badge>
+                )}
+              </Button>
+            ))}
+          </nav>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

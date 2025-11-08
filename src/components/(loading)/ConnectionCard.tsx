@@ -1,14 +1,14 @@
 "use client";
-import Skeleton from "react-loading-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ConnectionCard() {
   return (
     <>
-      <Skeleton width="100%" height={150} />
-      <Skeleton width="100%" height={300} />
+      <Skeleton className="w-full h-36" />
+      <Skeleton className="w-full h-72" />
       <div className="w-full flex flex-col gap-2">
         {Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton width="100%" height={60} key={i} />
+          <Skeleton className="w-full h-14" key={i} />
         ))}
       </div>
     </>

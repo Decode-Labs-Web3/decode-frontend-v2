@@ -1,12 +1,12 @@
 "use client";
-import Skeleton from "react-loading-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function NotificationCard() {
   return (
     <>
       <div className="w-full flex flex-col gap-2">
         {Array.from({ length: 20 }).map((_, i) => (
-            <Skeleton width="100%" height={60} key={i} />
+          <Skeleton key={i} className="w-full h-14" />
         ))}
       </div>
     </>

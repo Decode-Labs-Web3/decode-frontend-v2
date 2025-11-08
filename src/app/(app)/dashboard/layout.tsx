@@ -6,9 +6,9 @@ import Loading from "@/components/(loading)";
 import { UserProfile } from "@/interfaces/index.interfaces";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fingerprintService } from "@/services/fingerprint.services";
-import { UserInfoContext } from "@/contexts/UserInfoContext.contexts";
+import { UserInfoContext } from "@/contexts/UserInfoContext";
 import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
-import { NotificationProvider } from "@/contexts/NotificationContext.contexts";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

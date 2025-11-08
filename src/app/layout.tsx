@@ -1,7 +1,6 @@
 import "./globals.css";
 import { defaultMetadata } from "@/seo.config";
 import type { Metadata, Viewport } from "next";
-import "react-loading-skeleton/dist/skeleton.css";
 import ToastProvider from "@/components/ToastProvider";
 import AppKitRootProvider from "@/components/AppKitRootProvider";
 

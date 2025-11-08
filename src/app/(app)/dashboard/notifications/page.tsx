@@ -4,7 +4,7 @@ import Loading from "@/components/(loading)";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
-import { useNotificationContext } from "@/contexts/NotificationContext.contexts";
+import { useNotificationContext } from "@/contexts/NotificationContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 

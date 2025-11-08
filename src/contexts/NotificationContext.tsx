@@ -56,8 +56,35 @@ export function NotificationProvider({
   }, []);
 
   useEffect(() => {
-    fetchUnread();
-  }, [fetchUnread]);
+    const fetchUnreadData = async () => {
+      try {
+        const apiResponse = await fetch("/api/users/unread", {
+          method: "GET",
+          headers: {
+            "X-Frontend-Internal-Request": "true",
+          },
+          cache: "no-cache",
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!apiResponse.ok) {
+          if (apiResponse.status !== 401) {
+            const response = await apiResponse.json();
+            console.log("Follow API error:", response);
+          }
+          return;
+        }
+
+        const response = await apiResponse.json();
+        console.log("this is sidebar count notification", response);
+        setUnread(response.data.count);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchUnreadData();
+  }, []);
 
   return (
     <NotificationContext.Provider value={{ unread, setUnread, fetchUnread }}>

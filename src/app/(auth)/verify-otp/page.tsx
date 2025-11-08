@@ -4,6 +4,7 @@ import { useState } from "react";
 import Auth from "@/components/(auth)";
 import { useRouter } from "next/navigation";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import { Button } from "@/components/ui/button";
 
 export default function VerifyPage() {
   const router = useRouter();
@@ -69,18 +70,13 @@ export default function VerifyPage() {
             onChange={handleChange}
           />
 
-          <button
+          <Button
             type="submit"
             disabled={isInvalid || loading}
-            aria-busy={loading}
-            className={`w-full rounded-md p-2 transition ${
-              isInvalid || loading
-                ? "bg-blue-700/50 cursor-not-allowed"
-                : "bg-blue-700 hover:bg-blue-700"
-            }`}
+            className="w-full"
           >
             {loading ? "Verifying..." : "Verify Code"}
-          </button>
+          </Button>
         </form>
       </Auth.AuthCard>
 
