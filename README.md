@@ -35,7 +35,7 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
 - **Ethers.js 6.15.0**: Ethereum library for Web3 interactions and message signing
 - **Multi-chain Support**: Ethereum Mainnet and Arbitrum network compatibility
 - **IPFS Integration**: Pinata service for decentralized avatar storage
-- **Real-time Balance Display**: Live cryptocurrency balance fetching
+- **Wallet Management**: Connect, link, and manage multiple Web3 wallets
 
 ## 🏗️ Technical Stack
 
@@ -158,26 +158,18 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
 
 ## 🎨 User Experience Features
 
-### **Smart Code Input System**
-
-- **Smart Paste**: Automatically extracts 6-character codes from `fingerprint-email-verification:XXXXXX` format
-- **Auto-focus**: Automatically moves to next input field
-- **Keyboard Navigation**: Arrow keys and backspace support
-- **Input Validation**: Only allows alphanumeric characters (a-f, 0-9)
-
-### **Real-time Validation**
-
-- **Form Validation**: Immediate feedback on input changes
-- **Error Clearing**: Errors clear when user starts typing
-- **Loading States**: Visual feedback during API calls
-- **Toast Notifications**: User-friendly success/error messages
-
 ### **Responsive Design**
 
 - **Mobile-First**: Optimized for mobile devices
 - **Desktop Enhancement**: Enhanced features for larger screens
 - **Touch Support**: Full touch interaction support
 - **Dark/Light Mode**: Theme switching with localStorage persistence
+
+### **Real-time Features**
+
+- **Server-Sent Events**: Real-time notifications via WebSocket
+- **Live Updates**: Instant UI updates for user actions
+- **Toast Notifications**: User-friendly success/error messages
 
 ## 🔧 API Integration
 

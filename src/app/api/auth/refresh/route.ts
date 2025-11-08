@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
           "Content-Type": "application/json",
           "X-Request-Id": requestId,
         },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ session_token: refreshToken }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       }

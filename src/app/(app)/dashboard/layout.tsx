@@ -18,14 +18,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface NotificationReceived {
-  _id: string;
-  title: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-}
-
 type OutEvent =
   | { type: "disconnect"; data: string }
   | { type: "connect_error"; data: string }
@@ -109,8 +101,6 @@ export default function DashboardLayout({
     fetchUserInfo();
   }, [fetchUserInfo, router]);
 
-  const [logs, setLogs] = useState<NotificationReceived[]>([]);
-  console.log("logs", logs);
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
@@ -138,22 +128,6 @@ export default function DashboardLayout({
 
           if (notification) {
             toastInfo(`Notification received: ${notification.title}`);
-            setLogs((prev) => {
-              const newLogs = [
-                {
-                  _id: String(notification.id ?? ""),
-                  title: String(notification.title ?? ""),
-                  message: String(notification.message ?? ""),
-                  read: Boolean(notification.read ?? false),
-                  createdAt: String(
-                    notification.createdAt ?? new Date()
-                  ).toLocaleString(),
-                },
-                ...prev,
-              ];
-              sessionStorage.setItem("notifications", JSON.stringify(newLogs));
-              return newLogs;
-            });
           }
         }
       } catch (error) {
@@ -242,7 +216,7 @@ export default function DashboardLayout({
   if (loading) {
     return (
       <NotificationProvider>
-        <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
+        <div className="min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
           <App.Navbar />
           <App.Sidebar />
           <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
@@ -256,7 +230,7 @@ export default function DashboardLayout({
   return (
     <UserInfoContext.Provider value={{ userInfo, fetchUserInfo }}>
       <NotificationProvider>
-        <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
+        <div className="relative min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
           <App.Navbar />
           <App.Sidebar />
           <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>

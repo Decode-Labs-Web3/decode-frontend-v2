@@ -108,11 +108,10 @@ async function refreshTokens(
         "X-Frontend-Internal-Request": "true",
         Cookie: request.headers.get("cookie") || "",
       },
-      body: JSON.stringify({ refreshToken }),
+      body: JSON.stringify({ session_token: refreshToken }),
       cache: "no-store",
       signal: AbortSignal.timeout(10000),
     });
-
     if (!apiResponse.ok) return { success: false };
 
     const response = await apiResponse.json();
