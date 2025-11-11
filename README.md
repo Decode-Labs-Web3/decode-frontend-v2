@@ -216,7 +216,7 @@ PINATA_JWT=your_pinata_jwt_token
 
 # Environment
 NODE_ENV=production
-PUBLIC_FRONTEND_URL=https://app.decodenetwork.app
+PUBLIC_FRONTEND_URL=https://decode.decodenetwork.app
 ```
 
 ### **Build Optimizations**

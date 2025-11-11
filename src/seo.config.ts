@@ -5,7 +5,7 @@ const SITE_DESCRIPTION =
   "Decode Protocol - Web3 Authentication & Identity Management System. Secure dual authentication with traditional credentials and Web3 wallet integration. Manage your digital identity, devices, wallets, and security settings in one unified platform.";
 
 const SITE_URL =
-  process.env.PUBLIC_FRONTEND_URL || "https://app.decodenetwork.app";
+  process.env.PUBLIC_FRONTEND_URL || "https://decode.decodenetwork.app";
 
 const SITE_ICON = "/images/tokens/3d_token_nobg.png";
 

@@ -29,7 +29,7 @@ if (!projectId) console.error("REOWN_PROJECT_ID is missing");
 const appUrl =
   process.env.PUBLIC_FRONTEND_URL ||
   (process.env.NODE_ENV === "production"
-    ? "https://app.decodenetwork.app"
+    ? "https://decode.decodenetwork.app"
     : "http://localhost:3000");
 
 const metadata = {
