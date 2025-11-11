@@ -13,48 +13,84 @@ export default function BrandLogos() {
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
-        <Image
-          src="/images/logos/decareer.png"
-          width={120}
-          height={40}
-          alt="DeCareer logo"
-          className="object-contain"
-        />
-        <Image
-          src="/images/logos/decourse.png"
-          width={120}
-          height={40}
-          alt="DeCourse logo"
-          className="object-contain"
-        />
-        <Image
-          src="/images/logos/dedao.png"
-          width={150}
-          height={60}
-          alt="DeDao logo"
-          className="object-contain"
-        />
-        <Image
-          src="/images/logos/defuel.png"
-          width={120}
-          height={60}
-          alt="DeFuel logo"
-          className="object-contain"
-        />
-        <Image
-          src="/images/logos/dehive.png"
-          width={120}
-          height={60}
-          alt="DeHive logo"
-          className="object-contain"
-        />
-        <Image
-          src="/images/logos/deid.png"
-          width={60}
-          height={20}
-          alt="DEiD logo"
-          className="object-contain"
-        />
+        <Link
+          href="https://decareer.decodenetwork.app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            src="/images/logos/decareer.png"
+            width={120}
+            height={40}
+            alt="DeCareer logo"
+            className="object-contain hover:opacity-80 transition-opacity cursor-pointer"
+          />
+        </Link>
+        <Link
+          href="https://decourse.decodenetwork.app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            src="/images/logos/decourse.png"
+            width={120}
+            height={40}
+            alt="DeCourse logo"
+            className="object-contain hover:opacity-80 transition-opacity cursor-pointer"
+          />
+        </Link>
+        <Link
+          href="https://dedao.decodenetwork.app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            src="/images/logos/dedao.png"
+            width={150}
+            height={60}
+            alt="DeDao logo"
+            className="object-contain hover:opacity-80 transition-opacity cursor-pointer"
+          />
+        </Link>
+        <Link
+          href="https://defuel.decodenetwork.app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            src="/images/logos/defuel.png"
+            width={120}
+            height={60}
+            alt="DeFuel logo"
+            className="object-contain hover:opacity-80 transition-opacity cursor-pointer"
+          />
+        </Link>
+        <Link
+          href="https://dehive.decodenetwork.app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            src="/images/logos/dehive.png"
+            width={120}
+            height={60}
+            alt="DeHive logo"
+            className="object-contain hover:opacity-80 transition-opacity cursor-pointer"
+          />
+        </Link>
+        <Link
+          href="https://deid.decodenetwork.app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            src="/images/logos/deid.png"
+            width={60}
+            height={20}
+            alt="DEiD logo"
+            className="object-contain hover:opacity-80 transition-opacity cursor-pointer"
+          />
+        </Link>
       </div>
 
       {/* Terms */}
@@ -75,7 +111,6 @@ export default function BrandLogos() {
         </Link>
       </p>
 
-      {/* Footer */}
       <div className="text-center mt-12">
         <p className="text-gray-400 text-sm">
           © {new Date().getFullYear()} Decode Network. All rights reserved.
