@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     }
 
     const backendResponse = await fetch(
-      `${process.env.BACKEND_BASE_URL}/notifications?page=${page}&limit=15`,
+      `${process.env.BACKEND_BASE_URL}/notifications?page=${page}&limit=18`,
       {
         method: "GET",
         headers: {

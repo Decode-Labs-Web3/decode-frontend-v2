@@ -10,6 +10,7 @@ import { useNotification } from "@/hooks/useNotification.hooks";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fingerprintService } from "@/services/fingerprint.services";
+import { NotificationSocketEvent } from "@/interfaces/notification.interfaces";
 import {
   NotificationProvider,
   useNotificationContext,
@@ -121,14 +122,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         if (msg.type === "notification_received") {
           // msg.data: { event, data: {...}, timestamp, userId }
           const payload = msg.data as unknown as Record<string, unknown>;
-          const notification = payload?.data as unknown as Record<
-            string,
-            unknown
-          >;
-
+          const notification = payload?.data as NotificationSocketEvent;
           if (notification) {
-            setUnread(unread + 1);
-            pushNewNotification(notification as any);
+            setUnread((v) => v + 1);
+            pushNewNotification(notification);
             console.log("New notification received:", notification);
             toastInfo(`Notification received: ${notification.title}`);
           }

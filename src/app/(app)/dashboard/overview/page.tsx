@@ -210,7 +210,7 @@ export default function OverviewPage() {
                         </p>
                       </div>
                       <p className="text-xs text-(--muted-foreground)">
-                        {notification.createdAt.toLocaleString()}
+                        {new Date(notification.createdAt).toLocaleString()}
                       </p>
                     </div>
                   </div>

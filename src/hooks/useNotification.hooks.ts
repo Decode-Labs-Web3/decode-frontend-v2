@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { NotificationReceived, NotificationSocketEvent } from "@/interfaces/notification.interfaces";
 import {
   setNotification,
   setOldNotification,
   setReadAll,
   setReadOne,
   setNewNotification,
-  type NotificationReceived,
 } from "@/store/slices/notificationSlice";
 
 interface UseNotificationResult {
@@ -15,7 +15,7 @@ interface UseNotificationResult {
   addOldNotifications: (list: NotificationReceived[]) => void;
   markAllRead: () => void;
   markOneRead: (id: string) => void;
-  pushNewNotification: (n: NotificationReceived) => void;
+  pushNewNotification: (n: NotificationSocketEvent) => void;
 }
 
 export const useNotification = (): UseNotificationResult => {
@@ -48,7 +48,7 @@ export const useNotification = (): UseNotificationResult => {
   );
 
   const pushNewNotification = useCallback(
-    (n: NotificationReceived) => {
+    (n: NotificationSocketEvent) => {
       dispatch(setNewNotification(n));
     },
     [dispatch]

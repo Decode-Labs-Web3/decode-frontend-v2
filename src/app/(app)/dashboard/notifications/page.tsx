@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNotificationContext } from "@/contexts/NotificationContext";
 import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function NotificationsPage() {
   const [page, setPage] = useState(0);
@@ -17,6 +18,7 @@ export default function NotificationsPage() {
   const { setUnread } = useNotificationContext();
   const [loading, setLoading] = useState(false);
   const [endOfData, setEndOfData] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const {
     notifications,
     setNotifications,
@@ -26,9 +28,9 @@ export default function NotificationsPage() {
   } = useNotification();
 
   const getNotifications = useCallback(async () => {
-    if (endOfData) return;
+    if (endOfData || fetchingRef.current) return;
+    fetchingRef.current = true;
     setLoading(true);
-
     try {
       const apiResponse = await fetch("/api/users/notifications", {
         method: "POST",
@@ -52,15 +54,19 @@ export default function NotificationsPage() {
       } else {
         addOldNotifications(response.data.notifications);
       }
-      setNotifications(response.data.notifications);
       setEndOfData(response.data.meta.is_last_page);
       console.log("this is end of data", response.data.meta.is_last_page);
     } catch (error) {
       console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   }, [page, endOfData, fingerprintHash, setNotifications, addOldNotifications]);
+
+  useEffect(() => {
+    getNotifications();
+  }, [getNotifications]);
 
   const markAllAsRead = async () => {
     try {
@@ -112,94 +118,111 @@ export default function NotificationsPage() {
     }
   };
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const prevScrollHeightRef = useRef(0);
+  const restoreOnNextRenderRef = useRef(false);
+  const fetchingRef = useRef(false);
+
+  const handleScroll = () => {
+    const element = containerRef.current;
+    if (!element || endOfData || loadingMore || fetchingRef.current) return;
+    if (element.scrollTop + element.clientHeight === element.scrollHeight) {
+      prevScrollHeightRef.current = element.scrollHeight;
+      restoreOnNextRenderRef.current = true;
+      setLoadingMore(true);
+      setPage((p) => p + 1);
+    }
+  };
+
   useEffect(() => {
-    getNotifications();
-  }, [getNotifications]);
-
-  const ticking = useRef(false);
-  const cooldownRef = useRef(false);
-
-  useEffect(() => {
-    if (endOfData) return;
-    const onScroll = () => {
-      if (loading) return;
-      if (ticking.current) return;
-      ticking.current = true;
-      requestAnimationFrame(() => {
-        const contentHeight = document.documentElement.scrollHeight;
-        const scrolled = window.scrollY + window.innerHeight;
-        const atBottom = contentHeight - scrolled <= 10;
-
-        if (atBottom && !cooldownRef.current) {
-          cooldownRef.current = true;
-          setPage((p) => p + 1);
-          setTimeout(() => {
-            cooldownRef.current = false;
-          }, 300);
-        }
-        ticking.current = false;
-      });
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [endOfData, loading]);
+    if (page === 0) return;
+    if (!restoreOnNextRenderRef.current) return;
+    const element = containerRef.current;
+    if (element) {
+      element.scrollTop = prevScrollHeightRef.current - element.clientHeight;
+      prevScrollHeightRef.current = element.scrollHeight;
+    }
+    setLoadingMore(false);
+    restoreOnNextRenderRef.current = false;
+  }, [notifications, page]);
 
   return (
-    <div className="flex flex-col justify-start gap-4">
-      <Button onClick={() => markAllAsRead()} className="w-40">
-        Mark all as read
-      </Button>
-      {loading && <Loading.NotificationCard />}
-      {!loading &&
-        notifications.map((notification) => (
-          <Card
-            key={notification._id}
-            className="bg-(--card) border border-(--border) rounded-lg"
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {notification.read ? (
-                    <FontAwesomeIcon
-                      icon={faCircleCheck}
-                      className="text-(--success)"
-                    />
-                  ) : (
-                    <FontAwesomeIcon
-                      icon={faBell}
-                      className="text-(--warning)"
-                    />
-                  )}
+    <div className="flex flex-col h-[calc(100vh-6rem-2.5rem)] overflow-hidden">
+      <ScrollArea
+        className="h-full"
+        ref={containerRef}
+        onScrollViewport={handleScroll}
+      >
+        <div className="flex flex-col h-full">
+          <div className="sticky top-0 z-10 bg-(--card) border-b border-(--border) p-2">
+            <Button onClick={() => markAllAsRead()} className="w-40">
+              Mark all as read
+            </Button>
+          </div>
 
-                  <div>
-                    <p className="text-sm">{notification.title}</p>
-                    <p className="text-xs text-(--muted-foreground)">
-                      {notification.createdAt}
-                    </p>
-                  </div>
-                </div>
-                {!notification.read && (
-                  <Button
-                    onClick={() => markAsRead(notification._id)}
-                    size="sm"
-                    className="w-20"
-                  >
-                    Read
-                  </Button>
-                )}
+          <div className="space-y-2 p-2 pb-16">
+            {loading && <Loading.NotificationCard />}
+            {!loading &&
+              notifications.map((notification) => (
+                <Card
+                  key={notification._id}
+                  className="bg-(--card) border border-(--border) rounded-lg"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {notification.read ? (
+                          <FontAwesomeIcon
+                            icon={faCircleCheck}
+                            className="text-(--success)"
+                          />
+                        ) : (
+                          <FontAwesomeIcon
+                            icon={faBell}
+                            className="text-(--warning)"
+                          />
+                        )}
+
+                        <div>
+                          <p className="text-sm">{notification.title}</p>
+                          <p className="text-xs text-(--muted-foreground)">
+                            {notification.createdAt}
+                          </p>
+                        </div>
+                      </div>
+                      {!notification.read && (
+                        <Button
+                          onClick={() => markAsRead(notification._id)}
+                          size="sm"
+                          className="w-20"
+                        >
+                          Read
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            {loadingMore && (
+              <div className="p-3 text-center text-xs text-muted-foreground">
+                Loading more...
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      {endOfData && (
-        <p className="text-muted-foreground text-sm mt-2">End of data</p>
-      )}
-      {!endOfData && (
-        <p className="text-muted-foreground text-sm mt-2">
-          Current page: {page}
-        </p>
-      )}
+            )}
+          </div>
+
+          {/* Sticky footer */}
+          <div className="sticky bottom-0 z-10 bg-(--card) border-t border-(--border) p-2">
+            {endOfData ? (
+              <p className="text-muted-foreground text-sm">End of data</p>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                Current page: {page}
+              </p>
+            )}
+          </div>
+        </div>
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
     </div>
   );
 }

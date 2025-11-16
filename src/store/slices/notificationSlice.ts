@@ -1,21 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-export interface NotificationReceived {
-  _id: string;
-  user_id: string;
-  type: string;
-  title: string;
-  message: string;
-  delivered: boolean;
-  delivered_at: null | string;
-  read: boolean;
-  read_at: null | string;
-  createdAt: string;
-  updatedAt: string;
-  __v?: number;
-}
+import {
+  NotificationReceived,
+  NotificationSocketEvent,
+} from "@/interfaces/notification.interfaces";
 
 const initialState: NotificationReceived[] = [];
+
+function normalizeNotification(notification: NotificationSocketEvent) {
+  const { id, ...rest } = notification;
+  return { ...(rest as Omit<NotificationReceived, "_id">), _id: id };
+}
 
 const notificationSlice = createSlice({
   name: "notification",
@@ -47,12 +41,14 @@ const notificationSlice = createSlice({
         notification.read = true;
       }
     },
-    setNewNotification(state, action: PayloadAction<NotificationReceived>) {
-      const exists = state.find(
-        (notification) => notification._id === action.payload._id
-      );
+    setNewNotification(state, action: PayloadAction<NotificationSocketEvent>) {
+      const incoming = normalizeNotification(action.payload);
+      const exists = state.find((n) => n._id === incoming._id);
       if (exists) return;
-      state.unshift(action.payload);
+      state.unshift(incoming);
+    },
+    resetNotifications() {
+      return [] as NotificationReceived[];
     },
   },
 });
@@ -63,6 +59,7 @@ export const {
   setReadAll,
   setReadOne,
   setNewNotification,
+  resetNotifications,
 } = notificationSlice.actions;
 
 export default notificationSlice.reducer;
