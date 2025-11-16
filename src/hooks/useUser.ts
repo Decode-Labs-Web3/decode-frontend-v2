@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { UserProfile, Wallet } from "@/interfaces/user.interfaces";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { UserProfile, Wallet } from "@/interfaces/user.interfaces";
 import {
   createUser,
   updateUser,

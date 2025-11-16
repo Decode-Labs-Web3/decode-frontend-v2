@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useUser } from "@/hooks/useUser";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { useNotification } from "@/hooks/useNotification.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNotificationContext } from "@/contexts/NotificationContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   faShieldHalved,
   faWallet,
@@ -14,42 +15,10 @@ import {
   faCircleCheck,
   faBell,
 } from "@fortawesome/free-solid-svg-icons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-interface NotificationReceived {
-  _id: string;
-  title: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-}
 
 export default function OverviewPage() {
-  const router = useRouter();
   const { user } = useUser();
-  // const { fetchUnread } = useNotificationContext();
-  const [notifications, setNotifications] = useState<NotificationReceived[]>(
-    []
-  );
-
-  useEffect(() => {
-    router.refresh();
-
-    const interval = setInterval(() => {
-      const storedNotifications = sessionStorage.getItem("notifications");
-      const notificationsData = storedNotifications
-        ? JSON.parse(storedNotifications)
-        : [];
-      if (notificationsData.length > notifications.length) {
-        setNotifications(notificationsData);
-        // fetchUnread?.();
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [notifications.length, router]);
+  const { notifications } = useNotification();
 
   return (
     <>

@@ -4,34 +4,26 @@ import Loading from "@/components/(loading)";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { useNotification } from "@/hooks/useNotification.hooks";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNotificationContext } from "@/contexts/NotificationContext";
 import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
-
-interface NotificationReceived {
-  _id: string;
-  user_id: string;
-  type: string;
-  title: string;
-  message: string;
-  delivered: boolean;
-  delivered_at: null | string;
-  read: boolean;
-  read_at: null | string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
 
 export default function NotificationsPage() {
   const [page, setPage] = useState(0);
   const { fingerprintHash } = useFingerprint();
+  const { setUnread } = useNotificationContext();
   const [loading, setLoading] = useState(false);
   const [endOfData, setEndOfData] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationReceived[]>(
-    []
-  );
+  const {
+    notifications,
+    setNotifications,
+    addOldNotifications,
+    markAllRead,
+    markOneRead,
+  } = useNotification();
 
   const getNotifications = useCallback(async () => {
     if (endOfData) return;
@@ -55,7 +47,12 @@ export default function NotificationsPage() {
         );
         return;
       }
-      setNotifications((prev) => [...prev, ...response.data.notifications]);
+      if (page === 0) {
+        setNotifications(response.data.notifications);
+      } else {
+        addOldNotifications(response.data.notifications);
+      }
+      setNotifications(response.data.notifications);
       setEndOfData(response.data.meta.is_last_page);
       console.log("this is end of data", response.data.meta.is_last_page);
     } catch (error) {
@@ -63,7 +60,7 @@ export default function NotificationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, endOfData, fingerprintHash]);
+  }, [page, endOfData, fingerprintHash, setNotifications, addOldNotifications]);
 
   const markAllAsRead = async () => {
     try {
@@ -83,13 +80,8 @@ export default function NotificationsPage() {
         );
         return;
       }
-
-      // Update local state immediately instead of refetching
-      setNotifications((prev) =>
-        prev.map((notification) => ({ ...notification, read: true }))
-      );
-      // fetchUnread?.();
-      console.log("All notifications marked as read");
+      markAllRead();
+      setUnread(0);
     } catch (error) {
       console.error("Error marking all as read:", error);
     }
@@ -113,17 +105,8 @@ export default function NotificationsPage() {
         console.error("Mark as read API error:", errorMessage);
         return;
       }
-
-      // Update local state immediately instead of refetching
-      setNotifications((prev) =>
-        prev.map((notification) =>
-          notification._id === id
-            ? { ...notification, read: true }
-            : notification
-        )
-      );
-      // fetchUnread?.();
-      console.log("Notification marked as read:", id);
+      markOneRead(id);
+      setUnread((prev) => Math.max(prev - 1, 0));
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }

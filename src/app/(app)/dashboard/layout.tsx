@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
+import { useNotification } from "@/hooks/useNotification.hooks";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fingerprintService } from "@/services/fingerprint.services";
-import { NotificationProvider } from "@/contexts/NotificationContext";
-import { useNotificationContext } from "@/contexts/NotificationContext";
+import {
+  NotificationProvider,
+  useNotificationContext,
+} from "@/contexts/NotificationContext";
 import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import {
   Dialog,
@@ -32,9 +35,19 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  return (
+    <NotificationProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </NotificationProvider>
+  );
+}
+
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, setUser } = useUser();
   const [loading, setLoading] = useState(true);
+  const { pushNewNotification } = useNotification();
+  const { unread, setUnread } = useNotificationContext();
   const [isDeactivated, setIsDeactivated] = useState(false);
   const { fingerprintHash, updateFingerprint } = useFingerprint();
 
@@ -114,6 +127,9 @@ export default function DashboardLayout({
           >;
 
           if (notification) {
+            setUnread(unread + 1);
+            pushNewNotification(notification as any);
+            console.log("New notification received:", notification);
             toastInfo(`Notification received: ${notification.title}`);
           }
         }
@@ -131,7 +147,7 @@ export default function DashboardLayout({
       console.log("SSE closed");
       es.close();
     };
-  }, []);
+  }, [pushNewNotification, setUnread, unread]);
 
   const handleReactivateAccount = async (status: boolean) => {
     try {
@@ -201,25 +217,21 @@ export default function DashboardLayout({
 
   if (loading || !user._id) {
     return (
-      <NotificationProvider>
-        <div className="min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
-          <App.Navbar />
-          <App.Sidebar />
-          <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
-            <Loading.OverviewCard />
-          </div>
+      <div className="min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
+        <App.Navbar />
+        <App.Sidebar />
+        <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
+          <Loading.OverviewCard />
         </div>
-      </NotificationProvider>
+      </div>
     );
   }
 
   return (
-    <NotificationProvider>
-      <div className="relative min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
-        <App.Navbar />
-        <App.Sidebar />
-        <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>
-      </div>
-    </NotificationProvider>
+    <div className="relative min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
+      <App.Navbar />
+      <App.Sidebar />
+      <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>
+    </div>
   );
 }
