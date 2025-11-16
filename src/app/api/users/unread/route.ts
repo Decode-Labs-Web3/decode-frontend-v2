@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { getApiHeaders } from "@/utils/api.utils";
 import { httpStatus } from "@/constants/index.constants";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import {
   apiPathName,
   guardInternal,
@@ -14,8 +16,6 @@ export async function GET(req: Request) {
   if (denied) return denied;
 
   try {
-    // const cookieStore = await cookies();
-    // const accessToken = cookieStore.get("accessToken")?.value;
     const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
 
     if (!fingerprint) {
       return NextResponse.json(

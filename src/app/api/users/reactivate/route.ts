@@ -40,8 +40,6 @@ export async function DELETE(request: NextRequest) {
       return res;
     }
 
-    // const cookieStore = await cookies();
-    // const accessToken = cookieStore.get("accessToken")?.value;
     const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
@@ -55,7 +53,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = request.headers.get("X-Fingerprint-Hashed");
 
     if (!fingerprint) {
       return NextResponse.json(

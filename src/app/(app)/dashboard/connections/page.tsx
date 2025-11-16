@@ -77,10 +77,9 @@ export default function ConnectionsIndex() {
       try {
         const apiResponse = await fetch("/api/users/search", {
           method: "POST",
-          headers: {
+          headers: getApiHeaders(fingerprintHash, {
             "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
+          }),
           body: JSON.stringify({ name: queryToSearch }),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),
@@ -102,7 +101,7 @@ export default function ConnectionsIndex() {
         setLoading(false);
       }
     },
-    [query]
+    [query, fingerprintHash]
   );
 
   useEffect(() => {

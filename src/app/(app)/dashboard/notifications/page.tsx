@@ -1,12 +1,14 @@
 "use client";
 
 import Loading from "@/components/(loading)";
+import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { useNotificationContext } from "@/contexts/NotificationContext";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface NotificationReceived {
   _id: string;
@@ -18,6 +20,7 @@ interface NotificationReceived {
 
 export default function NotificationsPage() {
   const [page, setPage] = useState(0);
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [endOfData, setEndOfData] = useState(false);
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
@@ -32,10 +35,9 @@ export default function NotificationsPage() {
     try {
       const apiResponse = await fetch("/api/users/notifications", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ page }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -48,14 +50,6 @@ export default function NotificationsPage() {
         );
         return;
       }
-      console.log("this is notifications", response);
-      // setNotifications({
-      //   id: response.data.notifications._id,
-      //   title: response.data.notifications.title,
-      //   message: response.data.notifications.message,
-      //   read: response.data.notifications.read,
-      //   createAt: response.data.notifications.createdAt,
-      // });
       setNotifications((prev) => [...prev, ...response.data.notifications]);
       setEndOfData(response.data.meta.is_last_page);
       console.log("this is end of data", response.data.meta.is_last_page);
@@ -64,30 +58,15 @@ export default function NotificationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, endOfData]);
-
-  // const getNotifications = async (pageIndex: number) => {
-  //   try {
-  //     const apiResponse = await fetch("/api/users/notifications", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ page: pageIndex }),
-  //     });
-  //     const responseJson = await apiResponse.json();
-  //     if (!apiResponse.ok) {
-  //       return;
-  //     }
-  //     setNotifications(responseJson.data.notifications);
-  //   } catch (error) {}
-  // };
+  }, [page, endOfData, fingerprintHash]);
 
   const markAllAsRead = async () => {
     try {
       const apiResponse = await fetch("/api/users/read-all", {
         method: "PATCH",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -111,25 +90,13 @@ export default function NotificationsPage() {
     }
   };
 
-  // const markAllAsRead = async () => {
-  //   try {
-  //     const apiResponse = await fetch("/api/users/read-all", { method: "PATCH" });
-  //     const responseJson = await apiResponse.json();
-  //     if (!apiResponse.ok) {
-  //       return;
-  //     }
-  //    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  //   } catch (error) {}
-  // };
-
   const markAsRead = async (id: string) => {
     try {
       const apiResponse = await fetch("/api/users/read", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -156,21 +123,6 @@ export default function NotificationsPage() {
       console.error("Error marking notification as read:", error);
     }
   };
-
-  // const markAsReadExample = async (notificationId: string) => {
-  //   try {
-  //     const apiResponse = await fetch("/api/users/read", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ id: notificationId }),
-  //     });
-  //     const responseJson = await apiResponse.json();
-  //     if (!apiResponse.ok) {
-  //       return;
-  //     }
-  //     // setNotifications(prev => prev.map(n => n._id === notificationId ? { ...n, read: true } : n));
-  //   } catch (error) {}
-  // };
 
   useEffect(() => {
     getNotifications();

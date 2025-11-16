@@ -1,6 +1,10 @@
 "use client";
 
+import { format, parseISO } from "date-fns";
+import { getApiHeaders } from "@/utils/api.utils";
 import { useState, useEffect, useMemo } from "react";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 import {
   ResponsiveContainer,
   LineChart,
@@ -11,8 +15,6 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { format, parseISO } from "date-fns";
-import { toastSuccess, toastError } from "@/utils/index.utils";
 
 interface SnapshotData {
   _id: string;
@@ -30,11 +32,11 @@ interface ChartRow {
 type Props = { userId: string };
 
 export default function SnapshotChart({ userId }: Props) {
-  const [rows, setRows] = useState<SnapshotData[]>([]);
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<SnapshotData[]>([]);
 
-  // cố định chiều cao chart
-  const CHART_HEIGHT = 288; // ~ h-72
+  const CHART_HEIGHT = 288;
 
   useEffect(() => {
     if (!userId) return;
@@ -44,10 +46,9 @@ export default function SnapshotChart({ userId }: Props) {
       try {
         const apiResponse = await fetch("/api/users/snapshot", {
           method: "POST",
-          headers: {
+          headers: getApiHeaders(fingerprintHash, {
             "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
+          }),
           body: JSON.stringify({ id: userId }),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),

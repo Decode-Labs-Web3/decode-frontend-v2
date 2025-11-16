@@ -158,10 +158,9 @@ export default function DashboardLayout({
     try {
       const apiResponse = await fetch("/api/users/reactivate", {
         method: "DELETE",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ status }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

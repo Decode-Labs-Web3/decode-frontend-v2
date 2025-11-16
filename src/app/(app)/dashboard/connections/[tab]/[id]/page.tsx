@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
-import { useState, useEffect, useCallback } from "react";
-import SnapshotChart from "@/components/(app)/SnapshotChart";
-import { toastSuccess, toastError } from "@/utils/index.utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useState, useEffect, useCallback } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import SnapshotChart from "@/components/(app)/SnapshotChart";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
+import { toastSuccess, toastError } from "@/utils/index.utils";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   HoverCard,
   HoverCardContent,
@@ -61,8 +63,9 @@ interface MutualFollower {
 }
 
 export default function Page() {
-  const { tab, id } = useParams<{ id: string; tab: string }>();
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
+  const { tab, id } = useParams<{ id: string; tab: string }>();
   const [userData, setUserData] = useState<UserData | null>(null);
 
   console.log("This is user data", userData);
@@ -72,10 +75,9 @@ export default function Page() {
     try {
       const apiResponse = await fetch("/api/users/relationship", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -96,7 +98,7 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, fingerprintHash]);
 
   useEffect(() => {
     fetchUserData();
@@ -107,10 +109,9 @@ export default function Page() {
     try {
       const apiResponse = await fetch("/api/users/follow-and-unfollow", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -137,10 +138,9 @@ export default function Page() {
     try {
       const apiResponse = await fetch("/api/users/follow-and-unfollow", {
         method: "DELETE",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -167,10 +167,9 @@ export default function Page() {
     try {
       const apiResponse = await fetch("/api/users/block-and-unblock", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -197,10 +196,9 @@ export default function Page() {
     try {
       const apiResponse = await fetch("/api/users/block-and-unblock", {
         method: "DELETE",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ id }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

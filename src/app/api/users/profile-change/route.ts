@@ -64,7 +64,7 @@ export async function PUT(req: Request) {
     }
 
     const accessToken = (await cookies()).get("accessToken")?.value;
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
 
     if (!fingerprint) {
       return NextResponse.json(

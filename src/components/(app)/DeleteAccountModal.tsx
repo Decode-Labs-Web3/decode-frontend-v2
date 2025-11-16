@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
+import { toastSuccess, toastError } from "@/utils/index.utils";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { toastSuccess, toastError } from "@/utils/index.utils";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -23,16 +25,16 @@ export default function DeleteAccountModal({
 }: DeleteAccountModalProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-
+  const { fingerprintHash } = useFingerprint();
   const handleDeleteAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/deactivate", {
         method: "DELETE",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });

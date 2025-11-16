@@ -1,5 +1,7 @@
 "use client";
 
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import {
   useContext,
   createContext,
@@ -27,14 +29,13 @@ export function NotificationProvider({
   children: React.ReactNode;
 }) {
   const [unread, setUnread] = useState(0);
+  const { fingerprintHash } = useFingerprint();
 
   const fetchUnread = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/users/unread", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -53,16 +54,14 @@ export function NotificationProvider({
     } catch (error) {
       console.log(error);
     }
-  }, []);
+  }, [fingerprintHash]);
 
   useEffect(() => {
     const fetchUnreadData = async () => {
       try {
         const apiResponse = await fetch("/api/users/unread", {
           method: "GET",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-          },
+          headers: getApiHeaders(fingerprintHash),
           cache: "no-cache",
           signal: AbortSignal.timeout(10000),
         });
@@ -84,7 +83,7 @@ export function NotificationProvider({
     };
 
     fetchUnreadData();
-  }, []);
+  }, [fingerprintHash]);
 
   return (
     <NotificationContext.Provider value={{ unread, setUnread, fetchUnread }}>

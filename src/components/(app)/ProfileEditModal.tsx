@@ -1,9 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
+import { toastSuccess, toastError } from "@/utils/index.utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toastSuccess, toastError } from "@/utils/index.utils";
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -27,6 +29,7 @@ export default function ProfileEditModal({
   userInfo,
   onProfileUpdate,
 }: ProfileEditModalProps) {
+  const { fingerprintHash } = useFingerprint();
   const [loadingAvatar, setLoadingAvatar] = useState({
     loading: false,
     new: false,
@@ -69,9 +72,7 @@ export default function ProfileEditModal({
     try {
       const apiResponse = await fetch("/api/users/avatar", {
         method: "POST",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         body: formData,
         cache: "no-store",
         signal: AbortSignal.timeout(20000),
@@ -108,10 +109,9 @@ export default function ProfileEditModal({
     try {
       const apiResponse = await fetch("/api/users/profile-change", {
         method: "PUT",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           current: updateUserInfo,
           original: {

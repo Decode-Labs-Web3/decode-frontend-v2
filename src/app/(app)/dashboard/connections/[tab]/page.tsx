@@ -4,11 +4,13 @@ import Link from "next/link";
 import App from "@/components/(app)";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
+import { Badge } from "@/components/ui/badge";
+import { getApiHeaders } from "@/utils/api.utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   HoverCard,
   HoverCardContent,
@@ -43,7 +45,7 @@ interface MutualFollower {
 
 export default function PageFollow() {
   const [page, setPage] = useState(0);
-  // console.log("this is page", page);
+  const {  fingerprintHash } = useFingerprint();
   const { tab } = useParams<{ tab: string }>();
   const [loading, setLoading] = useState(false);
   const [endOfData, setEndOfData] = useState(false);
@@ -56,10 +58,9 @@ export default function PageFollow() {
     try {
       const apiResponse = await fetch("/api/users/follow", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ tab, page }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),

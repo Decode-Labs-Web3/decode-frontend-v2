@@ -16,11 +16,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { page } = body;
-
-    // console.log(`${pathname}: `, page);
-
-    // const cookieStore = await cookies();
-    // const accessToken = cookieStore.get("accessToken")?.value;
     const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
@@ -34,7 +29,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
 
     if (!fingerprint) {
       return NextResponse.json(

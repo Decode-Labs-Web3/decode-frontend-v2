@@ -14,8 +14,6 @@ export async function GET(req: Request) {
   if (denied) return denied;
 
   try {
-    // const cookieStore = await cookies();
-    // const accessToken = cookieStore.get("accessToken")?.value;
     const accessToken = (await cookies()).get("accessToken")?.value;
 
     if (!accessToken) {
@@ -30,7 +28,6 @@ export async function GET(req: Request) {
     }
 
     const fingerprint = req.headers.get("X-Fingerprint-Hashed");
-    // console.log("this is fingerprint from headers:", fingerprint);
 
     if (!fingerprint) {
       return NextResponse.json(
