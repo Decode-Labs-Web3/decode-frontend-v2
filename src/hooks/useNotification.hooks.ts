@@ -1,6 +1,9 @@
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { NotificationReceived, NotificationSocketEvent } from "@/interfaces/notification.interfaces";
+import {
+  NotificationReceived,
+  NotificationSocketEvent,
+} from "@/interfaces/notification.interfaces";
 import {
   setNotification,
   setOldNotification,
