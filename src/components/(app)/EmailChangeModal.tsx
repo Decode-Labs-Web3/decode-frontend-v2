@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +37,7 @@ export default function EmailChangeModal({
     new_code: false,
   });
 
+  const { fingerprintHash } = useFingerprint();
   const [errorEmail, setErrorEmail] = useState("");
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,10 +59,9 @@ export default function EmailChangeModal({
     try {
       const apiResponse = await fetch("/api/email/email-debounce", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ email }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -85,9 +87,7 @@ export default function EmailChangeModal({
     try {
       const apiResponse = await fetch("/api/email/old-email", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -110,10 +110,9 @@ export default function EmailChangeModal({
     try {
       const apiResponse = await fetch("/api/email/old-email", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ code }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -143,10 +142,9 @@ export default function EmailChangeModal({
     try {
       const apiResponse = await fetch("/api/email/new-email", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ email, code: emailChange.old_code }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -176,10 +174,9 @@ export default function EmailChangeModal({
     try {
       const apiResponse = await fetch("/api/email/new-code", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ code }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
