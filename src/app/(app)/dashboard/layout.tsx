@@ -63,14 +63,6 @@ export default function DashboardLayout({
       });
 
       const response = await apiResponse.json();
-      // const fetchUser = async () => {
-      //   try {
-      //     const apiResponse = await fetch("/api/users/overview");
-      //     const responseJson = await apiResponse.json();
-      //     if (responseJson?.statusCode === 403) {
-      //     }
-      //   } catch (error) {}
-      // };
       if (
         response.statusCode === 403 &&
         response.message === "Your account is deactivated"
