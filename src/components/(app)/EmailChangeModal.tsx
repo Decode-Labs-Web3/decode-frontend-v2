@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useUser } from "@/hooks/useUser";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,14 +18,13 @@ import {
 interface EmailChangeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onEmailUpdate: () => void;
 }
 
 export default function EmailChangeModal({
   isOpen,
   onClose,
-  onEmailUpdate,
 }: EmailChangeModalProps) {
+  const { updateUserEmail } = useUser();
   const [emailChange, setEmailChange] = useState({
     old_code: "",
     new_email: "",
@@ -193,8 +193,8 @@ export default function EmailChangeModal({
       ) {
         setEmailStep((prev) => ({ ...prev, new_code: false, old_code: true }));
         setEmailChange({ old_code: "", new_email: "", new_code: "" });
+        updateUserEmail(emailChange.new_email);
         onClose();
-        onEmailUpdate();
       } else {
         setErrorEmail(response.message);
       }

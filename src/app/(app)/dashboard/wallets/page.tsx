@@ -1,15 +1,14 @@
 "use client";
 
 import { ethers } from "ethers";
+import { useUser } from "@/hooks/useUser";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
-import { Wallet } from "@/interfaces/user.interfaces";
 import { useCallback, useEffect, useState } from "react";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useUserInfoContext } from "@/contexts/UserInfoContext";
 import { toastError, toastSuccess, toastInfo } from "@/utils/index.utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,43 +18,11 @@ import {
 } from "@reown/appkit/react";
 
 export default function WalletsPage() {
-  const { open } = useAppKit();
+  const { open, close } = useAppKit();
+  const { fingerprintHash } = useFingerprint();
+  const { user, addWalletUser, removeWalletUser, setPrimaryWallet } = useUser();
   const { address, isConnected } = useAppKitAccount();
   const { walletProvider } = useAppKitProvider("eip155");
-  const [allWallets, setAllWallets] = useState<Wallet[]>([]);
-  const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
-  const {fingerprintHash} = useFingerprint();
-
-  const handleGetAllWallets = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/wallet/all-wallet", {
-        method: "GET",
-        headers: getApiHeaders(fingerprintHash),
-        credentials: "include",
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!apiResponse.ok) {
-        const error = await apiResponse.json();
-        console.error("Get all wallets error:", error);
-        toastError(error.message || `HTTP ${apiResponse.status}`);
-        return;
-      }
-      const response = await apiResponse.json();
-      console.log("all wallets data:", response);
-      setAllWallets(response.data);
-      toastSuccess("Wallets fetched successfully");
-    } catch (error) {
-      console.error("Get all wallets error:", error);
-      toastError(
-        error instanceof Error ? error.message : "Get all wallets failed"
-      );
-    }
-  }, [fingerprintHash]);
-
-  useEffect(() => {
-    handleGetAllWallets();
-  }, [handleGetAllWallets]);
 
   const handleAddWallet = useCallback(async () => {
     try {
@@ -111,13 +78,11 @@ export default function WalletsPage() {
         throw new Error(verifyJson.message || "Link failed");
 
       try {
-        // Ensure the AppKit modal is closed before navigating
         close?.();
       } catch (error) {
         console.error("Close modal error:", error);
       }
-      fetchUserInfo?.();
-      handleGetAllWallets();
+      addWalletUser(verifyJson.data);
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
       // Handle user rejection (code 4001) or ACTION_REJECTED
@@ -134,12 +99,12 @@ export default function WalletsPage() {
     }
   }, [
     open,
+    close,
     fingerprintHash,
     isConnected,
     walletProvider,
     address,
-    fetchUserInfo,
-    handleGetAllWallets,
+    addWalletUser,
   ]);
 
   const handleAddPrimaryWallet = useCallback(async () => {
@@ -193,13 +158,11 @@ export default function WalletsPage() {
         throw new Error(verifyJson.message || "Link failed");
 
       try {
-        // Ensure the AppKit modal is closed before navigating
+        setPrimaryWallet(verifyJson.data);
         close?.();
       } catch (error) {
         console.error("Close modal error:", error);
       }
-      fetchUserInfo?.();
-      handleGetAllWallets();
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
       // Handle user rejection (code 4001) or ACTION_REJECTED
@@ -216,12 +179,12 @@ export default function WalletsPage() {
     }
   }, [
     open,
+    close,
     fingerprintHash,
     isConnected,
     walletProvider,
     address,
-    fetchUserInfo,
-    handleGetAllWallets,
+    setPrimaryWallet,
   ]);
 
   const handleRemoveWallet = useCallback(
@@ -239,13 +202,12 @@ export default function WalletsPage() {
         });
 
         const response = await apiResponse.json();
-        // console.log("Remove wallet response:", response);
         if (!apiResponse.ok) {
           console.log("Remove wallet error:", response);
           toastError(response.message || "Remove wallet failed");
           return;
         }
-        handleGetAllWallets();
+        removeWalletUser(address);
         toastSuccess("Wallet removed successfully");
       } catch (error) {
         console.error("Remove wallet error:", error);
@@ -254,7 +216,7 @@ export default function WalletsPage() {
         );
       }
     },
-    [handleGetAllWallets, fingerprintHash]
+    [fingerprintHash, removeWalletUser]
   );
 
   return (
@@ -272,9 +234,9 @@ export default function WalletsPage() {
         </Button>
       </div>
 
-      {allWallets.length > 0 &&
-        !userInfo?.primary_wallet?.is_primary &&
-        !userInfo?.primary_wallet?.address && (
+      {(user.wallets?.length ?? 0) > 0 &&
+        !user?.primary_wallet?.is_primary &&
+        !user?.primary_wallet?.address && (
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between gap-2">
@@ -293,7 +255,7 @@ export default function WalletsPage() {
           </Card>
         )}
 
-      {userInfo?.primary_wallet?.address && (
+      {user?.primary_wallet?.address && (
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between gap-2">
@@ -305,7 +267,7 @@ export default function WalletsPage() {
                   Primary wallet
                 </Badge>
                 <h1 className="text-sm font-medium truncate max-w-[70vw] md:max-w-[40vw]">
-                  {userInfo?.primary_wallet?.address}
+                  {user?.primary_wallet?.address}
                 </h1>
               </div>
             </div>
@@ -313,18 +275,18 @@ export default function WalletsPage() {
         </Card>
       )}
 
-      {allWallets.length > 0 ? (
+      {(user.wallets?.length ?? 0) > 0 ? (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">All wallets</CardTitle>
-              <Badge variant="outline">{allWallets.length}</Badge>
+              <Badge variant="outline">{user.wallets?.length ?? 0}</Badge>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {allWallets.map((wallet) => {
-                if (wallet.address !== userInfo?.primary_wallet?.address) {
+              {(user.wallets ?? []).map((wallet) => {
+                if (wallet.address !== user?.primary_wallet?.address) {
                   return (
                     <div
                       key={wallet._id}

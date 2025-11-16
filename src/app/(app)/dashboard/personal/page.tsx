@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { faPen } from "@fortawesome/free-solid-svg-icons";
 import dynamic from "next/dynamic";
+import { useUser } from "@/hooks/useUser";
+import { useState, Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 import SnapshotChart from "@/components/(app)/SnapshotChart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useUserInfoContext } from "@/contexts/UserInfoContext";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Dynamic imports for code splitting
 const ProfileEditModal = dynamic(
@@ -34,24 +34,12 @@ const DeleteAccountModal = dynamic(
 );
 
 export default function PersonalPage() {
-  const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
+  const { user } = useUser();
   const [modal, setModal] = useState({
     edit: false,
     email: false,
     delete: false,
   });
-
-  const handleProfileUpdate = () => {
-    fetchUserInfo?.();
-  };
-
-  const handleEmailUpdate = () => {
-    fetchUserInfo?.();
-  };
-
-  if (!userInfo) {
-    return <h1>Loading ....</h1>;
-  }
 
   return (
     <>
@@ -63,7 +51,7 @@ export default function PersonalPage() {
                 Profile Information
               </CardTitle>
               <p className="font-mono text-sm text-(--muted-foreground)">
-                User ID: {userInfo._id}
+                User ID: {user._id}
               </p>
             </div>
             <Button
@@ -89,8 +77,8 @@ export default function PersonalPage() {
               <Avatar className="w-32 h-32 rounded-2xl border-2 border-(--border) overflow-hidden shadow-xl">
                 <AvatarImage
                   src={
-                    userInfo?.avatar_ipfs_hash
-                      ? `https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`
+                    user?.avatar_ipfs_hash
+                      ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
                       : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                   }
                   alt="Avatar"
@@ -104,12 +92,12 @@ export default function PersonalPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
                   <h2 className="text-3xl font-bold">
-                    {userInfo.display_name || userInfo.username || "Your name"}
+                    {user.display_name || user.username || "Your name"}
                   </h2>
-                  {userInfo.role && (
+                  {user.role && (
                     <Badge className="bg-(--secondary) text-(--secondary-foreground)">
-                      {userInfo.role.charAt(0).toUpperCase() +
-                        userInfo.role.slice(1)}
+                      {user.role.charAt(0).toUpperCase() +
+                        user.role.slice(1)}
                     </Badge>
                   )}
                 </div>
@@ -120,7 +108,7 @@ export default function PersonalPage() {
                   <h4 className="text-lg font-semibold">About me</h4>
                   <Card className="hover-card">
                     <CardContent className="p-4">
-                      <p className="leading-relaxed">{userInfo.bio}</p>
+                      <p className="leading-relaxed">{user.bio}</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -130,7 +118,7 @@ export default function PersonalPage() {
         </CardContent>
       </Card>
 
-      {userInfo?._id && <SnapshotChart userId={userInfo?._id} />}
+      <SnapshotChart userId={user?._id} />
 
       <Button
         className="w-full mt-4 bg-(--destructive) text-(--destructive-foreground) shadow-sm hover:opacity-90"
@@ -148,19 +136,15 @@ export default function PersonalPage() {
         Change Email
       </Button>
 
-      {/* Dynamic modals with code splitting */}
       <Suspense fallback={<div>Loading...</div>}>
         <ProfileEditModal
           isOpen={modal.edit}
           onClose={() => setModal((prev) => ({ ...prev, edit: false }))}
-          userInfo={userInfo}
-          onProfileUpdate={handleProfileUpdate}
         />
 
         <EmailChangeModal
           isOpen={modal.email}
           onClose={() => setModal((prev) => ({ ...prev, email: false }))}
-          onEmailUpdate={handleEmailUpdate}
         />
 
         <DeleteAccountModal

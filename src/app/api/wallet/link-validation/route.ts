@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
       );
     }
     const response = await backendRes.json();
+    console.log("ehvdhwdjwqvdjwevdjwvedjwedwedwed", response);
 
     return NextResponse.json(
       {

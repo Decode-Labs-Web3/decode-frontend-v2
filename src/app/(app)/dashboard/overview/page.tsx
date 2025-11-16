@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useUserInfoContext } from "@/contexts/UserInfoContext";
 import { useNotificationContext } from "@/contexts/NotificationContext";
 import {
   faShieldHalved,
@@ -28,7 +28,7 @@ interface NotificationReceived {
 
 export default function OverviewPage() {
   const router = useRouter();
-  const { userInfo } = useUserInfoContext() || {};
+  const { user } = useUser();
   const { fetchUnread } = useNotificationContext();
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
     []
@@ -53,7 +53,7 @@ export default function OverviewPage() {
 
   return (
     <>
-      {userInfo && (
+      {user && (
         <Card className="bg-(--card) border border-(--border) rounded-lg mb-8 shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -62,7 +62,7 @@ export default function OverviewPage() {
                   Profile Information
                 </CardTitle>
                 <p className="font-mono text-sm text-muted-foreground">
-                  User ID: {userInfo._id}
+                  User ID: {user._id}
                 </p>
               </div>
             </div>
@@ -74,8 +74,8 @@ export default function OverviewPage() {
                 <Avatar className="w-32 h-32 rounded-2xl border border-(--border) overflow-hidden shadow">
                   <AvatarImage
                     src={
-                      userInfo?.avatar_ipfs_hash
-                        ? `https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`
+                      user?.avatar_ipfs_hash
+                        ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
                         : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                     }
                     alt="Avatar"
@@ -89,20 +89,15 @@ export default function OverviewPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
                     <h2 className="text-3xl font-bold">
-                      {userInfo.display_name ||
-                        userInfo.username ||
-                        "Your name"}
+                      {user.display_name || user.username || "Your name"}
                     </h2>
-                    {userInfo.role && (
+                    {user.role && (
                       <Badge variant="secondary">
-                        {userInfo.role.charAt(0).toUpperCase() +
-                          userInfo.role.slice(1)}
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-lg text-muted-foreground">
-                    {userInfo.email}
-                  </p>
+                  <p className="text-lg text-muted-foreground">{user.email}</p>
                 </div>
 
                 <div className="pt-6 border-t border-(--border)">
@@ -110,7 +105,7 @@ export default function OverviewPage() {
                     <h4 className="text-lg font-semibold">About me</h4>
                     <Card className="hover-card">
                       <CardContent className="p-4">
-                        <p className="leading-relaxed">{userInfo.bio}</p>
+                        <p className="leading-relaxed">{user.bio}</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -123,7 +118,7 @@ export default function OverviewPage() {
                         <span className="text-sm text-(--muted-foreground)">
                           Followers
                         </span>
-                        <p className="text-sm">{userInfo.followers_number}</p>
+                        <p className="text-sm">{user.followers_number}</p>
                       </Link>
                     </div>
                     <div className="space-y-2">
@@ -131,7 +126,7 @@ export default function OverviewPage() {
                         <span className="text-sm text-(--muted-foreground)">
                           Following
                         </span>
-                        <p className="text-sm">{userInfo.following_number}</p>
+                        <p className="text-sm">{user.following_number}</p>
                       </Link>
                     </div>
                   </div>
@@ -169,10 +164,10 @@ export default function OverviewPage() {
             </div>
             <p className="font-medium">Primary wallet</p>
             <p className="text-xs text-(--muted-foreground) mt-1">
-              {userInfo?.primary_wallet?.address
-                ? userInfo?.primary_wallet?.address.slice(0, 10) +
+              {user?.primary_wallet?.address
+                ? user?.primary_wallet?.address.slice(0, 10) +
                   "......" +
-                  userInfo?.primary_wallet?.address.slice(-6)
+                  user?.primary_wallet?.address.slice(-6)
                 : "No wallet connected"}
             </p>
           </CardContent>
@@ -186,8 +181,8 @@ export default function OverviewPage() {
             </div>
             <p className="font-medium">Current device</p>
             <p className="text-xs text-(--muted-foreground) mt-1">
-              {userInfo?.last_login
-                ? new Date(userInfo.last_login).toLocaleString()
+              {user?.last_login
+                ? new Date(user.last_login).toLocaleString()
                 : "—"}
             </p>
           </CardContent>

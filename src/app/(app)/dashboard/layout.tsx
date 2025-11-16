@@ -1,12 +1,11 @@
 "use client";
 
 import App from "@/components/(app)";
+import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
-import { UserProfile } from "@/interfaces/index.interfaces";
-import { UserInfoContext } from "@/contexts/UserInfoContext";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fingerprintService } from "@/services/fingerprint.services";
@@ -34,10 +33,9 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [userInfo, setUserInfo] = useState<UserProfile>();
   const [isDeactivated, setIsDeactivated] = useState(false);
-
-  const { fingerprintHash ,updateFingerprint } = useFingerprint();
+  const { user, setUser } = useUser();
+  const { fingerprintHash, updateFingerprint } = useFingerprint();
 
   useEffect(() => {
     (async () => {
@@ -71,7 +69,7 @@ export default function DashboardLayout({
         toastError("Account deactivated, please choose the modal");
         return;
       }
-      setUserInfo(response.data);
+      setUser(response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
     } catch (error) {
       console.error("User data fetch error:", error);
@@ -83,23 +81,11 @@ export default function DashboardLayout({
       // setLoading(true);
       console.log("User data fetch operation completed");
     }
-  }, [fingerprintHash]);
+  }, [fingerprintHash, setUser]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser && storedUser !== "undefined") {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUserInfo(parsedUser);
-        setLoading(false);
-      } catch (error) {
-        router.push("/");
-        console.error("Failed to parse stored user data:", error);
-        localStorage.removeItem("user");
-      }
-    }
     fetchUserInfo();
-  }, [fetchUserInfo, router]);
+  }, [fetchUserInfo]);
 
   const esRef = useRef<EventSource | null>(null);
 
@@ -212,7 +198,7 @@ export default function DashboardLayout({
     );
   }
 
-  if (loading) {
+  if (loading || !user._id) {
     return (
       <NotificationProvider>
         <div className="min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
@@ -227,14 +213,12 @@ export default function DashboardLayout({
   }
 
   return (
-    <UserInfoContext.Provider value={{ userInfo, fetchUserInfo }}>
-      <NotificationProvider>
-        <div className="relative min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
-          <App.Navbar />
-          <App.Sidebar />
-          <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>
-        </div>
-      </NotificationProvider>
-    </UserInfoContext.Provider>
+    <NotificationProvider>
+      <div className="relative min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
+        <App.Navbar />
+        <App.Sidebar />
+        <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>
+      </div>
+    </NotificationProvider>
   );
 }

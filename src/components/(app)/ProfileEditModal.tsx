@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useUser } from "@/hooks/useUser";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -19,16 +20,13 @@ import {
 interface ProfileEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userInfo: any;
-  onProfileUpdate: () => void;
 }
 
 export default function ProfileEditModal({
   isOpen,
   onClose,
-  userInfo,
-  onProfileUpdate,
 }: ProfileEditModalProps) {
+  const { user, updateUserDetail } = useUser();
   const { fingerprintHash } = useFingerprint();
   const [loadingAvatar, setLoadingAvatar] = useState({
     loading: false,
@@ -36,9 +34,9 @@ export default function ProfileEditModal({
   });
 
   const [updateUserInfo, setUpdateUserInfo] = useState({
-    avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
-    display_name: userInfo?.display_name,
-    bio: userInfo?.bio,
+    avatar_ipfs_hash: user?.avatar_ipfs_hash,
+    display_name: user?.display_name,
+    bio: user?.bio,
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -106,6 +104,10 @@ export default function ProfileEditModal({
 
   const handleUpdateProfile = async (event: React.FormEvent) => {
     event.preventDefault();
+    if(updateUserInfo.avatar_ipfs_hash.trim() === "" || updateUserInfo.display_name?.trim() === "" || updateUserInfo.bio?.trim() === "") {
+      toastError("All fields are required");
+      return;
+    }
     try {
       const apiResponse = await fetch("/api/users/profile-change", {
         method: "PUT",
@@ -115,9 +117,9 @@ export default function ProfileEditModal({
         body: JSON.stringify({
           current: updateUserInfo,
           original: {
-            avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
-            display_name: userInfo?.display_name,
-            bio: userInfo?.bio,
+            avatar_ipfs_hash: user?.avatar_ipfs_hash,
+            display_name: user?.display_name,
+            bio: user?.bio,
           },
         }),
         cache: "no-store",
@@ -137,11 +139,11 @@ export default function ProfileEditModal({
       ) {
         toastSuccess(response.message || "Profile updated");
         onClose();
-        onProfileUpdate();
+        updateUserDetail(updateUserInfo.avatar_ipfs_hash, updateUserInfo.display_name, updateUserInfo.bio);
         setUpdateUserInfo({
-          avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
-          display_name: userInfo?.display_name,
-          bio: userInfo?.bio,
+          avatar_ipfs_hash: user?.avatar_ipfs_hash,
+          display_name: user?.display_name,
+          bio: user?.bio,
         });
       }
 
@@ -161,9 +163,9 @@ export default function ProfileEditModal({
   const handleClose = () => {
     onClose();
     setUpdateUserInfo({
-      avatar_ipfs_hash: userInfo?.avatar_ipfs_hash,
-      display_name: userInfo?.display_name,
-      bio: userInfo?.bio,
+      avatar_ipfs_hash: user?.avatar_ipfs_hash,
+      display_name: user?.display_name,
+      bio: user?.bio,
     });
   };
 
@@ -208,8 +210,8 @@ export default function ProfileEditModal({
                   <Avatar className="w-full h-full">
                     <AvatarImage
                       src={
-                        userInfo?.avatar_ipfs_hash
-                          ? `https://ipfs.de-id.xyz/ipfs/${userInfo.avatar_ipfs_hash}`
+                        user?.avatar_ipfs_hash
+                          ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
                           : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
                       }
                       alt="Avatar"

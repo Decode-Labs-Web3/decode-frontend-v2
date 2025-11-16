@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       );
     }
     const response = await backendResponse.json();
-    // console.log(`${pathname} :`, response);
+    console.log(`${pathname} gdwqjdgqwjhdgqwjdhqgwdkjqwgdjk:`, response);
 
     return NextResponse.json(
       {
