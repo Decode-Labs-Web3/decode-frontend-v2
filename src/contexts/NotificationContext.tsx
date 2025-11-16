@@ -2,6 +2,7 @@
 
 import { getApiHeaders } from "@/utils/api.utils";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
+import { fingerprintService } from "@/services/fingerprint.services";
 import {
   useContext,
   createContext,
@@ -29,7 +30,20 @@ export function NotificationProvider({
   children: React.ReactNode;
 }) {
   const [unread, setUnread] = useState(0);
-  const { fingerprintHash } = useFingerprint();
+
+  const { fingerprintHash, updateFingerprint } = useFingerprint();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { fingerprint_hashed } = await fingerprintService();
+        // console.log("Fingerprint hashed:", fingerprint_hashed);
+        updateFingerprint(fingerprint_hashed);
+      } catch (error) {
+        console.error("Error getting fingerprint:", error);
+      }
+    })();
+  }, [updateFingerprint]);
 
   const fetchUnread = useCallback(async () => {
     try {

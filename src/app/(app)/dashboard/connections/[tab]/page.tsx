@@ -85,7 +85,7 @@ export default function PageFollow() {
     } finally {
       setLoading(false);
     }
-  }, [tab, page, endOfData]);
+  }, [tab, page, endOfData, fingerprintHash]);
 
   useEffect(() => {
     fetchFollowData();

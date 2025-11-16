@@ -73,7 +73,7 @@ export default function SnapshotChart({ userId }: Props) {
         setLoading(false);
       }
     })();
-  }, [userId]);
+  }, [userId, fingerprintHash]);
 
   const data: ChartRow[] = useMemo(() => {
     if (!rows.length) return [];

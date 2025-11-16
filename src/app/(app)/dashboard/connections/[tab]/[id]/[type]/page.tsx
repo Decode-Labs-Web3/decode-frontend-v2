@@ -82,7 +82,7 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  }, [id, type, endOfData, page]);
+  }, [id, type, endOfData, page, fingerprintHash]);
 
   useEffect(() => {
     fetchUserData();
