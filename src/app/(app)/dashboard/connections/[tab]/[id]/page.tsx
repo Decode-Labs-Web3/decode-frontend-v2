@@ -19,48 +19,12 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import type {
+  UserData,
+  MutualFollower,
+} from "@/interfaces/connections.interfaces";
 
-interface UserData {
-  _id: string;
-  username: string;
-  display_name: string;
-  bio: string;
-  avatar_ipfs_hash: string;
-  role: "user";
-  last_login: string;
-  __v: number;
-  is_active: boolean;
-  last_account_deactivation: string;
-  primary_wallet?: {
-    _id: string;
-    address: string;
-    user_id: string;
-    name_service: null;
-    is_primary: boolean;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  };
-  following_number: number;
-  followers_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_number: number;
-  mutual_followers_list: MutualFollower[];
-  is_online: boolean;
-}
-
-interface MutualFollower {
-  followers_number: number;
-  avatar_ipfs_hash: string;
-  role: string;
-  user_id: string;
-  display_name: string;
-  username: string;
-  following_number: number;
-}
+// Interfaces moved to src/interfaces/connections.interfaces.ts
 
 export default function Page() {
   const { fingerprintHash } = useFingerprint();

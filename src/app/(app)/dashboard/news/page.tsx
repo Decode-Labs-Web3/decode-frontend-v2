@@ -14,20 +14,7 @@ import {
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-interface BlogPost {
-  _id: string;
-  user_id: string;
-  title: string;
-  content: string;
-  category: string;
-  keywords: string[];
-  post_ipfs_hash: string;
-  upvote: number;
-  downvote: number;
-  updatedAt: string;
-  createdAt: string;
-}
+import type { BlogPost } from "@/interfaces/blog.interfaces";
 
 export default function NewsPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);

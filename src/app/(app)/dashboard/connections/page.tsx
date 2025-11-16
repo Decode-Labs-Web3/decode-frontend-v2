@@ -14,46 +14,15 @@ import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import InterestModal, { type Interest } from "@/components/(app)/Interest";
+import type {
+  UserSuggestion,
+  UserSearchProps,
+  MutualFollower,
+} from "@/interfaces/connections.interfaces";
 
-interface Follower {
-  followers_number: number;
-  avatar_ipfs_hash: string;
-  role: string;
-  user_id: string;
-  display_name: string;
-  username: string;
-  following_number: number;
-}
+// Interfaces moved to src/interfaces/connections.interfaces.ts
 
-interface UserSuggestion {
-  user_id: string;
-  username: string;
-  role: string;
-  display_name: string;
-  avatar_ipfs_hash: string;
-  following_number: number;
-  followers_number: number;
-  shared_interests_count: number;
-  shared_interests: string[];
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_list: Follower[];
-  mutual_followers_number: number;
-  is_online: boolean;
-}
-
-interface UserSearchProps {
-  _id: string;
-  username: string;
-  display_name: string;
-  bio: string;
-  avatar_ipfs_hash: string;
-  role: string;
-  last_login: string;
-  is_active: boolean;
-}
+// Interfaces moved to src/interfaces/connections.interfaces.ts
 
 export default function ConnectionsIndex() {
   const searchParams = useSearchParams();

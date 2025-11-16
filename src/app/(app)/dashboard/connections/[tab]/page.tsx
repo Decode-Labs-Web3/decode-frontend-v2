@@ -17,32 +17,12 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import type {
+  UserFollow,
+  MutualFollower,
+} from "@/interfaces/connections.interfaces";
 
-interface UserFollow {
-  followers_number: number;
-  avatar_ipfs_hash: string;
-  role: string;
-  user_id: string;
-  display_name: string;
-  username: string;
-  following_number: number;
-  is_following: boolean;
-  is_follower: boolean;
-  is_blocked: boolean;
-  is_blocked_by: boolean;
-  mutual_followers_list: MutualFollower[];
-  mutual_followers_number: number;
-}
-
-interface MutualFollower {
-  followers_number: number;
-  avatar_ipfs_hash: string;
-  role: string;
-  user_id: string;
-  display_name: string;
-  username: string;
-  following_number: number;
-}
+// Interfaces moved to src/interfaces/connections.interfaces.ts
 
 export default function PageFollow() {
   const [page, setPage] = useState(0);
