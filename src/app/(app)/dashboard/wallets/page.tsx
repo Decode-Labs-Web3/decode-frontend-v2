@@ -1,20 +1,22 @@
 "use client";
 
+import { ethers } from "ethers";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { Wallet } from "@/interfaces/user.interfaces";
+import { useCallback, useEffect, useState } from "react";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useUserInfoContext } from "@/contexts/UserInfoContext";
+import { toastError, toastSuccess, toastInfo } from "@/utils/index.utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useAppKit,
   useAppKitAccount,
   useAppKitProvider,
 } from "@reown/appkit/react";
-import { ethers } from "ethers";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useUserInfoContext } from "@/contexts/UserInfoContext";
-import { useCallback, useEffect, useState } from "react";
-import { toastError, toastSuccess, toastInfo } from "@/utils/index.utils";
-import { Wallet } from "@/interfaces/user.interfaces";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 export default function WalletsPage() {
   const { open } = useAppKit();
@@ -22,15 +24,14 @@ export default function WalletsPage() {
   const { walletProvider } = useAppKitProvider("eip155");
   const [allWallets, setAllWallets] = useState<Wallet[]>([]);
   const { userInfo, fetchUserInfo } = useUserInfoContext() || {};
+  const {fingerprintHash} = useFingerprint();
 
   const handleGetAllWallets = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/wallet/all-wallet", {
+        method: "GET",
+        headers: getApiHeaders(fingerprintHash),
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -50,7 +51,7 @@ export default function WalletsPage() {
         error instanceof Error ? error.message : "Get all wallets failed"
       );
     }
-  }, []);
+  }, [fingerprintHash]);
 
   useEffect(() => {
     handleGetAllWallets();
@@ -69,12 +70,11 @@ export default function WalletsPage() {
 
       const challengeRes = await fetch("/api/wallet/link-challenge", {
         method: "POST",
-        credentials: "include",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ address }),
+        credentials: "include",
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -97,10 +97,9 @@ export default function WalletsPage() {
       const verifyRes = await fetch("/api/wallet/link-validation", {
         method: "POST",
         credentials: "include",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ address, signature }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
@@ -135,6 +134,7 @@ export default function WalletsPage() {
     }
   }, [
     open,
+    fingerprintHash,
     isConnected,
     walletProvider,
     address,
@@ -155,12 +155,11 @@ export default function WalletsPage() {
 
       const challengeRes = await fetch("/api/wallet/primary-challenge", {
         method: "POST",
-        credentials: "include",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ address }),
+        credentials: "include",
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -179,12 +178,11 @@ export default function WalletsPage() {
 
       const verifyRes = await fetch("/api/wallet/primary-validation", {
         method: "POST",
-        credentials: "include",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ address, signature }),
+        credentials: "include",
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -218,6 +216,7 @@ export default function WalletsPage() {
     }
   }, [
     open,
+    fingerprintHash,
     isConnected,
     walletProvider,
     address,
@@ -230,10 +229,10 @@ export default function WalletsPage() {
       try {
         const apiResponse = await fetch("/api/wallet/unlink-wallet", {
           method: "POST",
-          headers: {
+          headers: getApiHeaders(fingerprintHash, {
             "Content-Type": "application/json",
-            "X-Frontend-Internal-Request": "true",
-          },
+          }),
+          credentials: "include",
           body: JSON.stringify({ address }),
           cache: "no-store",
           signal: AbortSignal.timeout(10000),
@@ -255,7 +254,7 @@ export default function WalletsPage() {
         );
       }
     },
-    [handleGetAllWallets]
+    [handleGetAllWallets, fingerprintHash]
   );
 
   return (

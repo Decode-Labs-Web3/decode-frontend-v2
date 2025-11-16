@@ -37,13 +37,6 @@ export default function DashboardLayout({
   const [userInfo, setUserInfo] = useState<UserProfile>();
   const [isDeactivated, setIsDeactivated] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const { fingerprint_hashed } = await fingerprintService();
-      document.cookie = `fingerprint=${fingerprint_hashed}; path=/; max-age=31536000; SameSite=Lax`;
-    })();
-  }, []);
-
   const { fingerprintHash ,updateFingerprint } = useFingerprint();
 
   useEffect(() => {

@@ -1,19 +1,14 @@
 "use client";
 
+import { ethers } from "ethers";
 import { useState } from "react";
+import Auth from "@/components/(auth)";
+import { useRouter } from "next/navigation";
+import { getApiHeaders } from "@/utils/api.utils";
 import { AppKitProvider } from "@reown/appkit/react";
 import { mainnet, arbitrum } from "@reown/appkit/networks";
 import { EthersAdapter } from "@reown/appkit-adapter-ethers";
-
-declare global {
-  interface Window {
-    okxwallet?: Record<string, unknown>;
-    ethereum?: Record<string, unknown>;
-  }
-}
-import { ethers } from "ethers";
-import Auth from "@/components/(auth)";
-import { useRouter } from "next/navigation";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toastError, toastInfo, toastSuccess } from "@/utils/index.utils";
 import { faWallet, faArrowRight } from "@fortawesome/free-solid-svg-icons";
@@ -22,6 +17,13 @@ import {
   useAppKitAccount,
   useAppKitProvider,
 } from "@reown/appkit/react";
+
+declare global {
+  interface Window {
+    okxwallet?: Record<string, unknown>;
+    ethereum?: Record<string, unknown>;
+  }
+}
 
 const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID!;
 if (!projectId) console.error("REOWN_PROJECT_ID is missing");
@@ -42,6 +44,7 @@ const metadata = {
 
 function WalletContent() {
   const router = useRouter();
+  const { fingerprintHash } = useFingerprint();
   const [formData, setFormData] = useState<{ email_or_username: string }>({
     email_or_username: "",
   });
@@ -148,12 +151,11 @@ function WalletContent() {
 
       const challengeRes = await fetch("/api/wallet/auth-challenge", {
         method: "POST",
-        credentials: "include",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ address }),
+        credentials: "include",
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -172,10 +174,9 @@ function WalletContent() {
       const verifyRes = await fetch("/api/wallet/auth-validation", {
         method: "POST",
         credentials: "include",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ address, signature }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

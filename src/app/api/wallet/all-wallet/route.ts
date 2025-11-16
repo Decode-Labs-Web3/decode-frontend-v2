@@ -28,7 +28,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
 
     if (!fingerprint) {
       return NextResponse.json(

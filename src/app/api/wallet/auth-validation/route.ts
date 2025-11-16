@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const fingerprintResult = await fingerprintService(userAgent);
     const { device, browser } = fingerprintResult;
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = request.headers.get("X-Fingerprint-Hashed");
 
     if (!fingerprint) {
       return NextResponse.json(

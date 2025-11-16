@@ -105,7 +105,7 @@ export default function SecurityPage() {
       // setLoading(true);
       setLoading(false);
     }
-  }, []);
+  }, [fingerprintHash]);
 
   useEffect(() => {
     handleStatus();
