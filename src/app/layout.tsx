@@ -1,6 +1,7 @@
 import "./globals.css";
 import { defaultMetadata } from "@/seo.config";
 import type { Metadata, Viewport } from "next";
+import { ReduxProvider } from "@/store/ReduxProvider";
 import ToastProvider from "@/components/ToastProvider";
 import AppKitRootProvider from "@/components/AppKitRootProvider";
 
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppKitRootProvider>{children}</AppKitRootProvider>
+        <ReduxProvider>
+          <AppKitRootProvider>{children}</AppKitRootProvider>
+        </ReduxProvider>
         <ToastProvider />
       </body>
     </html>
