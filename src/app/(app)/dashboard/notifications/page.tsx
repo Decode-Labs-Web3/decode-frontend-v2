@@ -7,15 +7,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNotificationContext } from "@/contexts/NotificationContext";
 import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface NotificationReceived {
   _id: string;
+  user_id: string;
+  type: string;
   title: string;
   message: string;
+  delivered: boolean;
+  delivered_at: null | string;
   read: boolean;
+  read_at: null | string;
   createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export default function NotificationsPage() {
@@ -26,7 +32,6 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
     []
   );
-  const { fetchUnread } = useNotificationContext();
 
   const getNotifications = useCallback(async () => {
     if (endOfData) return;
@@ -83,7 +88,7 @@ export default function NotificationsPage() {
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, read: true }))
       );
-      fetchUnread?.();
+      // fetchUnread?.();
       console.log("All notifications marked as read");
     } catch (error) {
       console.error("Error marking all as read:", error);
@@ -117,7 +122,7 @@ export default function NotificationsPage() {
             : notification
         )
       );
-      fetchUnread?.();
+      // fetchUnread?.();
       console.log("Notification marked as read:", id);
     } catch (error) {
       console.error("Error marking notification as read:", error);

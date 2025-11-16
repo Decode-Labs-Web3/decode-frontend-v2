@@ -1,6 +1,6 @@
 import type { RootState } from "@/store/store";
-import { UserProfile, Wallet } from "@/interfaces/user.interfaces";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { UserProfile, Wallet } from "@/interfaces/user.interfaces";
 
 const initialState: UserProfile = {
   _id: "",
@@ -61,9 +61,9 @@ const userSlice = createSlice({
       const primaryWallet = action.payload;
       state.primary_wallet = primaryWallet;
       if (state.wallets) {
-        state.wallets = state.wallets.map((w) => ({
-          ...w,
-          is_primary: w.address === primaryWallet.address,
+        state.wallets = state.wallets.map((wallet) => ({
+          ...wallet,
+          is_primary: wallet.address === primaryWallet.address,
         }));
       }
     },

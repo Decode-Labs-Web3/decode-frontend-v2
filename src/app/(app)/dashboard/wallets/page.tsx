@@ -158,11 +158,11 @@ export default function WalletsPage() {
         throw new Error(verifyJson.message || "Link failed");
 
       try {
-        setPrimaryWallet(verifyJson.data);
         close?.();
       } catch (error) {
         console.error("Close modal error:", error);
       }
+      setPrimaryWallet(verifyJson.data);
       toastSuccess("Wallet linked successfully");
     } catch (error: unknown) {
       // Handle user rejection (code 4001) or ACTION_REJECTED

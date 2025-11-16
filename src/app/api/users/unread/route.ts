@@ -1,8 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getApiHeaders } from "@/utils/api.utils";
 import { httpStatus } from "@/constants/index.constants";
-import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import {
   apiPathName,
   guardInternal,

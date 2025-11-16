@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNotificationContext } from "@/contexts/NotificationContext";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import {
   faGaugeHigh,
   faUserShield,
@@ -31,22 +33,12 @@ const items = [
   { key: "blog-post", label: "Create Post", icon: faPenToSquare },
 ];
 
-// interface NotificationReceived {
-//   id: string;
-//   title: string;
-//   message: string;
-//   read: boolean;
-//   createdAt: string;
-// }
-
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { unread } = useNotificationContext();
+  const { fingerprintHash } = useFingerprint();
   const [mobileOpen, setMobileOpen] = useState(false);
-  // const [notifications, setNotifications] = useState<NotificationReceived[]>(
-  //   []
-  // );
+  const { unread, setUnread } = useNotificationContext();
 
   const active = pathname.replace(/\/+$/, "").split("/")[2] || "overview";
 
@@ -56,6 +48,35 @@ export default function Sidebar() {
     return () =>
       window.removeEventListener("toggle-sidebar", handler as EventListener);
   }, []);
+
+  const fetchUnread = useCallback(async () => {
+    if (!fingerprintHash) return;
+    try {
+      const apiResponse = await fetch("/api/users/unread", {
+        method: "GET",
+        headers: getApiHeaders(fingerprintHash),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        if (apiResponse.status !== 401) {
+          const response = await apiResponse.json();
+          console.log("Unread API error:", response);
+        }
+        return;
+      }
+
+      const response = await apiResponse.json();
+      setUnread(response.data.count ?? 0);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [fingerprintHash, setUnread]);
+
+  useEffect(() => {
+    fetchUnread();
+  }, [fetchUnread]);
 
   return (
     <>
@@ -116,16 +137,3 @@ export default function Sidebar() {
     </>
   );
 }
-
-// const SidebarRenderExample = (items: { key: string; label: string }[], activeKey: string) => {
-//   // naive render without accessibility or focus management
-//   return (
-//     <div>
-//       {items.map((item) => (
-//         <button key={item.key} className={item.key === activeKey ? "bg-blue-700 text-white" : ""}>
-//           {item.label}
-//         </button>
-//       ))}
-//     </div>
-//   );
-// };

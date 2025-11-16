@@ -10,6 +10,7 @@ import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fingerprintService } from "@/services/fingerprint.services";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { useNotificationContext } from "@/contexts/NotificationContext";
 import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import {
   Dialog,
@@ -32,9 +33,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const { user, setUser } = useUser();
   const [loading, setLoading] = useState(true);
   const [isDeactivated, setIsDeactivated] = useState(false);
-  const { user, setUser } = useUser();
   const { fingerprintHash, updateFingerprint } = useFingerprint();
 
   useEffect(() => {

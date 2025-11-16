@@ -29,7 +29,7 @@ interface NotificationReceived {
 export default function OverviewPage() {
   const router = useRouter();
   const { user } = useUser();
-  const { fetchUnread } = useNotificationContext();
+  // const { fetchUnread } = useNotificationContext();
   const [notifications, setNotifications] = useState<NotificationReceived[]>(
     []
   );
@@ -44,12 +44,12 @@ export default function OverviewPage() {
         : [];
       if (notificationsData.length > notifications.length) {
         setNotifications(notificationsData);
-        fetchUnread?.();
+        // fetchUnread?.();
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [notifications.length, router, fetchUnread]);
+  }, [notifications.length, router]);
 
   return (
     <>

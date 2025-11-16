@@ -51,13 +51,10 @@ export const useUser = (): UseUserResult => {
   );
 
   const addWalletUser = useCallback(
-    (wallet: Wallet, makePrimary: boolean = false) => {
+    (wallet: Wallet) => {
       dispatch(addWallet(wallet));
-      if (makePrimary || !user.primary_wallet) {
-        dispatch(addPrimary(wallet));
-      }
     },
-    [dispatch, user.primary_wallet]
+    [dispatch]
   );
 
   const removeWalletUser = useCallback(
