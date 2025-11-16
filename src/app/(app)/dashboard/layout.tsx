@@ -3,13 +3,15 @@
 import App from "@/components/(app)";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/(loading)";
+import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { UserProfile } from "@/interfaces/index.interfaces";
+import { UserInfoContext } from "@/contexts/UserInfoContext";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { fingerprintService } from "@/services/fingerprint.services";
-import { UserInfoContext } from "@/contexts/UserInfoContext";
-import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import { NotificationProvider } from "@/contexts/NotificationContext";
-import { Button } from "@/components/ui/button";
+import { toastInfo, toastError, toastSuccess } from "@/utils/index.utils";
 import {
   Dialog,
   DialogContent,
@@ -42,14 +44,27 @@ export default function DashboardLayout({
     })();
   }, []);
 
+  const { fingerprintHash ,updateFingerprint } = useFingerprint();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { fingerprint_hashed } = await fingerprintService();
+        // console.log("Fingerprint hashed:", fingerprint_hashed);
+        updateFingerprint(fingerprint_hashed);
+      } catch (error) {
+        console.error("Error getting fingerprint:", error);
+      }
+    })();
+  }, [updateFingerprint]);
+
   const fetchUserInfo = useCallback(async () => {
+    if (!fingerprintHash) return;
     try {
       const apiResponse = await fetch("/api/users/overview", {
         method: "GET",
+        headers: getApiHeaders(fingerprintHash),
         credentials: "include",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -83,7 +98,7 @@ export default function DashboardLayout({
       // setLoading(true);
       console.log("User data fetch operation completed");
     }
-  }, []);
+  }, [fingerprintHash]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
