@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-// import { toastError } from "@/utils/index.utils";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSun,
@@ -14,8 +15,8 @@ import {
 
 export default function Navbar() {
   const router = useRouter();
-
   const [theme, setTheme] = useState(false);
+  const { fingerprintHash } = useFingerprint();
 
   const handleTheme = () => {
     setTheme((prev) => !prev);
@@ -49,10 +50,9 @@ export default function Navbar() {
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         credentials: "include",
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

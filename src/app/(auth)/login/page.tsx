@@ -5,7 +5,9 @@ import Auth from "@/components/(auth)";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/utils/index.utils";
+import { getApiHeaders } from "@/utils/api.utils";
 import { LoginData } from "@/interfaces/index.interfaces";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import {
   toastSuccess,
   toastError,
@@ -15,6 +17,7 @@ import {
 
 export default function Login() {
   const router = useRouter();
+  const { fingerprintHash } = useFingerprint();
   const [loginData, setLoginData] = useState<LoginData>({
     email_or_username: "",
     password: "",
@@ -70,10 +73,9 @@ export default function Login() {
     try {
       const responseData = await fetch("/api/auth/login", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify(loginData),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

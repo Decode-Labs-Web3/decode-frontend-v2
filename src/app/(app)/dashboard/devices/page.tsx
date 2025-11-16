@@ -2,24 +2,26 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Loading from "@/components/(loading)";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getCookie } from "@/utils/index.utils";
+import { getApiHeaders } from "@/utils/api.utils";
 import { useState, useEffect, useCallback } from "react";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Fingerprint, Session } from "@/interfaces/index.interfaces";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   faLaptop,
   faMobileScreen,
   faTablet,
 } from "@fortawesome/free-solid-svg-icons";
-import Loading from "@/components/(loading)";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 export default function DevicesPage() {
   const router = useRouter();
-  // console.log("Rendering DevicesPage", router);
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string>("");
   const [fingerprintsData, setFingerprintsData] = useState<
@@ -59,9 +61,7 @@ export default function DevicesPage() {
     try {
       const apiResponse = await fetch("/api/auth/fingerprints", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
@@ -90,7 +90,7 @@ export default function DevicesPage() {
       console.info("Fetch done!");
       setLoading(false);
     }
-  }, [router]);
+  }, [router, fingerprintHash]);
 
   useEffect(() => {
     fetchFingerprints();
@@ -108,10 +108,9 @@ export default function DevicesPage() {
 
       const apiResponse = await fetch(`/api/auth/revoke-device`, {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({
           deviceFingerprintId: fingerprintId,
           sessions,
@@ -157,10 +156,9 @@ export default function DevicesPage() {
 
       const apiResponse = await fetch(`/api/auth/revoke-session`, {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ sessionId }),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),

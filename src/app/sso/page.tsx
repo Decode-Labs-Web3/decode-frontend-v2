@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { toastError } from "@/utils/toast.utils";
-import { useCallback, useEffect, useState, Suspense } from "react";
+import { getApiHeaders } from "@/utils/api.utils";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCallback, useEffect, useState, Suspense } from "react";
+import { fingerprintService } from "@/services/fingerprint.services";
 import {
   faShieldHalved,
   faCircleExclamation,
@@ -15,12 +18,25 @@ function AuthorizeContent() {
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
-
+  const { fingerprintHash, updateFingerprint } = useFingerprint();
   const app = searchParams.get("app");
   const redirect_uri = searchParams.get("redirect_uri");
   const state = searchParams.get("state");
+    useEffect(() => {
+      (async () => {
+        try {
+          const { fingerprint_hashed } = await fingerprintService();
+          // console.log("Fingerprint hashed:", fingerprint_hashed);
+          updateFingerprint(fingerprint_hashed);
+        } catch (error) {
+          console.error("Error getting fingerprint:", error);
+        }
+      })();
+    }, [updateFingerprint]);
+
 
   const handleAuthorize = useCallback(async () => {
+    if(!fingerprintHash) return
     setLoading(true);
     try {
       if (!app || !redirect_uri || !state) {
@@ -30,10 +46,9 @@ function AuthorizeContent() {
 
       const apiResponse = await fetch("/api/auth/sso", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         credentials: "include",
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -59,7 +74,7 @@ function AuthorizeContent() {
     } finally {
       setLoading(false);
     }
-  }, [app, redirect_uri, state, router]);
+  }, [app, redirect_uri, state, router, fingerprintHash]);
 
   useEffect(() => {
     handleAuthorize();

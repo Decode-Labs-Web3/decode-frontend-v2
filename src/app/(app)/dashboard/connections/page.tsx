@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
-import { toastSuccess, toastError } from "@/utils/index.utils";
-import InterestModal, { type Interest } from "@/components/(app)/Interest";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
+import { getApiHeaders } from "@/utils/api.utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect, useCallback } from "react";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { toastSuccess, toastError } from "@/utils/index.utils";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import InterestModal, { type Interest } from "@/components/(app)/Interest";
 
 interface Follower {
   followers_number: number;
@@ -55,15 +57,13 @@ interface UserSearchProps {
 
 export default function ConnectionsIndex() {
   const searchParams = useSearchParams();
+  const { fingerprintHash } = useFingerprint();
   const query = searchParams.get("name") ?? "";
   const [loading, setLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<UserSearchProps[]>([]);
-  // console.log("search:", searchResults);
-  const [interests, setInterests] = useState<Interest[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [interests, setInterests] = useState<Interest[]>([]);
   const [userSuggest, setUserSuggest] = useState<UserSuggestion[]>([]);
-
-  // console.log("userSuggest:", userSuggest);
+  const [searchResults, setSearchResults] = useState<UserSearchProps[]>([]);
 
   const handleSearch = useCallback(
     async (searchQuery?: string) => {
@@ -113,9 +113,7 @@ export default function ConnectionsIndex() {
     try {
       const apiResponse = await fetch("/api/interest/same-interest", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -133,17 +131,16 @@ export default function ConnectionsIndex() {
       console.error("Fetch interests error:", error);
       toastError("Failed to fetch interests");
     }
-  }, []);
+  }, [fingerprintHash]);
 
   const handleInterest = async () => {
     setModalOpen(true);
     try {
       const apiResponse = await fetch("/api/interest/create-interest", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ interest: interests }),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
@@ -173,9 +170,7 @@ export default function ConnectionsIndex() {
     try {
       const apiResponse = await fetch("/api/interest/get-interest", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
         signal: AbortSignal.timeout(10000),
       });
@@ -205,7 +200,7 @@ export default function ConnectionsIndex() {
       console.error("Fetch interests error:", error);
       toastError("Failed to fetch interests");
     }
-  }, [handleUserSuggestSameInterest]);
+  }, [handleUserSuggestSameInterest, fingerprintHash]);
 
   useEffect(() => {
     handleGetInterest();

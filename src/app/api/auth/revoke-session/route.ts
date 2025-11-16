@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       session_id: sessionId,
     };
 
-    const fingerprint = (await cookies()).get("fingerprint")?.value;
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
 
     if (!fingerprint) {
       return NextResponse.json(
