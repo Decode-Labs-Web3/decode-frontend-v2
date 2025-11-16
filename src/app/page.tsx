@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import Loading from "@/components/(loading)";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { fingerprintService } from "@/services/fingerprint.services";
 
 // Dynamically import the AppKit wrapper to prevent SSR issues
@@ -16,13 +17,19 @@ const AppKitWrapper = dynamic(() => import("@/components/AppKitWrapper"), {
 });
 
 export default function Home() {
+  const { updateFingerprint } = useFingerprint();
 
   useEffect(() => {
     (async () => {
-      const { fingerprint_hashed } = await fingerprintService();
-      document.cookie = `fingerprint=${fingerprint_hashed}; path=/; max-age=31536000; SameSite=Lax`;
+      try {
+        const { fingerprint_hashed } = await fingerprintService();
+        // console.log("Fingerprint hashed:", fingerprint_hashed);
+        updateFingerprint(fingerprint_hashed);
+      } catch (error) {
+        console.error("Error getting fingerprint:", error);
+      }
     })();
-  }, []);
+  }, [updateFingerprint]);
 
   return <AppKitWrapper />;
   // return (

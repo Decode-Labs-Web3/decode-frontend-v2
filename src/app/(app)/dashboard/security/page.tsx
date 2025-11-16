@@ -1,7 +1,9 @@
 "use client";
 
 import QRCode from "react-qr-code";
+import { getApiHeaders } from "@/utils/api.utils";
 import { useState, useEffect, useCallback } from "react";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { toastSuccess, toastError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -42,6 +44,7 @@ type TOTPResponse = {
 
 export default function SecurityPage() {
   const [setup, setSetup] = useState(false);
+  const { fingerprintHash } = useFingerprint();
   const [otpData, setOtpData] = useState<TOTPResponse | null>(null);
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,9 +60,7 @@ export default function SecurityPage() {
     try {
       const apiResponse = await fetch("/api/2fa/status", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
         signal: AbortSignal.timeout?.(10000),
       });
@@ -115,9 +116,7 @@ export default function SecurityPage() {
     try {
       const apiResponse = await fetch("/api/2fa/setup", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
         signal: AbortSignal.timeout?.(10000),
       });
@@ -152,10 +151,9 @@ export default function SecurityPage() {
     try {
       const apiResponse = await fetch("/api/2fa/enable", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify({ otp: trimmed }),
         cache: "no-cache",
         signal: AbortSignal.timeout?.(10000),
@@ -196,9 +194,7 @@ export default function SecurityPage() {
     try {
       const apiResponse = await fetch("/api/2fa/disable", {
         method: "GET",
-        headers: {
-          "X-Frontend-Internal-Request": "true",
-        },
+        headers: getApiHeaders(fingerprintHash),
         cache: "no-cache",
         signal: AbortSignal.timeout?.(10000),
       });
