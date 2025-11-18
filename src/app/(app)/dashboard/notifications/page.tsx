@@ -210,7 +210,6 @@ export default function NotificationsPage() {
             )}
           </div>
 
-          {/* Sticky footer */}
           <div className="sticky bottom-0 z-10 bg-(--card) border-t border-(--border) p-2">
             {endOfData ? (
               <p className="text-muted-foreground text-sm">End of data</p>

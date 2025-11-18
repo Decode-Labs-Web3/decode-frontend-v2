@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getApiHeaders } from "@/utils/api.utils";
 import { Textarea } from "@/components/ui/textarea";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,41 +26,51 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const categories = [
-  { value: "decode", label: "Decode" },
-  { value: "dehive", label: "Dehive" },
-  { value: "dedao", label: "Dedao" },
-  { value: "decareer", label: "Decareer" },
-  { value: "decourse", label: "Decourse" },
-  { value: "defuel", label: "Defuel" },
-  { value: "deid", label: "Deid" },
+const keywords = [
+  "Decode",
+  "Dehive",
+  "Dedao",
+  "Decareer",
+  "Decourse",
+  "Defuel",
+  "Deid",
 ];
 
 export default function BlogPostPage() {
+  const router = useRouter();
+  const { fingerprintHash } = useFingerprint();
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [healthStatus, setHealthStatus] = useState<string>("Checking...");
   const [formData, setFormData] = useState({
-    user_id: "",
     title: "",
     content: "",
-    category: "",
-    keywords: "",
+    keyword: "",
     post_ipfs_hash: null as string | null,
   });
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
+    const checkHealth = async () => {
       try {
-        const userData = JSON.parse(user);
-        setFormData((prev) => ({
-          ...prev,
-          user_id: userData.id || "",
-        }));
-      } catch (error) {
-        console.error("Error parsing user data:", error);
+        const response = await fetch("/api/health", {
+          method: "GET",
+          headers: {
+            "X-Frontend-Internal-Request": "true",
+          },
+        });
+        const data = await response.json();
+        if (data.backendStatus === 200) {
+          setHealthStatus("Backend OK: " + data.backendResponse);
+        } else {
+          setHealthStatus("Backend Error: " + data.error);
+        }
+      } catch (err) {
+        setHealthStatus(
+          "Health check failed: " + ((err as Error).message || String(err))
+        );
       }
-    }
+    };
+    checkHealth();
   }, []);
 
   const handleChange = (
@@ -142,45 +155,49 @@ export default function BlogPostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.content || !formData.category) {
+    if (!formData.title || !formData.content) {
       toastError("Please fill in all required fields");
       return;
     }
 
     try {
       const body = {
-        user_id: formData.user_id,
         title: formData.title,
         content: formData.content,
-        category: formData.category,
-        keywords: formData.keywords,
+        keyword: formData.keyword,
         post_ipfs_hash: formData.post_ipfs_hash,
       };
 
       console.log("Sending body:", body);
 
-      const response = await fetch("/api/blogs/post", {
+      const apiResponse = await fetch("/api/blogs/create", {
         method: "POST",
-        headers: {
+        headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
-          "X-Frontend-Internal-Request": "true",
-        },
+        }),
         body: JSON.stringify(body),
         cache: "no-store",
         signal: AbortSignal.timeout(10000),
       });
 
-      if (response.ok) {
+      if (!apiResponse.ok) {
+        console.error("API response not ok:", apiResponse);
+      }
+
+      const response = await apiResponse.json();
+      if (
+        response.statusCode === 201 &&
+        response.message === "Post created successfully"
+      ) {
         toastSuccess("Blog post created successfully");
-        setFormData((prev) => ({
-          ...prev,
+        setFormData(() => ({
           title: "",
           content: "",
-          category: "",
-          keywords: "",
+          keyword: "",
           post_ipfs_hash: null,
         }));
         setImagePreview(null);
+        router.push("/dashboard/blogs");
       } else {
         const error = await response.json();
         toastError(error.message || "Failed to create blog post");
@@ -198,6 +215,9 @@ export default function BlogPostPage() {
           <CardTitle>Create New Blog Post</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 p-2 bg-gray-100 rounded">
+            <strong>Health Status:</strong> {healthStatus}
+          </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="image-upload">Featured Image</Label>
@@ -264,41 +284,26 @@ export default function BlogPostPage() {
 
             <div className="space-y-2">
               <Label htmlFor="category">
-                Category <span className="text-red-500">*</span>
+                Keyword <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={formData.category}
+                value={formData.keyword}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, category: value }))
+                  setFormData((prev) => ({ ...prev, keyword: value }))
                 }
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="Select a keyword" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
+                  {keywords.map((keyword) => (
+                    <SelectItem key={keyword} value={keyword}>
+                      {keyword}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="keywords">Keywords</Label>
-              <Input
-                id="keywords"
-                name="keywords"
-                value={formData.keywords}
-                onChange={handleChange}
-                placeholder="Enter keywords separated by commas (e.g., blockchain, web3, crypto)"
-              />
-              <p className="text-xs text-muted-foreground">
-                Separate multiple keywords with commas for better
-                discoverability
-              </p>
             </div>
 
             <div className="space-y-2">
