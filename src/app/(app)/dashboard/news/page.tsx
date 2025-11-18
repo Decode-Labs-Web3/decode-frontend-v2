@@ -1,47 +1,47 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
-import { toastError } from "@/utils/index.utils";
 import Loading from "@/components/(loading)";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toastError } from "@/utils/index.utils";
+import { getApiHeaders } from "@/utils/api.utils";
+import type { BlogPost } from "@/interfaces/blog.interfaces";
+import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   faNewspaper,
   faClock,
   faThumbsUp,
+  faThumbsDown,
   faComment,
-  faShare,
 } from "@fortawesome/free-solid-svg-icons";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import type { BlogPost } from "@/interfaces/blog.interfaces";
 
 export default function NewsPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch("/api/blogs/blog", {
+        const apiResponse = await fetch("/api/blogs/get", {
           method: "GET",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-          },
+          headers: getApiHeaders(fingerprintHash),
           cache: "no-store",
           signal: AbortSignal.timeout(10000),
         });
 
-        if (!response.ok) {
+        if (!apiResponse.ok) {
           throw new Error("Failed to fetch posts");
         }
 
-        const data = await response.json();
+        const response = await apiResponse.json();
 
-        if (data.success) {
-          setPosts(data.posts || []);
-        } else {
-          throw new Error(data.message || "Failed to fetch posts");
+        if (response.statusCode === 200 && response.message) {
+          setPosts(response.data || []);
         }
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -54,24 +54,7 @@ export default function NewsPage() {
     };
 
     fetchPosts();
-  }, []);
-
-  const number = (n: number) =>
-    n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`;
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays === 1) return "Yesterday";
-    return `${diffInDays} days ago`;
-  };
+  }, [fingerprintHash]);
 
   const getImageUrl = (post: BlogPost) => {
     if (post.post_ipfs_hash) {
@@ -85,83 +68,120 @@ export default function NewsPage() {
       {loading ? (
         <Loading.NewsCard />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-          {posts.map((post) => (
-            <Card key={post._id} className="overflow-hidden hover-card">
-              <div className="relative aspect-video overflow-hidden bg-muted">
-                <div
-                  className="w-full h-full bg-cover bg-center bg-no-repeat"
-                  style={{ backgroundImage: `url(${getImageUrl(post)})` }}
-                  role="img"
-                  aria-label={post.title}
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0" />
-                <Badge className="absolute left-3 top-3 text-xs capitalize">
-                  {post.category}
-                </Badge>
-              </div>
-
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                  <FontAwesomeIcon icon={faNewspaper} />
-                  <span className="uppercase tracking-wide">Community</span>
-                  <span>•</span>
-                  <FontAwesomeIcon icon={faClock} />
-                  <span>{formatTime(post.createdAt)}</span>
-                </div>
-                <h3 className="text-lg font-semibold leading-snug mb-2 line-clamp-2">
-                  {post.title}
-                </h3>
-                <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-                  {post.content}
-                </p>
-                {post.keywords && post.keywords.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {post.keywords.slice(0, 3).map((keyword, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {keyword}
-                      </Badge>
-                    ))}
+        <div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Latest News</h1>
+            <p className="text-muted-foreground">
+              Stay updated with the latest posts from our community.
+            </p>
+          </div>
+          {posts.length === 0 ? (
+            <div className="text-center py-12">
+              <FontAwesomeIcon
+                icon={faNewspaper}
+                className="w-16 h-16 text-muted-foreground mx-auto mb-4"
+              />
+              <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+              <p className="text-muted-foreground">
+                Be the first to share something amazing!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              {posts.map((post) => (
+                <Card
+                  key={post._id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className="relative aspect-video overflow-hidden bg-muted">
+                    <div
+                      className="w-full h-full bg-cover bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${getImageUrl(post)})` }}
+                      role="img"
+                      aria-label={post.title}
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0" />
+                    <Badge className="absolute left-3 top-3 text-xs capitalize">
+                      {post.keyword}
+                    </Badge>
                   </div>
-                )}
-              </CardContent>
 
-              <CardFooter className="px-4 pb-4 pt-0">
-                <div className="flex items-center justify-between w-full border-t border-border pt-3">
-                  <div className="flex items-center gap-4 text-muted-foreground">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-auto p-0 text-xs hover:text-foreground"
-                    >
-                      <FontAwesomeIcon icon={faThumbsUp} className="mr-1.5" />
-                      <span>{number(post.upvote)}</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-auto p-0 text-xs hover:text-foreground"
-                    >
-                      <FontAwesomeIcon icon={faComment} className="mr-1.5" />
-                      <span>0</span>
-                    </Button>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto p-0 text-xs text-primary hover:text-primary/80"
-                  >
-                    <FontAwesomeIcon icon={faShare} className="mr-1.5" />
-                    Share
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
-          ))}
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                      <Image
+                        src={
+                          post.author.avatar_ipfs_hash
+                            ? `https://ipfs.de-id.xyz/ipfs/${post.author.avatar_ipfs_hash}`
+                            : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=32&h=32&auto=format&fit=crop&crop=face"
+                        }
+                        alt={post.author.display_name}
+                        width={20}
+                        height={20}
+                        className="rounded-full"
+                      />
+                      <span>{post.author.display_name}</span>
+                      <span>•</span>
+                      <FontAwesomeIcon icon={faClock} />
+                      <span>{new Date(post.createdAt).toLocaleString()}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold leading-snug mb-2 line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
+                      {post.content}
+                    </p>
+                    {post.keyword && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        <Badge variant="secondary" className="text-xs">
+                          {post.keyword}
+                        </Badge>
+                      </div>
+                    )}
+                  </CardContent>
+
+                  <CardFooter className="px-4 pb-4 pt-0">
+                    <div className="flex items-center justify-between w-full border-t border-border pt-3">
+                      <div className="flex items-center gap-4 text-muted-foreground">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 text-xs hover:text-foreground"
+                        >
+                          <FontAwesomeIcon
+                            icon={faThumbsUp}
+                            className="mr-1.5"
+                          />
+                          <span>{post.totalLikes}</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 text-xs hover:text-foreground"
+                        >
+                          <FontAwesomeIcon
+                            icon={faThumbsDown}
+                            className="mr-1.5"
+                          />
+                          <span>{post.totalDislikes}</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-auto p-0 text-xs hover:text-foreground"
+                        >
+                          <FontAwesomeIcon
+                            icon={faComment}
+                            className="mr-1.5"
+                          />
+                          <span>{post.totalComments}</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>

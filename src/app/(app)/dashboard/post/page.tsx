@@ -49,30 +49,6 @@ export default function BlogPostPage() {
     post_ipfs_hash: null as string | null,
   });
 
-  useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const response = await fetch("/api/health", {
-          method: "GET",
-          headers: {
-            "X-Frontend-Internal-Request": "true",
-          },
-        });
-        const data = await response.json();
-        if (data.backendStatus === 200) {
-          setHealthStatus("Backend OK: " + data.backendResponse);
-        } else {
-          setHealthStatus("Backend Error: " + data.error);
-        }
-      } catch (err) {
-        setHealthStatus(
-          "Health check failed: " + ((err as Error).message || String(err))
-        );
-      }
-    };
-    checkHealth();
-  }, []);
-
   const handleChange = (
     event: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -170,7 +146,7 @@ export default function BlogPostPage() {
 
       console.log("Sending body:", body);
 
-      const apiResponse = await fetch("/api/blogs/create", {
+      const apiResponse = await fetch("/api/blogs/post", {
         method: "POST",
         headers: getApiHeaders(fingerprintHash, {
           "Content-Type": "application/json",
@@ -197,7 +173,7 @@ export default function BlogPostPage() {
           post_ipfs_hash: null,
         }));
         setImagePreview(null);
-        router.push("/dashboard/blogs");
+        router.push("/dashboard/news");
       } else {
         const error = await response.json();
         toastError(error.message || "Failed to create blog post");

@@ -1,118 +1,125 @@
-import { getDatabase } from "@/lib/mongodb.lib";
-import { NextRequest, NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { httpStatus } from "@/constants/index.constants";
+import {
+  generateRequestId,
+  guardInternal,
+  apiPathName,
+} from "@/utils/index.utils";
 
-export const runtime = "nodejs";
+export async function POST(req: Request) {
+  const requestId = generateRequestId();
+  const pathname = apiPathName(req);
+  const denied = guardInternal(req);
+  if (denied) return denied;
 
-const VALID_CATEGORIES = [
-  "decode",
-  "dehive",
-  "dedao",
-  "decareer",
-  "decourse",
-  "defuel",
-  "deid",
-] as const;
-
-function normalizeKeywords(input: string | string[] | undefined) {
-  const arr = Array.isArray(input)
-    ? input
-    : String(input ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-  return [...new Set(arr.map((s) => s.toLowerCase()))];
-}
-
-export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { title, content, category, keywords, post_ipfs_hash, user_id } =
-      body;
+    const accessToken = (await cookies()).get("accessToken")?.value;
 
-    if (!user_id) {
+    if (!accessToken) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
-          message: "User ID is required",
+          statusCode: httpStatus.UNAUTHORIZED,
+          message: "No access token found",
         },
-        { status: 400 }
+        { status: httpStatus.UNAUTHORIZED }
       );
     }
-    if (!ObjectId.isValid(user_id)) {
-      return NextResponse.json({ message: "Invalid user_id" }, { status: 400 });
-    }
-    if (!title || !content || !category) {
+
+    const body = await req.json();
+    const { title, content, keyword, post_ipfs_hash } = body;
+
+    console.log(
+      "Creating post for fingerprint:",
+      title,
+      content,
+      keyword,
+      post_ipfs_hash
+    );
+    if (!title || !content || !keyword) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
-          message: "Title, content, and category are required",
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Title or content or keyword are required",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
-    if (!VALID_CATEGORIES.includes(category)) {
+
+    const fingerprint = req.headers.get("X-Fingerprint-Hashed");
+
+    if (!fingerprint) {
       return NextResponse.json(
         {
           success: false,
-          statusCode: 400,
-          message: "Invalid category",
+          statusCode: httpStatus.BAD_REQUEST,
+          message: "Missing fingerprint header",
         },
-        { status: 400 }
+        { status: httpStatus.BAD_REQUEST }
       );
     }
 
-    const db = await getDatabase(process.env.MONGODB_DB_BLOG!);
-
-    const kw = normalizeKeywords(keywords);
-    if (kw.length) {
-      const ops = kw.map((name) => ({
-        updateOne: {
-          filter: { name },
-          update: { $setOnInsert: { name } },
-          upsert: true,
-          collation: { locale: "en", strength: 2 },
-        },
-      }));
-      await db.collection("keywords").bulkWrite(ops, { ordered: false });
-    }
-
-    const doc = {
-      user_id: new ObjectId(user_id),
-      title: String(title),
-      content: String(content),
-      category,
-      keywords: kw,
-      upvote: 0,
-      downvote: 0,
-      post_ipfs_hash: post_ipfs_hash ? String(post_ipfs_hash) : "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    const requestBody = {
+      title,
+      content,
+      keyword,
+      post_ipfs_hash,
     };
 
-    const result = await db.collection("blogs").insertOne(doc);
+    const backendResponse = await fetch(
+      `${process.env.DEBLOG_BACKEND_URL}/api/posts/post`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          "x-fingerprint-hashed": fingerprint,
+          "X-Request-Id": requestId,
+        },
+        body: JSON.stringify(requestBody),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+
+    if (!backendResponse.ok) {
+      const error = await backendResponse.json().catch(() => ({}));
+      console.error(`${pathname} :`, error);
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: backendResponse.status || httpStatus.BAD_REQUEST,
+          message: error.message || "Failed to initiate new email change",
+        },
+        { status: backendResponse.status || httpStatus.BAD_REQUEST }
+      );
+    }
+
+    const response = await backendResponse.json();
+
+    // console.log(`${pathname} :`, response);
 
     return NextResponse.json(
       {
-        success: true,
-        statusCode: 201,
-        message: "Blog post created successfully",
-        postId: result.insertedId,
-        post_ipfs_hash: doc.post_ipfs_hash,
+        success: response.success || true,
+        statusCode: response.statusCode || httpStatus.OK,
+        message: response.message || "Post created successfully",
       },
-      { status: 201 }
+      { status: httpStatus.OK }
     );
   } catch (error) {
-    console.error("Error creating blog post:", error);
+    console.error(`${pathname} error:`, error);
     return NextResponse.json(
       {
         success: false,
-        statusCode: 500,
-        message: "Internal server error",
+        statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Internal Server Error",
       },
-      { status: 500 }
+      { status: httpStatus.INTERNAL_SERVER_ERROR }
     );
+  } finally {
+    console.info(`${pathname}: ${requestId}]`);
   }
 }

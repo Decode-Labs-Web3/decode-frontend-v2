@@ -30,7 +30,7 @@ const items = [
   { key: "news", label: "News", icon: faNewspaper },
   { key: "notifications", label: "Notifications", icon: faBell },
   { key: "devices", label: "Devices", icon: faLaptop },
-  { key: "blog-post", label: "Create Post", icon: faPenToSquare },
+  { key: "post", label: "Create Post", icon: faPenToSquare },
 ];
 
 export default function Sidebar() {

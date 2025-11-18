@@ -1,13 +1,19 @@
 export interface BlogPost {
   _id: string;
-  user_id: string;
   title: string;
   content: string;
-  category: string;
-  keywords: string[];
-  post_ipfs_hash: string;
-  upvote: number;
-  downvote: number;
-  updatedAt: string;
+  keyword: string;
+  author: {
+    id: string;
+    username: string;
+    display_name: string;
+    avatar_ipfs_hash: string;
+  };
+  post_ipfs_hash: null | string;
   createdAt: string;
+  updatedAt: string;
+  __v: number;
+  totalLikes: number;
+  totalDislikes: number;
+  totalComments: number;
 }
