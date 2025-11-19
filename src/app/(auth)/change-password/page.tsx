@@ -10,6 +10,7 @@ import { toastSuccess, toastError } from "@/utils/index.utils";
 
 export default function ChangePassword() {
   const router = useRouter();
+  const [ loading, setLoading ] = useState(false);
   const [changePasswordData, setChangePasswordData] =
     useState<ChangePasswordData>({
       new_password: "",
@@ -24,6 +25,8 @@ export default function ChangePassword() {
   };
 
   const handleChangePassword = async () => {
+    if (loading) return;
+
     if (
       !changePasswordData.new_password.trim() ||
       !changePasswordData.confirm_new_password.trim()
@@ -32,6 +35,7 @@ export default function ChangePassword() {
       return;
     }
 
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/auth/change-password", {
         method: "POST",
@@ -56,21 +60,10 @@ export default function ChangePassword() {
     } catch (error) {
       console.error("Change password request error:", error);
       toastError("Password change failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
-
-  // const handleSetCookie = () => {
-  //   // document.cookie =
-  //   //   "gate-key-for-login=true; Max-Age=60; Path=/login; SameSite=strict";
-  //   setCookie({
-  //     name: "gate-key-for-login",
-  //     value: "true",
-  //     maxAge: 60,
-  //     path: "/login",
-  //     sameSite: "Strict",
-  //   });
-  //   router.push("/login");
-  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,7 +137,6 @@ export default function ChangePassword() {
             placeholder="New password"
           />
 
-          {/* Password strength color + length */}
           <div className="mb-2" aria-hidden="true">
             <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
               <div
@@ -204,7 +196,7 @@ export default function ChangePassword() {
             )}
           </div>
 
-          <Auth.SubmitButton>Save and log in</Auth.SubmitButton>
+          <Auth.SubmitButton disabled={loading}>Save and log in</Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
     </main>

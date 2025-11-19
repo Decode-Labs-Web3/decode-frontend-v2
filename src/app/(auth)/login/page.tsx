@@ -22,6 +22,7 @@ export default function Login() {
     email_or_username: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const value = getCookie("email_or_username");
@@ -66,10 +67,14 @@ export default function Login() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (loading) return;
+
     if (!loginData.email_or_username.trim() || !loginData.password.trim()) {
       toastError("Please fill in all fields");
       return;
     }
+
+    setLoading(true);
     try {
       const responseData = await fetch("/api/auth/login", {
         method: "POST",
@@ -95,13 +100,13 @@ export default function Login() {
         response.message === "Please verify OTP to login"
       ) {
         router.push("/verify-otp");
-      }else if (
+      } else if (
         response.success &&
         response.statusCode === 200 &&
         response.message === "Please verify OTP to verify device fingerprint"
       ) {
         router.push("/verify-fingerprint");
-      }  else if (
+      } else if (
         response.success &&
         response.statusCode === 400 &&
         response.message ===
@@ -116,6 +121,7 @@ export default function Login() {
       console.error("Login request error:", error);
       toastError("Login failed. Please try again.");
     } finally {
+      setLoading(false);
       console.info("/app/(auth)/login handleLogin completed");
     }
   };
@@ -124,7 +130,6 @@ export default function Login() {
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
       <Auth.Logo />
 
-      {/* Main Card */}
       <Auth.AuthCard title="Log in">
         <form onSubmit={handleSubmit} noValidate>
           <Auth.TextField
@@ -152,10 +157,9 @@ export default function Login() {
             </Link>
           </div>
 
-          <Auth.SubmitButton>Log in</Auth.SubmitButton>
+          <Auth.SubmitButton disabled={loading}>Log in</Auth.SubmitButton>
         </form>
 
-        {/* Register Link */}
         <p className="text-center text-gray-400">
           Don&apos;t have an account yet?{" "}
           <Link

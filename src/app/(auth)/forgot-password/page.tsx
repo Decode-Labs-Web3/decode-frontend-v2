@@ -7,6 +7,7 @@ import { ForgotPasswordData } from "@/interfaces/index.interfaces";
 
 export default function ForgotPassword() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [forgotData, setForgotData] = useState<ForgotPasswordData>({
     email_or_username: "",
   });
@@ -33,12 +34,14 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (loading) return;
 
     if (!forgotData.email_or_username.trim()) {
       toastError("Please enter your email or username");
       return;
     }
 
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/auth/forgot-password", {
         method: "POST",
@@ -66,6 +69,7 @@ export default function ForgotPassword() {
       console.error("Forgot password request error:", error);
       toastError("Failed to send reset link. Please try again.");
     } finally {
+      setLoading(false);
       console.info(
         "/app/(auth)/forgot-password handleForgotPassword completed"
       );
@@ -76,11 +80,7 @@ export default function ForgotPassword() {
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
       <Auth.Logo />
 
-
-      {/* Main Card */}
       <Auth.AuthCard title="Reset Password">
-
-        {/* Simple Description */}
         <p className="text-sm text-gray-400 text-center mb-8">
           Enter your email to receive a reset link
         </p>
@@ -101,7 +101,9 @@ export default function ForgotPassword() {
             onChange={handleChange}
           />
 
-          <Auth.SubmitButton>Send Reset Password</Auth.SubmitButton>
+          <Auth.SubmitButton disabled={loading}>
+            Send Reset Password
+          </Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
 

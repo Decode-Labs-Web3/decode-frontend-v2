@@ -13,12 +13,10 @@ import {
 } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faX } from "@fortawesome/free-solid-svg-icons";
-// import InterestDropdown, {
-//   type Interest,
-// } from "@/components/(auth)/InterestDropdown";
 
 export default function Register() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [registerData, setRegisterData] = useState<RegisterData>({
     username: "",
     email: "",
@@ -63,6 +61,7 @@ export default function Register() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (loading) return;
     if (
       !registerData.email.trim() ||
       !registerData.username.trim() ||
@@ -72,6 +71,7 @@ export default function Register() {
       toastError("Please fill in all fields");
       return;
     }
+    setLoading(true);
     try {
       const apiResponse = await fetch("/api/auth/register", {
         method: "POST",
@@ -137,6 +137,7 @@ export default function Register() {
       console.error("Registration request error:", error);
       toastError("Registration failed. Please try again.");
     } finally {
+      setLoading(false);
       console.info("/app/(auth)/register handleRegister completed");
     }
   };
@@ -271,7 +272,9 @@ export default function Register() {
             )}
           </div>
 
-          <Auth.SubmitButton>Register</Auth.SubmitButton>
+          <Auth.SubmitButton disabled={loading}>
+            {loading ? "Registering..." : "Register"}
+          </Auth.SubmitButton>
         </form>
 
         {/* Login Link */}

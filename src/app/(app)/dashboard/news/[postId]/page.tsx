@@ -304,6 +304,96 @@ export default function NewsPage() {
     [fingerprintHash, fetchPosts]
   );
 
+  const handleReacttion = useCallback(
+    async (type: "like" | "dislike") => {
+      try {
+        const apiResponse = await fetch("/api/blogs/reaction", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ postId, type }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error("Failed to send reaction");
+        }
+
+        const response = await apiResponse.json();
+        if (response.statusCode === 201) {
+          fetchPosts();
+        }
+      } catch (error) {
+        console.error("Error sending reaction:", error);
+        const message =
+          error instanceof Error ? error.message : "Failed to send reaction";
+        toastError(message);
+      }
+    },
+    [fingerprintHash, postId, fetchPosts]
+  );
+
+  const handleEditReaction = useCallback(
+    async (type: "like" | "dislike") => {
+      try {
+        const apiResponse = await fetch("/api/blogs/reaction", {
+          method: "PUT",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ postId, type }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error("Failed to send reaction");
+        }
+
+        const response = await apiResponse.json();
+        if (response.statusCode === 200) {
+          fetchPosts();
+        }
+      } catch (error) {
+        console.error("Error sending reaction:", error);
+        const message =
+          error instanceof Error ? error.message : "Failed to send reaction";
+        toastError(message);
+      }
+    },
+    [fingerprintHash, postId, fetchPosts]
+  );
+
+  const handleDeleteReaction = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/blogs/reaction", {
+        method: "DELETE",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ postId }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error("Failed to send reaction");
+      }
+
+      const response = await apiResponse.json();
+      if (response.statusCode === 200) {
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error("Error sending reaction:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to send reaction";
+      toastError(message);
+    }
+  }, [fingerprintHash, postId, fetchPosts]);
+
   const getImageUrl = (post: BlogDetailProps) => {
     if (post.post_ipfs_hash) {
       return `https://ipfs.de-id.xyz/ipfs/${post.post_ipfs_hash}`;
@@ -436,6 +526,16 @@ export default function NewsPage() {
                 }
                 size="sm"
                 className="flex items-center gap-2"
+                onClick={() => {
+                  if (!postDetail.userReaction) {
+                    handleReacttion("like");
+                  } else if (postDetail.userReaction === "like") {
+                    handleDeleteReaction();
+                  }
+                  else {
+                    handleEditReaction("like");
+                  }
+                }}
               >
                 <FontAwesomeIcon icon={faThumbsUp} />
                 <span>{number(postDetail.totalLikes || 0)}</span>
@@ -446,6 +546,15 @@ export default function NewsPage() {
                 }
                 size="sm"
                 className="flex items-center gap-2"
+                onClick={() => {
+                  if (!postDetail.userReaction) {
+                    handleReacttion("dislike");
+                  } else if (postDetail.userReaction === "dislike") {
+                    handleDeleteReaction();
+                  } else {
+                    handleEditReaction("dislike");
+                  }
+                }}
               >
                 <FontAwesomeIcon icon={faThumbsDown} />
                 <span>{number(postDetail.totalDislikes || 0)}</span>

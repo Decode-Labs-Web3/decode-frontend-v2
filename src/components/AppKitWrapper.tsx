@@ -48,10 +48,11 @@ function WalletContent() {
   const [formData, setFormData] = useState<{ email_or_username: string }>({
     email_or_username: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const { open, close } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider("eip155"); // EVM provider
+  const { walletProvider } = useAppKitProvider("eip155");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -63,8 +64,10 @@ function WalletContent() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (loading) return;
 
     try {
+      setLoading(true);
       const response = await fetch("/api/auth/login-or-register", {
         method: "POST",
         credentials: "include",
@@ -96,7 +99,6 @@ function WalletContent() {
 
       if (data.success && data.message === "User found") {
         console.log("User found, redirecting to login...");
-        // Ensure gate cookie exists before navigating to avoid middleware race in production
         try {
           document.cookie = `gate-key-for-login=true; Max-Age=120; Path=/login; SameSite=Lax`;
           if (formData.email_or_username) {
@@ -134,6 +136,8 @@ function WalletContent() {
     } catch (err: unknown) {
       console.error("Login/Register error:", err);
       toastError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -237,7 +241,6 @@ function WalletContent() {
     <main className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
       <Auth.Logo />
 
-      {/* Main Card */}
       <Auth.AuthCard title="Get Started">
         <button
           onClick={openConnectModal}
@@ -251,7 +254,6 @@ function WalletContent() {
           />
         </button>
 
-        {/* Divider */}
         <div className="flex items-center mb-6">
           <div className="flex-1 border-t border-gray-600"></div>
           <span className="px-4 text-gray-400 text-sm">OR</span>
@@ -266,7 +268,9 @@ function WalletContent() {
             value={formData.email_or_username}
             onChange={handleChange}
           />
-          <Auth.SubmitButton>Explore Decode</Auth.SubmitButton>
+          <Auth.SubmitButton disabled={loading}>
+            {loading ? "Processing..." : "Explore Decode"}
+          </Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
 

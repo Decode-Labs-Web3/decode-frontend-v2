@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@/hooks/useUser";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
@@ -35,6 +36,7 @@ const items = [
 
 export default function Sidebar() {
   const router = useRouter();
+  const { user } = useUser();
   const pathname = usePathname();
   const { fingerprintHash } = useFingerprint();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -82,36 +84,10 @@ export default function Sidebar() {
     <>
       <aside className="fixed top-16 left-0 bottom-0 w-64 bg-(--surface-muted) backdrop-blur-xl border-r border-(--border) hidden md:flex flex-col">
         <nav className="p-3 space-y-1">
-          {items.map((item) => (
-            <Button
-              key={item.key}
-              onClick={() => {
-                router.push(`/dashboard/${item.key}`);
-                setMobileOpen(false);
-              }}
-              variant={active === item.key ? "secondary" : "ghost"}
-              className={`w-full justify-start gap-3 px-3 py-2 h-auto ${
-                active === item.key ? "border-l-4 border-primary" : ""
-              }`}
-            >
-              <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-              <span className="flex-1 text-left">{item.label}</span>
-              {item.key === "notifications" && unread > 0 && (
-                <Badge variant="destructive" className="ml-auto text-xs">
-                  {unread}
-                </Badge>
-              )}
-            </Button>
-          ))}
-        </nav>
-      </aside>
+          {items.map((item) => {
+            if (item.key === "post" && user?.role !== "admin") return null;
 
-      {/* Mobile drawer */}
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-64 p-0">
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <nav className="p-3 space-y-1">
-            {items.map((item) => (
+            return (
               <Button
                 key={item.key}
                 onClick={() => {
@@ -131,7 +107,40 @@ export default function Sidebar() {
                   </Badge>
                 )}
               </Button>
-            ))}
+            );
+          })}
+        </nav>
+      </aside>
+
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="w-64 p-0">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <nav className="p-3 space-y-1">
+            {items.map((item) => {
+              if (item.key === "post" && user?.role !== "admin") return null;
+
+              return (
+                <Button
+                  key={item.key}
+                  onClick={() => {
+                    router.push(`/dashboard/${item.key}`);
+                    setMobileOpen(false);
+                  }}
+                  variant={active === item.key ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 px-3 py-2 h-auto ${
+                    active === item.key ? "border-l-4 border-primary" : ""
+                  }`}
+                >
+                  <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {item.key === "notifications" && unread > 0 && (
+                    <Badge variant="destructive" className="ml-auto text-xs">
+                      {unread}
+                    </Badge>
+                  )}
+                </Button>
+              );
+            })}
           </nav>
         </SheetContent>
       </Sheet>
