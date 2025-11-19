@@ -41,6 +41,7 @@ export default function VerifyPage() {
       if (!apiResponse.ok) {
         console.log(response.message);
         toastError(response.message);
+        return
       }
       router.push("/change-password");
       toastSuccess("Now you will be direct to change password");

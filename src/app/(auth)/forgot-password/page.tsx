@@ -85,7 +85,6 @@ export default function ForgotPassword() {
           Enter your email to receive a reset link
         </p>
 
-        {/* Back to Login Button */}
         <Auth.BackButton
           href="/login"
           onClick={handleSetCookie}

@@ -203,9 +203,9 @@ export default function DevicesPage() {
             <Card
               key={fingerprint._id}
               id={fingerprint._id}
-              className="hover-card"
+              className="hover-card overflow-visible"
             >
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-4 relative">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
@@ -242,7 +242,7 @@ export default function DevicesPage() {
                     }
                     variant="destructive"
                     size="sm"
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto sm:absolute sm:top-3 sm:right-3 z-10"
                   >
                     Revoke Device
                   </Button>
@@ -255,7 +255,7 @@ export default function DevicesPage() {
                     fingerprint.sessions.map((session: Session) => (
                       <div
                         key={session._id}
-                        className="bg-muted border rounded-lg p-3 sm:p-4 hover:bg-background transition-colors"
+                        className="bg-muted border rounded-lg p-3 sm:p-4 hover:bg-background transition-colors relative"
                       >
                         <div className="flex items-center gap-2 sm:gap-3">
                           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-background border flex items-center justify-center shrink-0 overflow-hidden">
@@ -275,7 +275,10 @@ export default function DevicesPage() {
                                   session.app.slice(1)}
                               </h3>
                               {session._id === currentSessionId && (
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs absolute left-12 top-1 sm:static sm:ml-2"
+                                >
                                   Current
                                 </Badge>
                               )}

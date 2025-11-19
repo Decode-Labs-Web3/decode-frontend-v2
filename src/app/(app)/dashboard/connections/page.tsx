@@ -17,12 +17,7 @@ import InterestModal, { type Interest } from "@/components/(app)/Interest";
 import type {
   UserSuggestion,
   UserSearchProps,
-  MutualFollower,
 } from "@/interfaces/connections.interfaces";
-
-// Interfaces moved to src/interfaces/connections.interfaces.ts
-
-// Interfaces moved to src/interfaces/connections.interfaces.ts
 
 export default function ConnectionsIndex() {
   const searchParams = useSearchParams();
@@ -145,22 +140,20 @@ export default function ConnectionsIndex() {
       const response = await apiResponse.json();
 
       if (!apiResponse.ok) {
+        if (
+          response.statusCode === 404 &&
+          response.message === "User interests not found"
+        ) {
+          setModalOpen(true);
+          return;
+        }
         console.error(response);
         toastError("Failed to fetch interests");
         return;
       }
 
-      if (
-        response.statusCode === 404 &&
-        response.message === "User interests not found"
-      ) {
-        setModalOpen(true);
-        return;
-      }
-
       if (response.message === "User interests fetched successfully") {
         setModalOpen(false);
-        // console.log("Response from get interest", response);
         handleUserSuggestSameInterest();
         return;
       }
@@ -271,13 +264,13 @@ export default function ConnectionsIndex() {
         </Card>
       )}
 
-      {modalOpen && (
         <InterestModal
           value={interests}
           onChangeAction={setInterests}
-          onCloseAction={interests.length >= 3 ? handleInterest : undefined}
+          modalOpen={modalOpen}
+          setModalOpen={setModalOpen}
+          handleInterest={handleInterest}
         />
-      )}
 
       {searchResults.length === 0 && !loading && userSuggest.length > 0 && (
         <div>

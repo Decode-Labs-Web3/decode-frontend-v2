@@ -44,6 +44,7 @@ const metadata = {
 
 function WalletContent() {
   const router = useRouter();
+  const [openDialogNotification, setOpenDialogNotification] = useState(false);
   const { fingerprintHash } = useFingerprint();
   const [formData, setFormData] = useState<{ email_or_username: string }>({
     email_or_username: "",
@@ -230,10 +231,10 @@ function WalletContent() {
         toastInfo("Signature request was cancelled.");
         return;
       }
-
       console.error("Wallet auth error:", error);
-
       toastError("Wallet authentication failed. Please try again.");
+      close?.();
+      setOpenDialogNotification(true);
     }
   };
 
@@ -273,7 +274,12 @@ function WalletContent() {
           </Auth.SubmitButton>
         </form>
       </Auth.AuthCard>
-
+      <Auth.DialogNotification
+        openDialogNotification={openDialogNotification}
+        setOpenDialogNotification={setOpenDialogNotification}
+        title="Primary wallet not set"
+        description="You haven't set a primary wallet yet. Please add one in your profile to use wallet features."
+      />
       <Auth.BrandLogos />
     </main>
   );

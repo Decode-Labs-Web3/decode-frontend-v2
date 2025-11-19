@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -50,30 +50,22 @@ export const INTERESTS = [
 
 export type Interest = (typeof INTERESTS)[number];
 
+interface InterestModalProps {
+  value: Interest[];
+  modalOpen: boolean;
+  handleInterest: () => void;
+  onChangeAction: (v: Interest[]) => void;
+  setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
 export default function InterestModal({
   value,
+  modalOpen,
+  setModalOpen,
+  handleInterest,
   onChangeAction,
-  onCloseAction,
-}: {
-  value: Interest[];
-  onChangeAction: (v: Interest[]) => void;
-  onCloseAction?: () => void;
-}) {
+}: InterestModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const toFocus = panelRef.current?.querySelector<HTMLElement>(
-      "input, button, [href], select, textarea, [tabindex]:not([tabindex='-1'])"
-    );
-    toFocus?.focus();
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, []);
 
   const toggle = (opt: Interest) => {
     const exists = value.includes(opt);
@@ -88,7 +80,7 @@ export default function InterestModal({
     txt.charAt(0).toUpperCase() + txt.slice(1).replace(/_/g, " ");
 
   return (
-    <Dialog open={true} onOpenChange={() => onCloseAction?.()}>
+    <Dialog open={modalOpen} onOpenChange={setModalOpen}>
       <DialogContent className="max-w-md max-h-[80vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
@@ -102,7 +94,6 @@ export default function InterestModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Content */}
         <div className="max-h-80 overflow-auto">
           <ul className="space-y-1">
             {INTERESTS.map((interest) => {
@@ -124,12 +115,14 @@ export default function InterestModal({
           </ul>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-end gap-2 pt-4 border-t">
           <Button
             type="button"
-            onClick={onCloseAction}
-            disabled={!onCloseAction}
+            onClick={() => {
+              setModalOpen(false);
+              handleInterest();
+            }}
+            disabled={value.length < 3}
             variant="outline"
           >
             Done
