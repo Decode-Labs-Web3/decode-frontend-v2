@@ -4,9 +4,12 @@ import Image from "next/image";
 import { useUser } from "@/hooks/useUser";
 import Loading from "@/components/(loading)";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toastError } from "@/utils/index.utils";
 import { getApiHeaders } from "@/utils/api.utils";
+import { Textarea } from "@/components/ui/textarea";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
@@ -35,9 +38,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   faThumbsUp,
   faThumbsDown,
@@ -68,6 +68,11 @@ export default function NewsPage() {
   const [postDetail, setPostDetail] = useState<BlogDetailProps>(
     {} as BlogDetailProps
   );
+  const [commentContent, setCommentContent] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentContent, setEditingCommentContent] = useState("");
+  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
+  const [deleteCommentDialogOpen, setDeleteCommentDialogOpen] = useState(false);
   const [editPostForm, setEditPostForm] = useState({
     title: "",
     content: "",
@@ -189,6 +194,115 @@ export default function NewsPage() {
       toastError(message);
     }
   }, [fingerprintHash, postId, editPostForm, fetchPosts]);
+
+  const handleComment = useCallback(async () => {
+    if (!commentContent) {
+      toastError("Comment content cannot be empty");
+      return;
+    }
+    try {
+      const apiResponse = await fetch("/api/blogs/comment", {
+        method: "POST",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ postId, content: commentContent }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error("Failed to post comment");
+      }
+
+      const response = await apiResponse.json();
+
+      if (
+        response.statusCode === 201 &&
+        response.message === "Comment created successfully"
+      ) {
+        setCommentContent("");
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error("Error posting comment:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to post comment";
+      toastError(message);
+    }
+  }, [fingerprintHash, postId, fetchPosts, commentContent]);
+
+  const handleCommentEdit = useCallback(
+    async (commentId: string, content: string) => {
+      if (!content) {
+        toastError("Comment content cannot be empty");
+        return;
+      }
+      try {
+        const apiResponse = await fetch("/api/blogs/comment", {
+          method: "PUT",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ commentId, content }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error("Failed to update comment");
+        }
+
+        const response = await apiResponse.json();
+
+        if (response.statusCode === 200) {
+          setEditingCommentId(null);
+          setEditingCommentContent("");
+          fetchPosts();
+        }
+      } catch (error) {
+        console.error("Error updating comment:", error);
+        const message =
+          error instanceof Error ? error.message : "Failed to update comment";
+        toastError(message);
+      }
+    },
+    [fingerprintHash, fetchPosts]
+  );
+
+  const handleCommentDelete = useCallback(
+    async (commentId: string) => {
+      try {
+        const apiResponse = await fetch("/api/blogs/comment", {
+          method: "DELETE",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ commentId }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error("Failed to delete comment");
+        }
+
+        const response = await apiResponse.json();
+
+        if (response.statusCode === 200) {
+          setDeleteCommentDialogOpen(false);
+          setDeleteCommentId(null);
+          fetchPosts();
+        }
+      } catch (error) {
+        console.error("Error deleting comment:", error);
+        const message =
+          error instanceof Error ? error.message : "Failed to delete comment";
+        toastError(message);
+      }
+    },
+    [fingerprintHash, fetchPosts]
+  );
 
   const getImageUrl = (post: BlogDetailProps) => {
     if (post.post_ipfs_hash) {
@@ -347,6 +461,50 @@ export default function NewsPage() {
             </CardFooter>
           </Card>
 
+          <div className="mt-4">
+            <div className="flex gap-3">
+              <Avatar className="w-8 h-8">
+                <AvatarImage
+                  src={
+                    user?.avatar_ipfs_hash
+                      ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
+                      : undefined
+                  }
+                  alt={user?.display_name}
+                />
+                <AvatarFallback>
+                  {user?.display_name?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1">
+                <Textarea
+                  placeholder="Write a comment..."
+                  value={commentContent}
+                  onChange={(e) => setCommentContent(e.target.value)}
+                  rows={3}
+                />
+
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCommentContent("")}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleComment}
+                    disabled={!commentContent.trim()}
+                  >
+                    Post Comment
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">
@@ -370,16 +528,81 @@ export default function NewsPage() {
                         {comment.author?.display_name?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
+
                     <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium">
-                          {comment.author?.display_name}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {new Date(comment.createdAt).toLocaleString()}
-                        </span>
+                      <div className="flex items-center justify-between gap-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">
+                            {comment.author?.display_name}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {new Date(comment.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+
+                        {comment.author?.id === user?._id && (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingCommentId(comment._id);
+                                setEditingCommentContent(comment.content);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setDeleteCommentId(comment._id);
+                                setDeleteCommentDialogOpen(true);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm">{comment.content}</p>
+
+                      {editingCommentId === comment._id ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editingCommentContent}
+                            onChange={(e) =>
+                              setEditingCommentContent(e.target.value)
+                            }
+                            rows={3}
+                          />
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingCommentId(null);
+                                setEditingCommentContent("");
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                handleCommentEdit(
+                                  comment._id,
+                                  editingCommentContent
+                                )
+                              }
+                              disabled={!editingCommentContent.trim()}
+                            >
+                              Save
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm">{comment.content}</p>
+                      )}
                     </div>
                   </div>
                 ))
@@ -479,6 +702,37 @@ export default function NewsPage() {
                   Cancel
                 </Button>
                 <Button onClick={handleEditPost}>Save Changes</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog
+            open={deleteCommentDialogOpen}
+            onOpenChange={setDeleteCommentDialogOpen}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Comment</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this comment? This action
+                  cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteCommentDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() =>
+                    deleteCommentId && handleCommentDelete(deleteCommentId)
+                  }
+                >
+                  Delete
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
