@@ -14,6 +14,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { BlogDetailProps } from "@/interfaces/blog.interfaces";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -28,6 +35,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   faThumbsUp,
   faThumbsDown,
@@ -37,6 +47,16 @@ import {
   faEdit,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+
+const keywords = [
+  "Decode",
+  "Dehive",
+  "Dedao",
+  "Decareer",
+  "Decourse",
+  "Defuel",
+  "Deid",
+];
 
 export default function NewsPage() {
   const router = useRouter();
@@ -48,7 +68,12 @@ export default function NewsPage() {
   const [postDetail, setPostDetail] = useState<BlogDetailProps>(
     {} as BlogDetailProps
   );
-
+  const [editPostForm, setEditPostForm] = useState({
+    title: "",
+    content: "",
+    keyword: "",
+  });
+  const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
 
   const fetchPosts = useCallback(async () => {
@@ -128,6 +153,43 @@ export default function NewsPage() {
     }
   }, [fingerprintHash, postId, router]);
 
+  const handleEditPost = useCallback(async () => {
+    if (!editPostForm.title || !editPostForm.content || !editPostForm.keyword) {
+      toastError("Please fill in all required fields");
+      return;
+    }
+    try {
+      const apiResponse = await fetch("/api/blogs/specific", {
+        method: "PUT",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ postId, ...editPostForm }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error("Failed to fetch posts");
+      }
+
+      const response = await apiResponse.json();
+
+      if (
+        response.statusCode === 200 &&
+        response.message === "Post updated successfully"
+      ) {
+        setEditDialog(false);
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to load posts";
+      toastError(message);
+    }
+  }, [fingerprintHash, postId, editPostForm, fetchPosts]);
+
   const getImageUrl = (post: BlogDetailProps) => {
     if (post.post_ipfs_hash) {
       return `https://ipfs.de-id.xyz/ipfs/${post.post_ipfs_hash}`;
@@ -179,7 +241,17 @@ export default function NewsPage() {
 
             {user._id === postDetail.author.id && (
               <div className="flex gap-2">
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditPostForm({
+                      title: postDetail.title,
+                      content: postDetail.content,
+                      keyword: postDetail.keyword,
+                    });
+                    setEditDialog(true);
+                  }}
+                >
                   <FontAwesomeIcon icon={faEdit} className="mr-2" />
                   Edit Post
                 </Button>
@@ -338,6 +410,75 @@ export default function NewsPage() {
                 <Button variant="destructive" onClick={handleDeletePost}>
                   Delete
                 </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={editDialog} onOpenChange={setEditDialog}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Edit Post</DialogTitle>
+                <DialogDescription>
+                  Update your post details below.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-title">Title</Label>
+                  <Input
+                    id="edit-title"
+                    value={editPostForm.title}
+                    onChange={(e) =>
+                      setEditPostForm((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter post title"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-keyword">Keyword</Label>
+                  <Select
+                    value={editPostForm.keyword}
+                    onValueChange={(value) =>
+                      setEditPostForm((prev) => ({ ...prev, keyword: value }))
+                    }
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a keyword" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {keywords.map((keyword) => (
+                        <SelectItem key={keyword} value={keyword}>
+                          {keyword}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-content">Content</Label>
+                  <Textarea
+                    id="edit-content"
+                    value={editPostForm.content}
+                    onChange={(e) =>
+                      setEditPostForm((prev) => ({
+                        ...prev,
+                        content: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter post content"
+                    rows={6}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleEditPost}>Save Changes</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
