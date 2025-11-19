@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Loading from "@/components/(loading)";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toastError } from "@/utils/index.utils";
 import { getApiHeaders } from "@/utils/api.utils";
-import type { BlogPost } from "@/interfaces/blog.interfaces";
+import type { BlogPostProps } from "@/interfaces/blog.interfaces";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -20,9 +21,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewsPage() {
+  const router = useRouter();
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(true);
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [posts, setPosts] = useState<BlogPostProps[]>([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -56,7 +58,7 @@ export default function NewsPage() {
     fetchPosts();
   }, [fingerprintHash]);
 
-  const getImageUrl = (post: BlogPost) => {
+  const getImageUrl = (post: BlogPostProps) => {
     if (post.post_ipfs_hash) {
       return `https://ipfs.de-id.xyz/ipfs/${post.post_ipfs_hash}`;
     }
@@ -91,6 +93,7 @@ export default function NewsPage() {
               {posts.map((post) => (
                 <Card
                   key={post._id}
+                  onClick={() => router.push(`/dashboard/news/${post._id}`)}
                   className="overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="relative aspect-video overflow-hidden bg-muted">

@@ -41,7 +41,6 @@ export default function BlogPostPage() {
   const { fingerprintHash } = useFingerprint();
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [healthStatus, setHealthStatus] = useState<string>("Checking...");
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -191,9 +190,6 @@ export default function BlogPostPage() {
           <CardTitle>Create New Blog Post</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 p-2 bg-gray-100 rounded">
-            <strong>Health Status:</strong> {healthStatus}
-          </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="image-upload">Featured Image</Label>
