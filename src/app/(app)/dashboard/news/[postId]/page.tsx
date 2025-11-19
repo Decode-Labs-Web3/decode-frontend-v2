@@ -1,17 +1,26 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useUser } from "@/hooks/useUser";
 import Loading from "@/components/(loading)";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toastError } from "@/utils/index.utils";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { BlogDetailProps } from "@/interfaces/blog.interfaces";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
@@ -24,54 +33,101 @@ import {
   faThumbsDown,
   faComment,
   faArrowLeft,
+  faNewspaper,
+  faEdit,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function NewsPage() {
   const router = useRouter();
-  const { fingerprintHash } = useFingerprint();
   const { postId } = useParams();
+  const { user } = useUser();
+  const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [postDetail, setPostDetail] = useState<BlogDetailProps>(
     {} as BlogDetailProps
   );
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const apiResponse = await fetch("/api/blogs/specific", {
-          method: "POST",
-          headers: getApiHeaders(fingerprintHash, {
-            "Content-Type": "application/json",
-          }),
-          body: JSON.stringify({ postId }),
-          cache: "no-store",
-          signal: AbortSignal.timeout(10000),
-        });
+  const [deleteDialog, setDeleteDialog] = useState(false);
 
-        if (!apiResponse.ok) {
-          throw new Error("Failed to fetch posts");
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const apiResponse = await fetch("/api/blogs/specific", {
+        method: "POST",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ postId }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        if (apiResponse.status === 404) {
+          setNotFound(true);
+        } else {
+          toastError("Failed to fetch posts");
         }
-
-        const response = await apiResponse.json();
-
-        if (
-          response.statusCode === 200 &&
-          response.message === "Post fetched successfully"
-        ) {
-          setPostDetail(response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-        const message =
-          error instanceof Error ? error.message : "Failed to load posts";
-        toastError(message);
-      } finally {
-        setLoading(false);
+        return;
       }
-    };
 
-    fetchPosts();
+      const response = await apiResponse.json();
+
+      if (
+        response.statusCode === 200 &&
+        response.message === "Post fetched successfully"
+      ) {
+        setPostDetail(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to load posts";
+      toastError(message);
+    } finally {
+      setLoading(false);
+    }
   }, [fingerprintHash, postId]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  const handleDeletePost = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/blogs/specific", {
+        method: "DELETE",
+        headers: getApiHeaders(fingerprintHash, {
+          "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({ postId }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error("Failed to fetch posts");
+      }
+
+      const response = await apiResponse.json();
+
+      if (
+        response.statusCode === 200 &&
+        response.message === "Post deleted successfully"
+      ) {
+        setDeleteDialog(false);
+        router.push("/dashboard/news");
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to load posts";
+      toastError(message);
+    }
+  }, [fingerprintHash, postId, router]);
+
   const getImageUrl = (post: BlogDetailProps) => {
     if (post.post_ipfs_hash) {
       return `https://ipfs.de-id.xyz/ipfs/${post.post_ipfs_hash}`;
@@ -82,20 +138,59 @@ export default function NewsPage() {
   const number = (n: number) =>
     n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`;
 
+  if (notFound) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <FontAwesomeIcon
+              icon={faNewspaper}
+              className="w-16 h-16 text-muted-foreground mb-4"
+            />
+            <h3 className="text-lg font-semibold mb-2">Post Not Found</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              The post you&apos;re looking for doesn&apos;t exist or has been
+              removed.
+            </p>
+            <Button onClick={() => router.push("/dashboard/news")}>
+              Back to News
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <Loading.NewsCard />;
+  }
+
   return (
     <>
       {loading ? (
         <Loading.NewsCard />
       ) : (
         <div className="max-w-4xl mx-auto space-y-6">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="mb-4"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-            Back to News
-          </Button>
+          <div className="flex justify-between items-center">
+            <Button variant="ghost" onClick={() => router.back()}>
+              <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+              Back to News
+            </Button>
+
+            {user._id === postDetail.author.id && (
+              <div className="flex gap-2">
+                <Button variant="outline">
+                  <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                  Edit Post
+                </Button>
+
+                <Button variant="outline" onClick={() => setDeleteDialog(true)}>
+                  <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                  Delete Post
+                </Button>
+              </div>
+            )}
+          </div>
 
           <Card>
             <CardHeader>
@@ -136,7 +231,7 @@ export default function NewsPage() {
                     src={getImageUrl(postDetail)}
                     alt={postDetail.title}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                   />
                 </div>
               </CardContent>
@@ -223,6 +318,29 @@ export default function NewsPage() {
               )}
             </CardContent>
           </Card>
+
+          <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Post</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this post? This action cannot
+                  be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleDeletePost}>
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
     </>

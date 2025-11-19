@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toastError } from "@/utils/index.utils";
 import { getApiHeaders } from "@/utils/api.utils";
-import type { BlogPostProps } from "@/interfaces/blog.interfaces";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { BlogPostProps } from "@/interfaces/blog.interfaces";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   faNewspaper,
   faClock,
@@ -97,11 +98,11 @@ export default function NewsPage() {
                   className="overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="relative aspect-video overflow-hidden bg-muted">
-                    <div
-                      className="w-full h-full bg-cover bg-center bg-no-repeat"
-                      style={{ backgroundImage: `url(${getImageUrl(post)})` }}
-                      role="img"
-                      aria-label={post.title}
+                    <Image
+                      src={getImageUrl(post)}
+                      alt={post.title}
+                      fill
+                      className="object-contain"
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0" />
                     <Badge className="absolute left-3 top-3 text-xs capitalize">
@@ -111,17 +112,19 @@ export default function NewsPage() {
 
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                      <Image
-                        src={
-                          post.author.avatar_ipfs_hash
-                            ? `https://ipfs.de-id.xyz/ipfs/${post.author.avatar_ipfs_hash}`
-                            : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=32&h=32&auto=format&fit=crop&crop=face"
-                        }
-                        alt={post.author.display_name}
-                        width={20}
-                        height={20}
-                        className="rounded-full"
-                      />
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage
+                          src={
+                            post.author?.avatar_ipfs_hash
+                              ? `https://ipfs.de-id.xyz/ipfs/${post.author.avatar_ipfs_hash}`
+                              : undefined
+                          }
+                          alt={post.author?.display_name}
+                        />
+                        <AvatarFallback>
+                          {post.author?.display_name?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       <span>{post.author.display_name}</span>
                       <span>•</span>
                       <FontAwesomeIcon icon={faClock} />
