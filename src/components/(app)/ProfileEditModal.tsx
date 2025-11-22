@@ -104,8 +104,29 @@ export default function ProfileEditModal({
 
   const handleUpdateProfile = async (event: React.FormEvent) => {
     event.preventDefault();
-    if(updateUserInfo.avatar_ipfs_hash.trim() === "" || updateUserInfo.display_name?.trim() === "" || updateUserInfo.bio?.trim() === "") {
+    const avatarHash = (updateUserInfo.avatar_ipfs_hash ?? "")
+      .toString()
+      .trim();
+    const displayName = (updateUserInfo.display_name ?? "").toString().trim();
+    const bio = (updateUserInfo.bio ?? "").toString().trim();
+
+    if (avatarHash === "" || displayName === "" || bio === "") {
       toastError("All fields are required");
+      return;
+    }
+
+    const pattern = /^[a-zA-Z0-9\s\-_]+$/;
+    if (!pattern.test(displayName)) {
+      toastError(
+        "Display name contains invalid characters. Only letters, numbers, whitespace, '-' and '_' are allowed."
+      );
+      return;
+    }
+
+    if (!pattern.test(bio)) {
+      toastError(
+        "Bio contains invalid characters. Only letters, numbers, whitespace, '-' and '_' are allowed."
+      );
       return;
     }
     try {
@@ -139,7 +160,11 @@ export default function ProfileEditModal({
       ) {
         toastSuccess(response.message || "Profile updated");
         onClose();
-        updateUserDetail(updateUserInfo.avatar_ipfs_hash, updateUserInfo.display_name, updateUserInfo.bio);
+        updateUserDetail(
+          updateUserInfo.avatar_ipfs_hash,
+          updateUserInfo.display_name,
+          updateUserInfo.bio
+        );
         setUpdateUserInfo({
           avatar_ipfs_hash: user?.avatar_ipfs_hash,
           display_name: user?.display_name,
@@ -261,18 +286,10 @@ export default function ProfileEditModal({
             </div>
 
             <div className="flex flex-row justify-end gap-4 pt-4">
-              <Button
-                className="border border-(--input) bg-(--background) shadow-sm hover:bg-(--accent) hover:text-(--accent-foreground)"
-                onClick={handleClose}
-              >
+              <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button
-                className="bg-(--primary) text-(--primary-foreground) shadow hover:opacity-90"
-                onClick={handleUpdateProfile}
-              >
-                Save Changes
-              </Button>
+              <Button onClick={handleUpdateProfile}>Save Changes</Button>
             </div>
           </div>
         </div>

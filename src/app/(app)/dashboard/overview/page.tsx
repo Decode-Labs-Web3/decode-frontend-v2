@@ -69,7 +69,7 @@ export default function OverviewPage() {
                   <p className="text-lg text-muted-foreground">{user.email}</p>
                 </div>
 
-                <div className="pt-6 border-t border-(--border)">
+                <div className="pt-6 border-t border-border">
                   <div className="space-y-3">
                     <h4 className="text-lg font-semibold">About me</h4>
                     <Card className="hover-card">
@@ -80,11 +80,11 @@ export default function OverviewPage() {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-(--border)">
+                <div className="pt-6 border-t border-border">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Link href="/dashboard/connections/followers">
-                        <span className="text-sm text-(--muted-foreground)">
+                        <span className="text-sm text-muted-foreground">
                           Followers
                         </span>
                         <p className="text-sm">{user.followers_number}</p>
@@ -92,7 +92,7 @@ export default function OverviewPage() {
                     </div>
                     <div className="space-y-2">
                       <Link href="/dashboard/connections/followings">
-                        <span className="text-sm text-(--muted-foreground)">
+                        <span className="text-sm text-muted-foreground">
                           Following
                         </span>
                         <p className="text-sm">{user.following_number}</p>
@@ -107,25 +107,25 @@ export default function OverviewPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-(--card) border border-(--border) rounded-lg">
+        <Card className="bg-(--card) border border-border rounded-lg">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <FontAwesomeIcon
                 icon={faShieldHalved}
                 className="text-(--success)"
               />
-              <span className="text-sm text-(--muted-foreground)">
+              <span className="text-sm text-muted-foreground">
                 Security
               </span>
             </div>
             <p className="font-medium">Protected</p>
-            <p className="text-xs text-(--muted-foreground) mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               2FA enabled
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-(--card) border border-(--border) rounded-lg">
+        <Card className="bg-card border border-border rounded-lg">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <FontAwesomeIcon icon={faWallet} className="text-blue-600" />
@@ -142,11 +142,11 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-(--card) border border-(--border) rounded-lg">
+        <Card className="bg-card border border-border rounded-lg">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <FontAwesomeIcon icon={faLaptop} className="text-purple-600" />
-              <span className="text-sm text-(--muted-foreground)">Devices</span>
+              <span className="text-sm text-muted-foreground">Devices</span>
             </div>
             <p className="font-medium">Current device</p>
             <p className="text-xs text-(--muted-foreground) mt-1">

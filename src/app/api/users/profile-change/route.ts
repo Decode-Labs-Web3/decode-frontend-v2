@@ -52,6 +52,8 @@ export async function PUT(req: Request) {
   try {
     const body = await req.json();
     const { current, original } = body;
+
+    console.log(`${pathname} request body: `, current, original);
     if (!current || !original) {
       return NextResponse.json(
         {

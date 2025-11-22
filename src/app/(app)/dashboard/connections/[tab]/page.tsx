@@ -312,7 +312,7 @@ export default function PageFollow() {
             )}
           </div>
 
-          <div className="sticky bottom-0 z-10 bg-(--card) border-t border-(--border) p-4">
+          <div className="sticky bottom-0 z-10 bg-card border-t border-border p-4">
             {endOfData ? (
               <p className="text-muted-foreground text-sm">End of data</p>
             ) : (

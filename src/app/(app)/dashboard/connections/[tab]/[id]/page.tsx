@@ -199,10 +199,10 @@ export default function Page() {
 
       {userData && (
         <div className="flex flex-col gap-6">
-          <Card className="bg-(--card) border border-(--border) rounded-lg">
+          <Card className="bg-card border border-border rounded-lg">
             <CardContent className="p-6">
               <div className="flex items-center gap-6">
-                <Avatar className="w-20 h-20 border border-(--border)">
+                <Avatar className="w-20 h-20 border border-border">
                   <AvatarImage
                     src={
                       userData.avatar_ipfs_hash
@@ -228,8 +228,8 @@ export default function Page() {
                         icon={faCircle}
                         className={`ml-3 ${
                           userData.is_online
-                            ? "text-(--success)"
-                            : "text-(--muted-foreground-2)"
+                            ? "text-success"
+                            : "text-muted-foreground-2"
                         }`}
                         title={userData.is_online ? "Online" : "Offline"}
                         aria-hidden={false}
@@ -239,7 +239,7 @@ export default function Page() {
                       {userData.role}
                     </Badge>
                   </div>
-                  <p className="text-sm text-(--muted-foreground) truncate mb-1">
+                  <p className="text-sm text-muted-foreground truncate mb-1">
                     @{userData.username}
                   </p>
                   {userData.primary_wallet?.address && (
@@ -248,17 +248,17 @@ export default function Page() {
                       {userData.primary_wallet.address.slice(-4)}
                     </p>
                   )}
-                  <div className="flex gap-3 text-xs text-(--muted-foreground)">
+                  <div className="flex gap-3 text-xs text-muted-foreground">
                     <Link
                       href={`/dashboard/connections/${tab}/${id}/followers`}
-                      className="hover:text-(--foreground) transition-colors"
+                      className="hover:text-foreground transition-colors"
                     >
                       <span>{userData.followers_number} followers</span>
                     </Link>
                     <span>•</span>
                     <Link
                       href={`/dashboard/connections/${tab}/${id}/followings`}
-                      className="hover:text-(--foreground) transition-colors"
+                      className="hover:text-foreground transition-colors"
                     >
                       <span>{userData.following_number} following</span>
                     </Link>
@@ -343,7 +343,7 @@ export default function Page() {
                             href={`/dashboard/connections/followings/${mutualFollower.user_id}`}
                             className="flex items-center gap-3 min-w-0"
                           >
-                            <Avatar className="w-10 h-10 border border-(--border)">
+                            <Avatar className="w-10 h-10 border border-border">
                               <AvatarImage
                                 src={
                                   mutualFollower.avatar_ipfs_hash
@@ -360,10 +360,10 @@ export default function Page() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-(--foreground)">
+                              <p className="truncate text-sm font-medium text-foreground">
                                 {mutualFollower.display_name}
                               </p>
-                              <p className="truncate text-xs text-(--muted-foreground)">
+                              <p className="truncate text-xs text-muted-foreground">
                                 @{mutualFollower.username}
                               </p>
                             </div>
@@ -378,7 +378,7 @@ export default function Page() {
                     >
                       <div className="flex flex-col gap-4">
                         <div className="flex items-start gap-3">
-                          <Avatar className="w-16 h-16 border border-(--border)">
+                          <Avatar className="w-16 h-16 border border-border">
                             <AvatarImage
                               src={
                                 mutualFollower.avatar_ipfs_hash
@@ -396,21 +396,21 @@ export default function Page() {
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <p className="font-medium text-(--foreground) truncate">
+                              <p className="font-medium text-foreground truncate">
                                 {mutualFollower.display_name}
                               </p>
                               <Badge variant="outline" className="text-xs">
                                 {mutualFollower.role}
                               </Badge>
                             </div>
-                            <p className="text-xs text-(--muted-foreground) truncate">
+                            <p className="text-xs text-muted-foreground truncate">
                               @{mutualFollower.username}
                             </p>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 text-center">
-                          <Card className="bg-(--card) border border-(--border)">
+                          <Card className="bg-card border border-border">
                             <CardContent className="p-3">
                               <p className="text-xs text-(--muted-foreground)">
                                 Following
@@ -420,7 +420,7 @@ export default function Page() {
                               </p>
                             </CardContent>
                           </Card>
-                          <Card className="bg-(--card) border border-(--border)">
+                          <Card className="bg-card border border-border">
                             <CardContent className="p-3">
                               <p className="text-xs text-(--muted-foreground)">
                                 Followers

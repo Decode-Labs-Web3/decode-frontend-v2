@@ -169,11 +169,11 @@ export default function ConnectionsIndex() {
 
   return (
     <main className="p-6 space-y-6 max-w-4xl mx-auto">
-      <Card className="bg-(--card) border border-(--border) rounded-lg">
+      <Card className="bg-card border border-border rounded-lg">
         <CardContent className="p-4">
           <form className="flex flex-col sm:flex-row gap-3 items-center">
             <Input
-              className="flex-1 min-w-0 px-3 py-2 rounded-md bg-(--input) text-(--foreground) border border-transparent focus:border-(--ring)"
+              className="flex-1 min-w-0 px-3 py-2 rounded-md bg-input text-foreground border border-transparent focus:border-ring"
               type="text"
               name="name"
               placeholder="Search users by name or username"
@@ -182,7 +182,7 @@ export default function ConnectionsIndex() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-4 py-2 rounded-md bg-(--primary) text-(--primary-foreground) shadow-sm"
+              className="w-full sm:w-auto px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm"
             >
               {loading ? "Searching..." : "Search"}
             </Button>
@@ -191,8 +191,8 @@ export default function ConnectionsIndex() {
       </Card>
       {loading && (
         <div className="flex flex-col justify-center items-center py-6 gap-2">
-          <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-(--primary)"></span>
-          <span className="text-(--foreground)">Loading...</span>
+          <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></span>
+          <span className="text-foreground">Loading...</span>
         </div>
       )}
       {searchResults.length > 0 && (
@@ -200,12 +200,12 @@ export default function ConnectionsIndex() {
           {searchResults.map((user) => (
             <Card
               key={user._id}
-              className="bg-(--card) border border-(--border) rounded-lg hover:shadow-md"
+              className="bg-card border border-border rounded-lg hover:shadow-md"
             >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-14 h-14 rounded-full overflow-hidden bg-(--surface-muted) shrink-0 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
                       <Image
                         src={
                           user.avatar_ipfs_hash
@@ -221,16 +221,16 @@ export default function ConnectionsIndex() {
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-0">
-                        <span className="font-semibold text-(--foreground) truncate text-base">
+                        <span className="font-semibold text-foreground truncate text-base">
                           {user.display_name || user.username}
                         </span>
                       </div>
-                      <span className="text-sm text-(--muted-foreground) truncate">
+                      <span className="text-sm text-muted-foreground truncate">
                         @{user.username}
                       </span>
 
                       {user.bio && (
-                        <p className="text-sm text-(--foreground)/90 mt-2 line-clamp-2">
+                        <p className="text-sm text-foreground/90 mt-2 line-clamp-2">
                           {user.bio}
                         </p>
                       )}
@@ -252,29 +252,29 @@ export default function ConnectionsIndex() {
         </div>
       )}
       {!loading && searchResults.length === 0 && query && (
-        <Card className="bg-(--card) border border-(--border) rounded-lg">
+        <Card className="bg-card border border-border rounded-lg">
           <CardContent className="text-center py-8">
-            <div className="text-(--muted-foreground) text-lg mb-2">
+            <div className="text-muted-foreground text-lg mb-2">
               No users found
             </div>
-            <p className="text-(--muted-foreground) text-sm">
+            <p className="text-muted-foreground text-sm">
               Try searching with a different username
             </p>
           </CardContent>
         </Card>
       )}
 
-        <InterestModal
-          value={interests}
-          onChangeAction={setInterests}
-          modalOpen={modalOpen}
-          setModalOpen={setModalOpen}
-          handleInterest={handleInterest}
-        />
+      <InterestModal
+        value={interests}
+        onChangeAction={setInterests}
+        modalOpen={modalOpen}
+        setModalOpen={setModalOpen}
+        handleInterest={handleInterest}
+      />
 
       {searchResults.length === 0 && !loading && userSuggest.length > 0 && (
         <div>
-          <h2 className="text-(--foreground) text-xl font-semibold mb-4">
+          <h2 className="text-foreground text-xl font-semibold mb-4">
             User Suggestions
           </h2>
 
@@ -282,12 +282,12 @@ export default function ConnectionsIndex() {
             {userSuggest.map((user) => (
               <Card
                 key={user.user_id}
-                className="bg-(--card) border border-(--border) rounded-lg hover:shadow-sm"
+                className="bg-card border border-border rounded-lg hover:shadow-sm"
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-14 h-14 rounded-full overflow-hidden bg-(--surface-muted) shrink-0 flex items-center justify-center">
+                      <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
                         <Image
                           src={
                             user.avatar_ipfs_hash
@@ -303,7 +303,7 @@ export default function ConnectionsIndex() {
                       </div>
                       <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-0">
-                          <span className="font-semibold text-(--foreground) truncate text-base">
+                          <span className="font-semibold text-foreground truncate text-base">
                             {user.display_name || user.username}
                           </span>
                           {user.is_following && (
@@ -313,21 +313,21 @@ export default function ConnectionsIndex() {
                             icon={faCircle}
                             className={`ml-2 ${
                               user.is_online
-                                ? "text-(--success)"
-                                : "text-(--muted-foreground-2)"
+                                ? "text-success"
+                                : "text-muted-foreground-2"
                             }`}
                             title={user.is_online ? "Online" : "Offline"}
                             aria-hidden={false}
                           />
                         </div>
-                        <span className="text-sm text-(--muted-foreground) truncate">
+                        <span className="text-sm text-muted-foreground truncate">
                           @{user.username}
                         </span>
                         <div className="flex items-center gap-3 mt-2 text-xs">
-                          <span className="text-(--primary)">
+                          <span className="text-primary">
                             {user.shared_interests_count} shared
                           </span>
-                          <span className="text-(--muted-foreground)">
+                          <span className="text-muted-foreground">
                             {user.followers_number} followers
                           </span>
                         </div>
@@ -345,7 +345,7 @@ export default function ConnectionsIndex() {
                                 </Badge>
                               ))}
                             {user.shared_interests.length > 3 && (
-                              <span className="text-xs text-(--muted-foreground)">
+                              <span className="text-xs text-muted-foreground">
                                 +{user.shared_interests.length - 3} more
                               </span>
                             )}

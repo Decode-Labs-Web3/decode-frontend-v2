@@ -70,21 +70,26 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
 ## 📚 Detailed Technology Stack
 
 ### **Programming Languages**
+
 - **TypeScript**: Primary language for type-safe development
 - **JavaScript**: Used for configuration and utility scripts
 
 ### **Frameworks**
+
 - **Next.js**: Full-stack React framework with App Router for routing and server-side rendering
 - **React**: UI library for building interactive user interfaces
 - **Radix UI**: Low-level UI primitives for accessible components (via shadcn/ui)
 
 ### **Libraries**
+
 #### **Web3 & Blockchain Libraries**
+
 - `@reown/appkit`: Wallet connection and management
 - `@reown/appkit-adapter-ethers`: Ethers.js adapter for AppKit
 - `ethers`: Ethereum library for blockchain interactions and cryptographic operations
 
 #### **UI & Styling Libraries**
+
 - `tailwindcss`: Utility-first CSS framework
 - `class-variance-authority`: Class name utilities for component variants
 - `clsx`: Conditional class name utility
@@ -96,19 +101,23 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
 - `@fortawesome/react-fontawesome`: React FontAwesome component
 
 #### **State Management & Data Fetching**
+
 - `@reduxjs/toolkit`: Redux toolkit for state management
 - `react-redux`: React bindings for Redux
 - `socket.io-client`: WebSocket client for real-time communication
 
 #### **Form Handling & Validation**
+
 - `react-hook-form`: Performant forms with easy validation
 - `@hookform/resolvers`: Resolvers for react-hook-form
 - `zod`: TypeScript-first schema validation
 
 #### **Charts & Visualization**
+
 - `recharts`: Composable charting library built on React components
 
 #### **Utilities**
+
 - `date-fns`: Modern JavaScript date utility library
 - `cmdk`: Command palette component
 - `react-qr-code`: QR code generation for React
@@ -116,52 +125,65 @@ Decode Protocol is a comprehensive Web3 authentication and identity management s
 - `mongodb`: MongoDB driver for database operations
 
 ### **Tools**
+
 #### **Development Tools**
+
 - **ESLint**: Linting tool for code quality
 - **TypeScript Compiler (tsc)**: Type checking and compilation
 - **Next.js CLI**: Development server and build tools
 
 #### **Build Tools**
+
 - **npm**: Package manager and script runner
 - **Next.js Build System**: Optimized production builds
 
 #### **Code Quality Tools**
+
 - **ESLint Config Next**: ESLint configuration for Next.js
 - **@typescript-eslint/eslint-plugin**: TypeScript ESLint rules
 - **@typescript-eslint/parser**: TypeScript parser for ESLint
 
 ### **Data Storage and Management**
+
 #### **Client-Side Storage**
+
 - **Cookies**: Secure HTTP-only cookies for session management
 - **LocalStorage**: Browser storage for theme preferences and user settings
 
 #### **Server-Side Storage**
+
 - **MongoDB**: NoSQL database for user data, authentication, and application state
 - **IPFS (via Pinata)**: Decentralized storage for user avatars and media files
 
 #### **Data Management**
+
 - **JWT Tokens**: JSON Web Tokens for authentication and authorization
 - **Device Fingerprinting**: SHA-256 hashed device identification for security
 - **Session Management**: Secure session handling with automatic token refresh
 
 ### **User Interface Development**
+
 #### **Design System**
+
 - **Tailwind CSS**: Utility-first CSS framework with custom design tokens
 - **shadcn/ui**: Component library built on Radix UI primitives
 - **CSS Variables**: Custom properties for theme management
 
 #### **Component Architecture**
+
 - **Reusable Components**: Modular UI components for consistency
 - **Accessible Design**: WCAG compliant components using Radix UI
 - **Responsive Design**: Mobile-first approach with breakpoint utilities
 
 #### **User Experience**
+
 - **Loading States**: Skeleton components for better perceived performance
 - **Toast Notifications**: User feedback system for actions and errors
 - **Real-time Updates**: Server-sent events for live notifications
 - **Form Validation**: Client-side validation with error messaging
 
 #### **Theming**
+
 - **Dark/Light Mode**: Theme switching with localStorage persistence
 - **Custom Variables**: CSS custom properties for color schemes
 

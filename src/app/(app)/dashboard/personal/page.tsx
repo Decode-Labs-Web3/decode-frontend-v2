@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Dynamic imports for code splitting
 const ProfileEditModal = dynamic(
   () => import("@/components/(app)/ProfileEditModal"),
   {
@@ -55,7 +54,7 @@ export default function PersonalPage() {
               </p>
             </div>
             <Button
-              className="border border-(--input) bg-(--background) shadow-sm hover:bg-(--accent) hover:text-(--accent-foreground)"
+              variant="outline"
               size="sm"
               onClick={() =>
                 setModal((prev) => ({
@@ -72,7 +71,6 @@ export default function PersonalPage() {
 
         <CardContent>
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* avatar */}
             <div className="flex flex-col items-center lg:items-start">
               <Avatar className="w-32 h-32 rounded-2xl border-2 border-(--border) overflow-hidden shadow-xl">
                 <AvatarImage
@@ -96,8 +94,7 @@ export default function PersonalPage() {
                   </h2>
                   {user.role && (
                     <Badge className="bg-(--secondary) text-(--secondary-foreground)">
-                      {user.role.charAt(0).toUpperCase() +
-                        user.role.slice(1)}
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </Badge>
                   )}
                 </div>
