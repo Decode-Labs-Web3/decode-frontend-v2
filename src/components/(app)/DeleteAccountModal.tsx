@@ -70,7 +70,7 @@ export default function DeleteAccountModal({
 
         <div className="flex items-center justify-end gap-3 pt-4">
           <Button
-            className="border border-(--input) bg-(--background) shadow-sm hover:bg-(--accent) hover:text-(--accent-foreground)"
+            variant="outline"
             onClick={onClose}
           >
             Cancel

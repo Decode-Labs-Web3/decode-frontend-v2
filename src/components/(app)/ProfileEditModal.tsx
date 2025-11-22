@@ -122,13 +122,7 @@ export default function ProfileEditModal({
       );
       return;
     }
-
-    if (!pattern.test(bio)) {
-      toastError(
-        "Bio contains invalid characters. Only letters, numbers, whitespace, '-' and '_' are allowed."
-      );
-      return;
-    }
+    
     try {
       const apiResponse = await fetch("/api/users/profile-change", {
         method: "PUT",
