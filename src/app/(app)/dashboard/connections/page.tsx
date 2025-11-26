@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { toastSuccess, toastError } from "@/utils/index.utils";
+import { toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import InterestModal, { type Interest } from "@/components/(app)/Interest";
 import type {
@@ -56,7 +56,7 @@ export default function ConnectionsIndex() {
           return;
         }
         setSearchResults(response?.data?.users || []);
-        toastSuccess(response?.message || "Search successful");
+        // toastSuccess(response?.message || "Search successful");
         console.log(response);
       } catch (error) {
         console.error("Search error:", error);
@@ -315,7 +315,7 @@ export default function ConnectionsIndex() {
                               user.is_online
                                 ? "text-success"
                                 : "text-muted-foreground-2"
-                            }`}
+                            } text-xs`}
                             title={user.is_online ? "Online" : "Offline"}
                             aria-hidden={false}
                           />

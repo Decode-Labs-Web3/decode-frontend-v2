@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
-import { toastSuccess, toastError } from "@/utils/index.utils";
+import { toastError } from "@/utils/index.utils";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -19,10 +19,8 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type {
   UserFollow,
-  MutualFollower,
 } from "@/interfaces/connections.interfaces";
 
-// Interfaces moved to src/interfaces/connections.interfaces.ts
 
 export default function PageFollow() {
   const [page, setPage] = useState(0);
@@ -66,8 +64,8 @@ export default function PageFollow() {
       }
       setUserFollow((prev) => [...prev, ...response.data.users]);
       setEndOfData(response.data.meta.is_last_page);
-      console.log("Follow API response:", response);
-      toastSuccess(response?.message || "Follow data fetched successfully");
+      // console.log("Follow API response:", response);
+      // toastSuccess(response?.message || "Follow data fetched successfully");
     } catch (error) {
       console.error(error);
       toastError("Fetch follow data failed");

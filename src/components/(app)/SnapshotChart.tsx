@@ -4,7 +4,7 @@ import { format, parseISO } from "date-fns";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useState, useEffect, useMemo } from "react";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
-import { toastSuccess, toastError } from "@/utils/index.utils";
+import { toastError } from "@/utils/index.utils";
 import {
   ResponsiveContainer,
   LineChart,
@@ -62,10 +62,10 @@ export default function SnapshotChart({ userId }: Props) {
         }
 
         setRows(response.data || []);
-        toastSuccess(
-          response?.message ||
-            "Followers snapshot data last month fetched successfully"
-        );
+        // toastSuccess(
+        //   response?.message ||
+        //     "Followers snapshot data last month fetched successfully"
+        // );
       } catch (error) {
         console.error(error);
         toastError("Fetch error");
@@ -107,11 +107,11 @@ export default function SnapshotChart({ userId }: Props) {
     const p = payload[0]?.payload as ChartRow | undefined;
     if (!p) return null;
     return (
-      <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2 shadow-xl">
-        <div className="text-xs text-[color:var(--muted-foreground)]">
+      <div className="rounded-xl border border--border bg--surface px-3 py-2 shadow-xl">
+        <div className="text-xs text--muted-foreground">
           {format(parseISO(p.dateISO), "dd/MM/yyyy HH:mm")}
         </div>
-        <div className="text-sm font-medium text-[color:var(--foreground)]">
+        <div className="text-sm font-medium text--foreground">
           Followers: {p.followers}
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function SnapshotChart({ userId }: Props) {
   return (
     <>
       {!loading && data.length === 0 && (
-        <div className="rounded-xl border border-dashed border-[color:var(--border)] p-6 text-sm text-[color:var(--muted-foreground)]">
+        <div className="rounded-xl border border-dashed border--border p-6 text-sm text--muted-foreground">
           No data found in last 30 days
         </div>
       )}
@@ -158,7 +158,7 @@ export default function SnapshotChart({ userId }: Props) {
       )}
 
       {loading && (
-        <div className="h-72 animate-pulse rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)]" />
+        <div className="h-72 animate-pulse rounded-xl border border--border bg--surface" />
       )}
     </>
   );

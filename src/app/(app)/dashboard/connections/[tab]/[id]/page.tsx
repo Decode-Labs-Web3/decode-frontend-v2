@@ -24,15 +24,13 @@ import type {
   MutualFollower,
 } from "@/interfaces/connections.interfaces";
 
-// Interfaces moved to src/interfaces/connections.interfaces.ts
-
 export default function Page() {
   const { fingerprintHash } = useFingerprint();
   const [loading, setLoading] = useState(false);
   const { tab, id } = useParams<{ id: string; tab: string }>();
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  console.log("This is user data", userData);
+  // console.log("This is user data", userData);
 
   const fetchUserData = useCallback(async () => {
     setLoading(true);
@@ -54,8 +52,8 @@ export default function Page() {
         return;
       }
       setUserData(response.data);
-      toastSuccess(response?.message || "Profile fetched successfully");
-      console.log(response);
+      // toastSuccess(response?.message || "Profile fetched successfully");
+      // console.log(response);
     } catch (error) {
       console.log(error);
       toastError("error");
@@ -86,7 +84,7 @@ export default function Page() {
         toastError(response.message || `API error follow`);
         return;
       }
-      toastSuccess(response?.message || "Follow/unfollow action successful");
+      // toastSuccess(response?.message || "Follow/unfollow action successful");
       setUserData(response.data);
       fetchUserData();
       console.log(response);
@@ -115,10 +113,10 @@ export default function Page() {
         toastError(response.message || `API error unfollow fail`);
         return;
       }
-      toastSuccess(response?.message || "Follow/unfollow action successful");
+      // toastSuccess(response?.message || "Follow/unfollow action successful");
       setUserData(response.data);
       fetchUserData();
-      console.log(response);
+      // console.log(response);
     } catch (error) {
       console.log(error);
     } finally {
@@ -144,10 +142,10 @@ export default function Page() {
         toastError(response.message || `API error block fail`);
         return;
       }
-      toastSuccess(response?.message || "Follow/unfollow action successful");
+      // toastSuccess(response?.message || "Follow/unfollow action successful");
       setUserData(response.data);
       fetchUserData();
-      console.log(response);
+      // console.log(response);
     } catch (error) {
       console.log(error);
     } finally {
@@ -173,22 +171,17 @@ export default function Page() {
         toastError(response.message || `API error unblock fail`);
         return;
       }
-      toastSuccess(response?.message || "Follow/unfollow action successful");
+      // toastSuccess(response?.message || "Follow/unfollow action successful");
       setUserData(response.data);
       fetchUserData();
-      console.log(response);
+      // console.log(response);
     } catch (error) {
       console.log(error);
     } finally {
       setLoading(false);
     }
   };
-
-  // const preloadAvatarExample = (avatarUrl: string) => {
-  //   const image = new Image();
-  //   image.src = avatarUrl;
-  // };
-
+  
   return (
     <>
       {loading && (
