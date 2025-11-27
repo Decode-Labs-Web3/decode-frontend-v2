@@ -28,7 +28,7 @@ export default function DevicesPage() {
     Fingerprint[] | null
   >(null);
 
-  const getAppLogoSrc = (app: string) => {
+  const getAppLogoSrc = useCallback((app: string) => {
     const key = (app || "")
       .toLowerCase()
       .replace(/\s+/g, "")
@@ -46,7 +46,7 @@ export default function DevicesPage() {
     };
     const filename = map[key] || "decode.png";
     return `/images/logos/${filename}`;
-  };
+  }, []);
 
   useEffect(() => {
     const sessionId = getCookie("sessionId");
@@ -96,99 +96,106 @@ export default function DevicesPage() {
     fetchFingerprints();
   }, [fetchFingerprints]);
 
-  const handleRevokeDevice = async (
-    fingerprintId: string,
-    sessions: Session[]
-  ) => {
-    try {
-      const isCurrentDevice = currentSessionId
-        ? sessions.some((session) => session._id === currentSessionId)
-        : false;
-      console.log("Is current device:", isCurrentDevice);
+  const handleRevokeDevice = useCallback(
+    async (fingerprintId: string, sessions: Session[]) => {
+      try {
+        const isCurrentDevice = currentSessionId
+          ? sessions.some((session) => session._id === currentSessionId)
+          : false;
+        console.log("Is current device:", isCurrentDevice);
 
-      const apiResponse = await fetch(`/api/auth/revoke-device`, {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({
-          deviceFingerprintId: fingerprintId,
-          sessions,
-          currentSessionId: currentSessionId,
-        }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
+        const apiResponse = await fetch(`/api/auth/revoke-device`, {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({
+            deviceFingerprintId: fingerprintId,
+            sessions,
+            currentSessionId: currentSessionId,
+          }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
 
-      const response = await apiResponse.json();
-      if (
-        response.success ||
-        response.statusCode === 200 ||
-        response.message === "Device fingerprint revoked"
-      ) {
-        if (isCurrentDevice) {
-          toastSuccess("Device revoked successfully. You will be logged out.");
-          router.push("/");
+        const response = await apiResponse.json();
+        if (
+          response.success ||
+          response.statusCode === 200 ||
+          response.message === "Device fingerprint revoked"
+        ) {
+          if (isCurrentDevice) {
+            toastSuccess(
+              "Device revoked successfully. You will be logged out."
+            );
+            router.push("/");
+          } else {
+            toastSuccess("Device revoked successfully");
+            fetchFingerprints();
+          }
         } else {
-          toastSuccess("Device revoked successfully");
+          toastError(response.message || "Failed to revoke device");
           fetchFingerprints();
         }
-      } else {
-        toastError(response.message || "Failed to revoke device");
-        fetchFingerprints();
+      } catch (error) {
+        console.error("Revoke device error:", error);
+        toastError("Network error. Please try again.");
+      } finally {
+        console.log("Device revocation operation completed");
       }
-    } catch (error) {
-      console.error("Revoke device error:", error);
-      toastError("Network error. Please try again.");
-    } finally {
-      console.log("Device revocation operation completed");
-    }
-  };
+    },
+    [fingerprintHash, currentSessionId, router, fetchFingerprints]
+  );
 
-  const handleRevokeSession = async (sessionId: string) => {
-    try {
-      console.log("Revoking session - currentSessionId:", currentSessionId);
-      console.log("Revoking sessionId:", sessionId);
-      const isCurrentSession = currentSessionId
-        ? sessionId === currentSessionId
-        : false;
-      console.log("Is current session:", isCurrentSession);
+  const handleRevokeSession = useCallback(
+    async (sessionId: string) => {
+      try {
+        console.log("Revoking session - currentSessionId:", currentSessionId);
+        console.log("Revoking sessionId:", sessionId);
+        const isCurrentSession = currentSessionId
+          ? sessionId === currentSessionId
+          : false;
+        console.log("Is current session:", isCurrentSession);
 
-      const apiResponse = await fetch(`/api/auth/revoke-session`, {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ sessionId }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
+        const apiResponse = await fetch(`/api/auth/revoke-session`, {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ sessionId }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
 
-      const response = await apiResponse.json();
+        const response = await apiResponse.json();
 
-      if (
-        response.success ||
-        response.statusCode === 200 ||
-        response.message === "Session revoked"
-      ) {
-        if (isCurrentSession) {
-          toastSuccess("Session revoked successfully. You will be logged out.");
-          router.push("/");
+        if (
+          response.success ||
+          response.statusCode === 200 ||
+          response.message === "Session revoked"
+        ) {
+          if (isCurrentSession) {
+            toastSuccess(
+              "Session revoked successfully. You will be logged out."
+            );
+            router.push("/");
+          } else {
+            toastSuccess("Session revoked successfully nha");
+            fetchFingerprints();
+          }
         } else {
-          toastSuccess("Session revoked successfully nha");
+          toastError(response.message || "Failed to revoke session");
           fetchFingerprints();
         }
-      } else {
-        toastError(response.message || "Failed to revoke session");
-        fetchFingerprints();
+      } catch (error) {
+        console.error("Revoke session error:", error);
+        toastError("Network error. Please try again.");
+      } finally {
+        console.log("Session revocation operation completed");
       }
-    } catch (error) {
-      console.error("Revoke session error:", error);
-      toastError("Network error. Please try again.");
-    } finally {
-      console.log("Session revocation operation completed");
-    }
-  };
+    },
+    [fingerprintHash, currentSessionId, router, fetchFingerprints]
+  );
 
   return (
     <>

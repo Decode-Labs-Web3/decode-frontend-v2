@@ -96,7 +96,7 @@ export default function ConnectionsIndex() {
     }
   }, [fingerprintHash]);
 
-  const handleInterest = async () => {
+  const handleInterest = useCallback(async () => {
     setModalOpen(true);
     try {
       const apiResponse = await fetch("/api/interest/create-interest", {
@@ -127,7 +127,7 @@ export default function ConnectionsIndex() {
     } finally {
       setModalOpen(false);
     }
-  };
+  }, [interests, fingerprintHash, handleUserSuggestSameInterest]);
 
   const handleGetInterest = useCallback(async () => {
     try {

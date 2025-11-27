@@ -5,22 +5,19 @@ import App from "@/components/(app)";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { Badge } from "@/components/ui/badge";
+import { toastError } from "@/utils/index.utils";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
-import { toastError } from "@/utils/index.utils";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import type { UserFollow } from "@/interfaces/connections.interfaces";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import type {
-  UserFollow,
-} from "@/interfaces/connections.interfaces";
-
 
 export default function PageFollow() {
   const [page, setPage] = useState(0);
@@ -80,7 +77,7 @@ export default function PageFollow() {
     fetchFollowData();
   }, [fetchFollowData]);
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     const element = containerRef.current;
     if (!element || endOfData || loadingMore || fetchingRef.current) return;
     if (element.scrollTop + element.clientHeight === element.scrollHeight) {
@@ -89,7 +86,7 @@ export default function PageFollow() {
       setLoadingMore(true);
       setPage((p) => p + 1);
     }
-  };
+  }, [endOfData, loadingMore]);
 
   useEffect(() => {
     if (page === 0) return;

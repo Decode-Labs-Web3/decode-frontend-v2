@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useUser } from "@/hooks/useUser";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,152 +41,159 @@ export default function ProfileEditModal({
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleUserInfoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUpdateUserInfo((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
-  };
+  const handleUserInfoChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setUpdateUserInfo((prev) => ({
+        ...prev,
+        [event.target.name]: event.target.value,
+      }));
+    },
+    []
+  );
 
-  const openFilePicker = () => fileInputRef.current?.click();
+  const openFilePicker = useCallback(() => fileInputRef.current?.click(), []);
 
-  const handleAvatarUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setLoadingAvatar((prev) => ({
-      ...prev,
-      loading: true,
-    }));
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toastError("Please select a valid image file");
-      event.target.value = "";
-      return;
-    }
-    const formData = new FormData();
-    formData.append("file", file);
+  const handleAvatarUpload = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      setLoadingAvatar((prev) => ({
+        ...prev,
+        loading: true,
+      }));
+      const file = event.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        toastError("Please select a valid image file");
+        event.target.value = "";
+        return;
+      }
+      const formData = new FormData();
+      formData.append("file", file);
 
-    try {
-      const apiResponse = await fetch("/api/users/avatar", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash),
-        body: formData,
-        cache: "no-store",
-        signal: AbortSignal.timeout(20000),
-      });
+      try {
+        const apiResponse = await fetch("/api/users/avatar", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash),
+          body: formData,
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000),
+        });
 
-      if (!apiResponse.ok) {
-        console.error("Avatar upload failed:", apiResponse);
-        toastError("Avatar upload failed");
+        if (!apiResponse.ok) {
+          console.error("Avatar upload failed:", apiResponse);
+          toastError("Avatar upload failed");
+          return;
+        }
+
+        const response = await apiResponse.json();
+
+        setUpdateUserInfo((prev) => ({
+          ...prev,
+          avatar_ipfs_hash: response.ipfsHash,
+        }));
+
+        toastSuccess("Avatar uploaded successfully");
+      } catch (error) {
+        console.error("Avatar upload request error:", error);
+        toastError("Avatar upload failed. Please try again.");
+        return;
+      } finally {
+        setLoadingAvatar({
+          new: true,
+          loading: false,
+        });
+      }
+    },
+    [fingerprintHash]
+  );
+
+  const handleUpdateProfile = useCallback(
+    async (event: React.FormEvent) => {
+      event.preventDefault();
+      const avatarHash = (updateUserInfo.avatar_ipfs_hash ?? "")
+        .toString()
+        .trim();
+      const displayName = (updateUserInfo.display_name ?? "").toString().trim();
+      const bio = (updateUserInfo.bio ?? "").toString().trim();
+
+      if (avatarHash === "" || displayName === "" || bio === "") {
+        toastError("All fields are required");
         return;
       }
 
-      const response = await apiResponse.json();
+      const pattern = /^[a-zA-Z0-9\s\-_]+$/;
+      if (!pattern.test(displayName)) {
+        toastError(
+          "Display name contains invalid characters. Only letters, numbers, whitespace, '-' and '_' are allowed."
+        );
+        return;
+      }
 
-      setUpdateUserInfo((prev) => ({
-        ...prev,
-        avatar_ipfs_hash: response.ipfsHash,
-      }));
+      try {
+        const apiResponse = await fetch("/api/users/profile-change", {
+          method: "PUT",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({
+            current: updateUserInfo,
+            original: {
+              avatar_ipfs_hash: user?.avatar_ipfs_hash,
+              display_name: user?.display_name,
+              bio: user?.bio,
+            },
+          }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000),
+        });
 
-      toastSuccess("Avatar uploaded successfully");
-    } catch (error) {
-      console.error("Avatar upload request error:", error);
-      toastError("Avatar upload failed. Please try again.");
-      return;
-    } finally {
-      setLoadingAvatar({
-        new: true,
-        loading: false,
-      });
-    }
-  };
+        if (!apiResponse.ok) {
+          console.error("Profile update failed:", apiResponse);
+          toastError("Update failed");
+          return;
+        }
+        const response = await apiResponse.json();
 
-  const handleUpdateProfile = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const avatarHash = (updateUserInfo.avatar_ipfs_hash ?? "")
-      .toString()
-      .trim();
-    const displayName = (updateUserInfo.display_name ?? "").toString().trim();
-    const bio = (updateUserInfo.bio ?? "").toString().trim();
-
-    if (avatarHash === "" || displayName === "" || bio === "") {
-      toastError("All fields are required");
-      return;
-    }
-
-    const pattern = /^[a-zA-Z0-9\s\-_]+$/;
-    if (!pattern.test(displayName)) {
-      toastError(
-        "Display name contains invalid characters. Only letters, numbers, whitespace, '-' and '_' are allowed."
-      );
-      return;
-    }
-
-    try {
-      const apiResponse = await fetch("/api/users/profile-change", {
-        method: "PUT",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({
-          current: updateUserInfo,
-          original: {
+        if (
+          response.statusCode === 200 &&
+          response.message === "Profile updated"
+        ) {
+          toastSuccess(response.message || "Profile updated");
+          onClose();
+          updateUserDetail(
+            updateUserInfo.avatar_ipfs_hash,
+            updateUserInfo.display_name,
+            updateUserInfo.bio
+          );
+          setUpdateUserInfo({
             avatar_ipfs_hash: user?.avatar_ipfs_hash,
             display_name: user?.display_name,
             bio: user?.bio,
-          },
-        }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(20000),
-      });
+          });
+        }
 
-      if (!apiResponse.ok) {
-        console.error("Profile update failed:", apiResponse);
-        toastError("Update failed");
+        if (
+          response.statusCode === 207 &&
+          response.message === "Partial update"
+        ) {
+          toastError(response.message || "Partial failed");
+        }
+      } catch (error) {
+        console.error("Profile update request error:", error);
+        toastError("Update failed. Please try again.");
         return;
       }
-      const response = await apiResponse.json();
+    },
+    [updateUserInfo, user, fingerprintHash, onClose, updateUserDetail]
+  );
 
-      if (
-        response.statusCode === 200 &&
-        response.message === "Profile updated"
-      ) {
-        toastSuccess(response.message || "Profile updated");
-        onClose();
-        updateUserDetail(
-          updateUserInfo.avatar_ipfs_hash,
-          updateUserInfo.display_name,
-          updateUserInfo.bio
-        );
-        setUpdateUserInfo({
-          avatar_ipfs_hash: user?.avatar_ipfs_hash,
-          display_name: user?.display_name,
-          bio: user?.bio,
-        });
-      }
-
-      if (
-        response.statusCode === 207 &&
-        response.message === "Partial update"
-      ) {
-        toastError(response.message || "Partial failed");
-      }
-    } catch (error) {
-      console.error("Profile update request error:", error);
-      toastError("Update failed. Please try again.");
-      return;
-    }
-  };
-
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onClose();
     setUpdateUserInfo({
       avatar_ipfs_hash: user?.avatar_ipfs_hash,
       display_name: user?.display_name,
       bio: user?.bio,
     });
-  };
+  }, [onClose, user]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -208,9 +215,7 @@ export default function ProfileEditModal({
             title="Click to change avatar"
           >
             {loadingAvatar.loading ? (
-              <div className="text-sm text-muted-foreground">
-                Loading...
-              </div>
+              <div className="text-sm text-muted-foreground">Loading...</div>
             ) : (
               <>
                 {loadingAvatar.new ? (

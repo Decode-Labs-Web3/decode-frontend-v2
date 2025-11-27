@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
@@ -18,7 +18,7 @@ export default function Navbar() {
   const [theme, setTheme] = useState(false);
   const { fingerprintHash } = useFingerprint();
 
-  const handleTheme = () => {
+  const handleTheme = useCallback(() => {
     setTheme((prev) => !prev);
     const next = theme ? "light" : "dark";
     localStorage.setItem("theme", next);
@@ -27,7 +27,7 @@ export default function Navbar() {
     } else {
       document.documentElement.classList.remove("dark");
     }
-  };
+  }, [theme]);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -46,7 +46,7 @@ export default function Navbar() {
     document.documentElement.classList.add("dark");
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
@@ -79,15 +79,15 @@ export default function Navbar() {
     } finally {
       console.log("Logout operation completed");
     }
-  };
+  }, [fingerprintHash, router]);
 
-  const handleToggleSidebar = () => {
+  const handleToggleSidebar = useCallback(() => {
     try {
       window.dispatchEvent(new CustomEvent("toggle-sidebar"));
     } catch {
       // ignore
     }
-  };
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-navbar-bg backdrop-blur-2xl">

@@ -41,12 +41,15 @@ export default function EmailChangeModal({
   const [errorEmail, setErrorEmail] = useState("");
   const debouncedEmail = useDebounce(emailChange.new_email, 500);
 
-  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmailChange((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
-  };
+  const handleEmailChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setEmailChange((prev) => ({
+        ...prev,
+        [event.target.name]: event.target.value,
+      }));
+    },
+    []
+  );
 
   useEffect(() => {
     if (debouncedEmail.trim().length >= 1) {
@@ -81,7 +84,7 @@ export default function EmailChangeModal({
     }
   }, [debouncedEmail, fingerprintHash]);
 
-  const handleSendCodeOldEmail = async () => {
+  const handleSendCodeOldEmail = useCallback(async () => {
     setErrorEmail("");
     try {
       const apiResponse = await fetch("/api/email/old-email", {
@@ -101,117 +104,138 @@ export default function EmailChangeModal({
       console.error(error);
       console.log("Handle send old email code failed");
     }
-  };
+  }, [fingerprintHash]);
 
-  const handleVerifyCodeOldEmail = async (code: string) => {
-    setErrorEmail("");
-    try {
-      const apiResponse = await fetch("/api/email/old-email", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ code }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-      if (!apiResponse.ok) {
-        setErrorEmail(response.message);
-        console.error("Send old email code API error:", apiResponse);
-        return;
+  const handleVerifyCodeOldEmail = useCallback(
+    async (code: string) => {
+      setErrorEmail("");
+      try {
+        const apiResponse = await fetch("/api/email/old-email", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ code }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+        const response = await apiResponse.json();
+        if (!apiResponse.ok) {
+          setErrorEmail(response.message);
+          console.error("Send old email code API error:", apiResponse);
+          return;
+        }
+        if (
+          response.success &&
+          response.message === "Email change code verified"
+        ) {
+          setEmailStep((prev) => ({
+            ...prev,
+            old_code: false,
+            new_email: true,
+          }));
+        } else {
+          setErrorEmail(response.message);
+        }
+      } catch (error) {
+        console.error(error);
+        console.log("Handle send old email code failed");
       }
-      if (
-        response.success &&
-        response.message === "Email change code verified"
-      ) {
-        setEmailStep((prev) => ({ ...prev, old_code: false, new_email: true }));
-      } else {
-        setErrorEmail(response.message);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Handle send old email code failed");
-    }
-  };
+    },
+    [fingerprintHash]
+  );
 
-  const handleSendCodeNewEmail = async (email: string) => {
-    setErrorEmail("");
-    try {
-      const apiResponse = await fetch("/api/email/new-email", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ email, code: emailChange.old_code }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-      if (!apiResponse.ok) {
-        setErrorEmail(response.message);
-        console.error("Send old email code API error:", apiResponse);
-        return;
+  const handleSendCodeNewEmail = useCallback(
+    async (email: string) => {
+      setErrorEmail("");
+      try {
+        const apiResponse = await fetch("/api/email/new-email", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ email, code: emailChange.old_code }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+        const response = await apiResponse.json();
+        if (!apiResponse.ok) {
+          setErrorEmail(response.message);
+          console.error("Send old email code API error:", apiResponse);
+          return;
+        }
+        if (
+          response.success &&
+          response.message === "New email change initiated successfully"
+        ) {
+          setEmailStep((prev) => ({
+            ...prev,
+            new_code: true,
+            new_email: false,
+          }));
+        } else {
+          setErrorEmail(response.message);
+        }
+      } catch (error) {
+        console.error(error);
+        console.log("Handle send old email code failed");
       }
-      if (
-        response.success &&
-        response.message === "New email change initiated successfully"
-      ) {
-        setEmailStep((prev) => ({ ...prev, new_code: true, new_email: false }));
-      } else {
-        setErrorEmail(response.message);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Handle send old email code failed");
-    }
-  };
+    },
+    [fingerprintHash, emailChange.old_code]
+  );
 
-  const handleVerifyCodeNewEmail = async (code: string) => {
-    setErrorEmail("");
-    try {
-      const apiResponse = await fetch("/api/email/new-code", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ code }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-      if (!apiResponse.ok) {
-        setErrorEmail(response.message);
-        console.error("Send old email code API error:", apiResponse);
-        return;
+  const handleVerifyCodeNewEmail = useCallback(
+    async (code: string) => {
+      setErrorEmail("");
+      try {
+        const apiResponse = await fetch("/api/email/new-code", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ code }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+        const response = await apiResponse.json();
+        if (!apiResponse.ok) {
+          setErrorEmail(response.message);
+          console.error("Send old email code API error:", apiResponse);
+          return;
+        }
+        if (
+          response.success &&
+          response.message === "Email changed successfully"
+        ) {
+          setEmailStep((prev) => ({
+            ...prev,
+            new_code: false,
+            old_code: true,
+          }));
+          setEmailChange({ old_code: "", new_email: "", new_code: "" });
+          updateUserEmail(emailChange.new_email);
+          onClose();
+        } else {
+          setErrorEmail(response.message);
+        }
+      } catch (error) {
+        console.error(error);
+        console.log("Handle send old email code failed");
       }
-      if (
-        response.success &&
-        response.message === "Email changed successfully"
-      ) {
-        setEmailStep((prev) => ({ ...prev, new_code: false, old_code: true }));
-        setEmailChange({ old_code: "", new_email: "", new_code: "" });
-        updateUserEmail(emailChange.new_email);
-        onClose();
-      } else {
-        setErrorEmail(response.message);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Handle send old email code failed");
-    }
-  };
+    },
+    [fingerprintHash, emailChange.new_email, updateUserEmail, onClose]
+  );
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onClose();
     setErrorEmail("");
     setEmailChange({ old_code: "", new_email: "", new_code: "" });
     setEmailStep({ old_code: true, new_email: false, new_code: false });
-  };
+  }, [onClose]);
 
-  const handleSendInitialCode = () => {
+  const handleSendInitialCode = useCallback(() => {
     handleSendCodeOldEmail();
-  };
+  }, [handleSendCodeOldEmail]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

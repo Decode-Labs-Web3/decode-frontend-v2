@@ -5,13 +5,13 @@ import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toastError } from "@/utils/index.utils";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SnapshotChart from "@/components/(app)/SnapshotChart";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
-import { toastSuccess, toastError } from "@/utils/index.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -66,7 +66,7 @@ export default function Page() {
     fetchUserData();
   }, [fetchUserData]);
 
-  const handleFollow = async () => {
+  const handleFollow = useCallback(async () => {
     setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/follow-and-unfollow", {
@@ -93,9 +93,9 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, fingerprintHash, fetchUserData]);
 
-  const handleUnFollow = async () => {
+  const handleUnFollow = useCallback(async () => {
     setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/follow-and-unfollow", {
@@ -122,9 +122,9 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, fingerprintHash, fetchUserData]);
 
-  const handleBlock = async () => {
+  const handleBlock = useCallback(async () => {
     setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/block-and-unblock", {
@@ -151,9 +151,9 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, fingerprintHash, fetchUserData]);
 
-  const handleUnBlock = async () => {
+  const handleUnBlock = useCallback(async () => {
     setLoading(true);
     try {
       const apiResponse = await fetch("/api/users/block-and-unblock", {
@@ -180,7 +180,7 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, fingerprintHash, fetchUserData]);
 
   return (
     <>

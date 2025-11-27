@@ -8,9 +8,9 @@ import { useNotification } from "@/hooks/useNotification.hooks";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useNotificationContext } from "@/contexts/NotificationContext";
 import { faBell, faCircleCheck } from "@fortawesome/free-solid-svg-icons";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function NotificationsPage() {
   const [page, setPage] = useState(0);
@@ -68,7 +68,7 @@ export default function NotificationsPage() {
     getNotifications();
   }, [getNotifications]);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     try {
       const apiResponse = await fetch("/api/users/read-all", {
         method: "PATCH",
@@ -91,39 +91,42 @@ export default function NotificationsPage() {
     } catch (error) {
       console.error("Error marking all as read:", error);
     }
-  };
+  }, [fingerprintHash, markAllRead, setUnread]);
 
-  const markAsRead = async (id: string) => {
-    try {
-      const apiResponse = await fetch("/api/users/read", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ id }),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-      if (!apiResponse.ok) {
-        const errorMessage =
-          response?.message || `API error: ${apiResponse.status}`;
-        console.error("Mark as read API error:", errorMessage);
-        return;
+  const markAsRead = useCallback(
+    async (id: string) => {
+      try {
+        const apiResponse = await fetch("/api/users/read", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ id }),
+          cache: "no-cache",
+          signal: AbortSignal.timeout(10000),
+        });
+        const response = await apiResponse.json();
+        if (!apiResponse.ok) {
+          const errorMessage =
+            response?.message || `API error: ${apiResponse.status}`;
+          console.error("Mark as read API error:", errorMessage);
+          return;
+        }
+        markOneRead(id);
+        setUnread((prev) => Math.max(prev - 1, 0));
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
       }
-      markOneRead(id);
-      setUnread((prev) => Math.max(prev - 1, 0));
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-  };
+    },
+    [fingerprintHash, markOneRead, setUnread]
+  );
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef(0);
   const restoreOnNextRenderRef = useRef(false);
   const fetchingRef = useRef(false);
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     const element = containerRef.current;
     if (!element || endOfData || loadingMore || fetchingRef.current) return;
     if (element.scrollTop + element.clientHeight === element.scrollHeight) {
@@ -132,7 +135,7 @@ export default function NotificationsPage() {
       setLoadingMore(true);
       setPage((p) => p + 1);
     }
-  };
+  }, [endOfData, loadingMore]);
 
   useEffect(() => {
     if (page === 0) return;

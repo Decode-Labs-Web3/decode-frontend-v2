@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -48,31 +48,21 @@ export default function BlogPostPage() {
     post_ipfs_hash: null as string | null,
   });
 
-  const handleChange = (
-    event: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
-  };
+  const handleChange = useCallback(
+    (
+      event: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >
+    ) => {
+      setFormData((prev) => ({
+        ...prev,
+        [event.target.name]: event.target.value,
+      }));
+    },
+    []
+  );
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-
-      await uploadImageToIPFS(file);
-    }
-  };
-
-  const uploadImageToIPFS = async (file: File) => {
+  const uploadImageToIPFS = useCallback(async (file: File) => {
     setUploadingImage(true);
     try {
       const formData = new FormData();
@@ -117,71 +107,90 @@ export default function BlogPostPage() {
     } finally {
       setUploadingImage(false);
     }
-  };
+  }, []);
 
-  const removeImage = () => {
+  const handleImageChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreview(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        await uploadImageToIPFS(file);
+      }
+    },
+    [uploadImageToIPFS]
+  );
+
+  const removeImage = useCallback(() => {
     setFormData((prev) => ({
       ...prev,
       post_ipfs_hash: null,
     }));
     setImagePreview(null);
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (!formData.title || !formData.content) {
-      toastError("Please fill in all required fields");
-      return;
-    }
-
-    try {
-      const body = {
-        title: formData.title,
-        content: formData.content,
-        keyword: formData.keyword,
-        post_ipfs_hash: formData.post_ipfs_hash,
-      };
-
-      console.log("Sending body:", body);
-
-      const apiResponse = await fetch("/api/blogs/post", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify(body),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-
-      if (!apiResponse.ok) {
-        console.error("API response not ok:", apiResponse);
+      if (!formData.title || !formData.content) {
+        toastError("Please fill in all required fields");
+        return;
       }
 
-      const response = await apiResponse.json();
-      if (
-        response.statusCode === 201 &&
-        response.message === "Post created successfully"
-      ) {
-        toastSuccess("Blog post created successfully");
-        setFormData(() => ({
-          title: "",
-          content: "",
-          keyword: "",
-          post_ipfs_hash: null,
-        }));
-        setImagePreview(null);
-        router.push("/dashboard/news");
-      } else {
-        const error = await response.json();
-        toastError(error.message || "Failed to create blog post");
+      try {
+        const body = {
+          title: formData.title,
+          content: formData.content,
+          keyword: formData.keyword,
+          post_ipfs_hash: formData.post_ipfs_hash,
+        };
+
+        console.log("Sending body:", body);
+
+        const apiResponse = await fetch("/api/blogs/post", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify(body),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!apiResponse.ok) {
+          console.error("API response not ok:", apiResponse);
+        }
+
+        const response = await apiResponse.json();
+        if (
+          response.statusCode === 201 &&
+          response.message === "Post created successfully"
+        ) {
+          toastSuccess("Blog post created successfully");
+          setFormData(() => ({
+            title: "",
+            content: "",
+            keyword: "",
+            post_ipfs_hash: null,
+          }));
+          setImagePreview(null);
+          router.push("/dashboard/news");
+        } else {
+          const error = await response.json();
+          toastError(error.message || "Failed to create blog post");
+        }
+      } catch (err) {
+        console.error("Error creating blog post:", err);
+        toastError("Failed to create blog post");
       }
-    } catch (err) {
-      console.error("Error creating blog post:", err);
-      toastError("Failed to create blog post");
-    }
-  };
+    },
+    [formData, fingerprintHash, router]
+  );
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -211,7 +220,7 @@ export default function BlogPostPage() {
                     )}
                     {formData.post_ipfs_hash && !uploadingImage && (
                       <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded text-xs">
-                        IPFS ✓
+                        IPFS
                       </div>
                     )}
                     <Button

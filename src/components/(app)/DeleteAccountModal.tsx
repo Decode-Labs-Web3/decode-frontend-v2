@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
@@ -26,35 +26,38 @@ export default function DeleteAccountModal({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { fingerprintHash } = useFingerprint();
-  const handleDeleteAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const apiResponse = await fetch("/api/users/deactivate", {
-        method: "DELETE",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-      if (response.success) {
-        toastSuccess(
-          "Account deactivated successfully, it will be permanently deleted after 1 month"
-        );
-        onClose();
-        router.refresh();
-      } else {
-        toastError(response.message || "Account deactivation failed");
+  const handleDeleteAccount = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setLoading(true);
+      try {
+        const apiResponse = await fetch("/api/users/deactivate", {
+          method: "DELETE",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+        const response = await apiResponse.json();
+        if (response.success) {
+          toastSuccess(
+            "Account deactivated successfully, it will be permanently deleted after 1 month"
+          );
+          onClose();
+          router.refresh();
+        } else {
+          toastError(response.message || "Account deactivation failed");
+        }
+      } catch (error) {
+        console.error("Account deactivation request error:", error);
+        toastError("Account deactivation failed. Please try again.");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Account deactivation request error:", error);
-      toastError("Account deactivation failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [fingerprintHash, onClose, router]
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -69,10 +72,7 @@ export default function DeleteAccountModal({
         </DialogHeader>
 
         <div className="flex items-center justify-end gap-3 pt-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-          >
+          <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <Button

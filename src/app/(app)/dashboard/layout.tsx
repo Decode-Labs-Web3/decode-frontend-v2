@@ -146,42 +146,45 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     };
   }, [pushNewNotification, setUnread, unread]);
 
-  const handleReactivateAccount = async (status: boolean) => {
-    try {
-      const apiResponse = await fetch("/api/users/reactivate", {
-        method: "DELETE",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ status }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
+  const handleReactivateAccount = useCallback(
+    async (status: boolean) => {
+      try {
+        const apiResponse = await fetch("/api/users/reactivate", {
+          method: "DELETE",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ status }),
+          cache: "no-store",
+          signal: AbortSignal.timeout(10000),
+        });
+        const response = await apiResponse.json();
 
-      if (status === false) {
-        setIsDeactivated(false);
-        router.push("/");
+        if (status === false) {
+          setIsDeactivated(false);
+          router.push("/");
+          router.refresh();
+          return;
+        }
+
+        if (response.success) {
+          toastSuccess("Account reactivated successfully");
+          setIsDeactivated(false);
+          router.refresh();
+        } else {
+          toastError(response.message || "Account reactivation failed");
+          router.refresh();
+          return;
+        }
+      } catch (error) {
+        console.error("Account reactivation request error:", error);
+        toastError("Account reactivation failed. Please try again.");
         router.refresh();
         return;
       }
-
-      if (response.success) {
-        toastSuccess("Account reactivated successfully");
-        setIsDeactivated(false);
-        router.refresh();
-      } else {
-        toastError(response.message || "Account reactivation failed");
-        router.refresh();
-        return;
-      }
-    } catch (error) {
-      console.error("Account reactivation request error:", error);
-      toastError("Account reactivation failed. Please try again.");
-      router.refresh();
-      return;
-    }
-  };
+    },
+    [fingerprintHash, router]
+  );
 
   if (isDeactivated) {
     return (

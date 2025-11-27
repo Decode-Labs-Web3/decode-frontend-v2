@@ -1,11 +1,11 @@
 "use client";
 
 import { ethers } from "ethers";
+import { useCallback } from "react";
 import { useUser } from "@/hooks/useUser";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
-import { useCallback, useEffect, useState } from "react";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

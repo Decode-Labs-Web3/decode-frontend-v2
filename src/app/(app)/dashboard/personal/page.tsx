@@ -8,29 +8,12 @@ import { Button } from "@/components/ui/button";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import SnapshotChart from "@/components/(app)/SnapshotChart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ProfileEditModal from "@/components/(app)/ProfileEditModal";
+import EmailChangeModal from "@/components/(app)/EmailChangeModal";
+import DeleteAccountModal from "@/components/(app)/DeleteAccountModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const ProfileEditModal = dynamic(
-  () => import("@/components/(app)/ProfileEditModal"),
-  {
-    loading: () => <div>Loading...</div>,
-  }
-);
-
-const EmailChangeModal = dynamic(
-  () => import("@/components/(app)/EmailChangeModal"),
-  {
-    loading: () => <div>Loading...</div>,
-  }
-);
-
-const DeleteAccountModal = dynamic(
-  () => import("@/components/(app)/DeleteAccountModal"),
-  {
-    loading: () => <div>Loading...</div>,
-  }
-);
 
 export default function PersonalPage() {
   const { user } = useUser();
@@ -118,14 +101,14 @@ export default function PersonalPage() {
       <SnapshotChart userId={user?._id} />
 
       <Button
-        className="w-full mt-4 bg-destructive text-destructive-foreground shadow-sm hover:opacity-90"
+        className="w-full mt-4 bg-rose-500 text-destructive-foreground shadow-sm hover:opacity-90"
         onClick={() => setModal((prev) => ({ ...prev, delete: true }))}
       >
         Delete Account
       </Button>
 
       <Button
-        className="w-full mt-4 bg-destructive text-destructive-foreground shadow-sm hover:opacity-90"
+        className="w-full mt-4 bg-rose-500 text-destructive-foreground shadow-sm hover:opacity-90"
         onClick={() => {
           setModal((prev) => ({ ...prev, email: true }));
         }}
