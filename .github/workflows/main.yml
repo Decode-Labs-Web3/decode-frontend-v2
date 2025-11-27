@@ -52,6 +52,10 @@ jobs:
             nvm install 20
             nvm use 20
 
+            if ! command -v pm2 >/dev/null 2>&1; then
+              npm install -g pm2
+            fi
+
             cd /root/decode-frontend-v2
 
             git fetch --all
