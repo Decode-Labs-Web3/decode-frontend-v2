@@ -110,7 +110,7 @@ export default function PageFollow() {
         onScrollViewport={handleScroll}
       >
         <div className="flex flex-col h-full">
-          <div className="sticky top-0 z-10 bg-(--card) border-b border-(--border) p-4">
+          <div className="sticky top-0 z-10 bg-card border-b border-border p-4">
             <App.PageHeader
               title={`${tab.charAt(0).toUpperCase() + tab.slice(1)}`}
               description={`Your ${tab}`}

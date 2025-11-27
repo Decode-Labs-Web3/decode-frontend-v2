@@ -110,7 +110,7 @@ Associated API routes:
 
 ## **UI/UX System**
 
-- **Design System**: Tailwind CSS v4 using CSS variables (e.g., `bg-(--card)`) for theme surfaces.
+- **Design System**: Tailwind CSS v4 using CSS variables (e.g., `bg-card`) for theme surfaces.
 - **Component Library**: shadcn/ui built on Radix UI primitives for accessibility.
 - **Installed/Used shadcn components**:
   - Core: `button`, `card`, `input`, `label`, `badge`, `separator`, `skeleton`, `switch`, `tabs`, `textarea`, `tooltip`, `dialog`, `sheet`, `hover-card`, `select`, `avatar`.

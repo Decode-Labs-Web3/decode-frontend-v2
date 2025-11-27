@@ -214,7 +214,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   if (loading || !user._id) {
     return (
-      <div className="min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
+      <div className="min-h-screen bg-background text-foreground overflow-hidden">
         <App.Navbar />
         <App.Sidebar />
         <div className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">
@@ -225,7 +225,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="relative min-h-screen bg-(--background) text-(--foreground) overflow-hidden">
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
       <App.Navbar />
       <App.Sidebar />
       <main className="px-4 md:pl-72 md:pr-8 pt-24 pb-10">{children}</main>

@@ -181,7 +181,7 @@ export default function Page() {
       setLoading(false);
     }
   };
-  
+
   return (
     <>
       {loading && (
@@ -236,7 +236,7 @@ export default function Page() {
                     @{userData.username}
                   </p>
                   {userData.primary_wallet?.address && (
-                    <p className="text-sm text-(--muted-foreground) truncate mb-3">
+                    <p className="text-sm text-muted-foreground truncate mb-3">
                       Wallet: {userData.primary_wallet.address.slice(0, 6)}...
                       {userData.primary_wallet.address.slice(-4)}
                     </p>
@@ -306,7 +306,7 @@ export default function Page() {
           <SnapshotChart userId={id} />
 
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-(--foreground)">
+            <h2 className="text-lg font-semibold text-foreground">
               Mutual followers
             </h2>
             {typeof userData.mutual_followers_number === "number" && (
@@ -317,9 +317,9 @@ export default function Page() {
           </div>
 
           {userData.mutual_followers_list.length === 0 ? (
-            <Card className="bg-(--card) border border-(--border) rounded-lg">
+            <Card className="bg-card border border-border rounded-lg">
               <CardContent className="flex items-center justify-center py-12">
-                <p className="text-(--muted-foreground) text-sm">
+                <p className="text-muted-foreground text-sm">
                   No mutual followers
                 </p>
               </CardContent>
@@ -405,20 +405,20 @@ export default function Page() {
                         <div className="grid grid-cols-2 gap-2 text-center">
                           <Card className="bg-card border border-border">
                             <CardContent className="p-3">
-                              <p className="text-xs text-(--muted-foreground)">
+                              <p className="text-xs text-muted-foreground">
                                 Following
                               </p>
-                              <p className="text-sm font-medium text-(--foreground)">
+                              <p className="text-sm font-medium text-foreground">
                                 {mutualFollower.following_number}
                               </p>
                             </CardContent>
                           </Card>
                           <Card className="bg-card border border-border">
                             <CardContent className="p-3">
-                              <p className="text-xs text-(--muted-foreground)">
+                              <p className="text-xs text-muted-foreground">
                                 Followers
                               </p>
-                              <p className="text-sm font-medium text-(--foreground)">
+                              <p className="text-sm font-medium text-foreground">
                                 {mutualFollower.followers_number}
                               </p>
                             </CardContent>

@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 
-// ---- Guard ENV
 const PROD = process.env.NODE_ENV === "production";
 const PROD_ORIGIN =
   process.env.PUBLIC_FRONTEND_URL || "https://decode.decodenetwork.app";
@@ -32,18 +31,6 @@ const nextConfig: NextConfig = {
     BACKEND_BASE_URL: process.env.BACKEND_BASE_URL,
   },
 
-  // Enable Turbopack with optimized config - temporarily disabled for build testing
-  // turbopack: {},
-
-  // Optimize build performance - temporarily disabled for build testing
-  // experimental: {
-  //   // Enable memory-based worker count for better performance
-  //   memoryBasedWorkersCount: true,
-  //   // Enable worker threads for parallel processing
-  //   workerThreads: true,
-  // },
-
-  // Optimize output
   output: "standalone",
 
   // Compiler optimizations

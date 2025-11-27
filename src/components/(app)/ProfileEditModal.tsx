@@ -122,7 +122,7 @@ export default function ProfileEditModal({
       );
       return;
     }
-    
+
     try {
       const apiResponse = await fetch("/api/users/profile-change", {
         method: "PUT",
@@ -203,12 +203,12 @@ export default function ProfileEditModal({
             role="button"
             tabIndex={0}
             onClick={openFilePicker}
-            className="w-28 h-28 rounded-xl border-2 border-(--border) overflow-hidden relative cursor-pointer group flex items-center justify-center hover-card"
+            className="w-28 h-28 rounded-xl border-2 border-border overflow-hidden relative cursor-pointer group flex items-center justify-center hover-card"
             aria-label="Change avatar"
             title="Click to change avatar"
           >
             {loadingAvatar.loading ? (
-              <div className="text-sm text-(--muted-foreground)">
+              <div className="text-sm text-muted-foreground">
                 Loading...
               </div>
             ) : (

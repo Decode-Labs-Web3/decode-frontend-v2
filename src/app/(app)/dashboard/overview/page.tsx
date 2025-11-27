@@ -23,7 +23,7 @@ export default function OverviewPage() {
   return (
     <>
       {user && (
-        <Card className="bg-(--card) border border-(--border) rounded-lg mb-8 shadow-sm">
+        <Card className="bg-card border border-border rounded-lg mb-8 shadow-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -40,7 +40,7 @@ export default function OverviewPage() {
           <CardContent>
             <div className="flex flex-col lg:flex-row gap-8">
               <div className="flex flex-col items-center lg:items-start">
-                <Avatar className="w-32 h-32 rounded-2xl border border-(--border) overflow-hidden shadow">
+                <Avatar className="w-32 h-32 rounded-2xl border border-border overflow-hidden shadow">
                   <AvatarImage
                     src={
                       user?.avatar_ipfs_hash
@@ -107,12 +107,12 @@ export default function OverviewPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-(--card) border border-border rounded-lg">
+        <Card className="bg-card border border-border rounded-lg">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <FontAwesomeIcon
                 icon={faShieldHalved}
-                className="text-(--success)"
+                className="text-success"
               />
               <span className="text-sm text-muted-foreground">
                 Security
@@ -129,10 +129,10 @@ export default function OverviewPage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <FontAwesomeIcon icon={faWallet} className="text-blue-600" />
-              <span className="text-sm text-(--muted-foreground)">Wallets</span>
+              <span className="text-sm text-muted-foreground">Wallets</span>
             </div>
             <p className="font-medium">Primary wallet</p>
-            <p className="text-xs text-(--muted-foreground) mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {user?.primary_wallet?.address
                 ? user?.primary_wallet?.address.slice(0, 10) +
                   "......" +
@@ -149,7 +149,7 @@ export default function OverviewPage() {
               <span className="text-sm text-muted-foreground">Devices</span>
             </div>
             <p className="font-medium">Current device</p>
-            <p className="text-xs text-(--muted-foreground) mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {user?.last_login
                 ? new Date(user.last_login).toLocaleString()
                 : "—"}
@@ -157,14 +157,14 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-(--card) border border-(--border) rounded-lg">
+        <Card className="bg-card border border-border rounded-lg">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
               <FontAwesomeIcon icon={faPlug} className="text-cyan-600" />
-              <span className="text-sm text-(--muted-foreground)">dApps</span>
+              <span className="text-sm text-muted-foreground">dApps</span>
             </div>
             <p className="font-medium">5 connected</p>
-            <p className="text-xs text-(--muted-foreground) mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Active today
             </p>
           </CardContent>
@@ -178,7 +178,7 @@ export default function OverviewPage() {
               <h3 className="font-semibold">Recent Activity</h3>
               <Link
                 href="/dashboard/notifications"
-                className="text-sm text-(--muted-foreground) hover:text-(--foreground)"
+                className="text-sm text-muted-foreground hover:text-foreground"
               >
                 View all
               </Link>
@@ -193,23 +193,23 @@ export default function OverviewPage() {
                     {notification.read ? (
                       <FontAwesomeIcon
                         icon={faCircleCheck}
-                        className="text-(--success) text-sm"
+                        className="text-success text-sm"
                       />
                     ) : (
                       <FontAwesomeIcon
                         icon={faBell}
-                        className="text-(--warning) text-sm"
+                        className="text-warning text-sm"
                       />
                     )}
 
                     <div className="flex justify-between w-full gap-3">
                       <div className="flex flex-col gap-1">
                         <p className="text-sm">{notification.title}</p>
-                        <p className="text-xs text-(--muted-foreground)">
+                        <p className="text-xs text-muted-foreground">
                           {notification.message}
                         </p>
                       </div>
-                      <p className="text-xs text-(--muted-foreground)">
+                      <p className="text-xs text-muted-foreground">
                         {new Date(notification.createdAt).toLocaleString()}
                       </p>
                     </div>

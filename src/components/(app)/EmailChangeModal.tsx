@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
-import { Label } from "@/components/ui/label";
+import useDebounce from "@/hooks/useDebounce";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
+import { useState, useEffect, useCallback } from "react";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import {
   Dialog,
@@ -36,51 +37,49 @@ export default function EmailChangeModal({
     new_email: false,
     new_code: false,
   });
-
   const { fingerprintHash } = useFingerprint();
   const [errorEmail, setErrorEmail] = useState("");
+  const debouncedEmail = useDebounce(emailChange.new_email, 500);
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmailChange((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
     }));
-    if (
-      event.target.name === "new_email" &&
-      emailChange.new_email.trim().length >= 1
-    ) {
-      setErrorEmail("");
-      handleEmailDebounce(event.target.value);
-    }
   };
 
-  const handleEmailDebounce = async (email: string) => {
-    setErrorEmail("");
-    try {
-      const apiResponse = await fetch("/api/email/email-debounce", {
-        method: "POST",
-        headers: getApiHeaders(fingerprintHash, {
-          "Content-Type": "application/json",
-        }),
-        body: JSON.stringify({ email }),
-        cache: "no-store",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-      if (!apiResponse.ok) {
-        setErrorEmail(response.message);
-        console.error("Send old email code API error:", apiResponse);
-        return;
-      }
-      if (response.success) {
-        console.log("Email is available");
-        setErrorEmail(response.message);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log("Handle send old email code failed");
+  useEffect(() => {
+    if (debouncedEmail.trim().length >= 1) {
+      const checkEmail = async () => {
+        setErrorEmail("");
+        try {
+          const apiResponse = await fetch("/api/email/email-debounce", {
+            method: "POST",
+            headers: getApiHeaders(fingerprintHash, {
+              "Content-Type": "application/json",
+            }),
+            body: JSON.stringify({ email: debouncedEmail }),
+            cache: "no-store",
+            signal: AbortSignal.timeout(10000),
+          });
+          const response = await apiResponse.json();
+          if (!apiResponse.ok) {
+            setErrorEmail(response.message);
+            console.error("Send old email code API error:", apiResponse);
+            return;
+          }
+          if (response.success) {
+            console.log("Email is available");
+            setErrorEmail(response.message);
+          }
+        } catch (error) {
+          console.error(error);
+          console.log("Handle send old email code failed");
+        }
+      };
+      checkEmail();
     }
-  };
+  }, [debouncedEmail, fingerprintHash]);
 
   const handleSendCodeOldEmail = async () => {
     setErrorEmail("");
@@ -97,7 +96,6 @@ export default function EmailChangeModal({
       }
       const response = await apiResponse.json();
       if (response.success && response.message === "Email verification sent") {
-        // Modal stays open, step changes handled in parent
       }
     } catch (error) {
       console.error(error);
@@ -264,7 +262,7 @@ export default function EmailChangeModal({
                 Send Code
               </Button>
               <Button
-                className="bg-(--primary) text-(--primary-foreground) min-w-[140px]"
+                className="bg-primary text-primary-foreground min-w-[140px]"
                 onClick={() => handleVerifyCodeOldEmail(emailChange.old_code)}
                 disabled={!emailChange.old_code}
               >
@@ -314,7 +312,7 @@ export default function EmailChangeModal({
                 Back
               </Button>
               <Button
-                className="bg-(--primary) text-(--primary-foreground) min-w-[140px]"
+                className="bg-primary text-primary-foreground min-w-[140px]"
                 onClick={() => handleSendCodeNewEmail(emailChange.new_email)}
               >
                 Send verification code
@@ -367,7 +365,7 @@ export default function EmailChangeModal({
                 Back
               </Button>
               <Button
-                className="bg-(--primary) text-(--primary-foreground) min-w-[140px]"
+                className="bg-primary text-primary-foreground min-w-[140px]"
                 onClick={() => handleVerifyCodeNewEmail(emailChange.new_code)}
               >
                 Complete change
