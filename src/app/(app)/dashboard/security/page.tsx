@@ -1,6 +1,11 @@
 "use client";
 
 import QRCode from "react-qr-code";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useState, useEffect, useCallback } from "react";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
@@ -19,11 +24,6 @@ import {
   CardDescription,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -163,7 +163,7 @@ export default function SecurityPage() {
 
       if (!apiResponse.ok) {
         toastError(response?.message || "API error");
-        setEnabled(false); // Keep toggle off on error
+        setEnabled(false);
         return;
       }
 
@@ -261,8 +261,8 @@ export default function SecurityPage() {
         {loading ? (
           <Card className="flex items-center justify-center py-12">
             <CardContent className="flex flex-col items-center space-y-4">
-              <div className="w-8 h-8 border-4 border-muted-foreground-2 border-t-ring rounded-full animate-spin" />
-              <p className="text-muted-foreground text-sm">Loading...</p>
+              <div className="w-8 h-8 border-4 border-(--muted-foreground-2) border-t-ring rounded-full animate-spin" />
+              <p className="text-(--muted-foreground) text-sm">Loading...</p>
             </CardContent>
           </Card>
         ) : setup ? (
@@ -309,10 +309,7 @@ export default function SecurityPage() {
                       autoComplete="one-time-code"
                     />
 
-                    <p
-                      id="code-help"
-                      className="text-sm text-muted-foreground"
-                    >
+                    <p id="code-help" className="text-sm text-muted-foreground">
                       Open your Authenticator app and enter the current 6-digit
                       code here.
                     </p>
@@ -331,17 +328,17 @@ export default function SecurityPage() {
                 </>
               ) : (
                 <div className="text-center space-y-6">
-                  <div className="w-16 h-16 bg-surface-muted rounded-full flex items-center justify-center mx-auto">
+                  <div className="w-16 h-16 bg-(--surface-muted) rounded-full flex items-center justify-center mx-auto">
                     <FontAwesomeIcon
                       icon={faLock}
-                      className="w-8 h-8 text-primary"
+                      className="w-8 h-8 text-(--primary)"
                     />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-semibold text-foreground">
+                    <h3 className="text-xl font-semibold text-(--foreground)">
                       Enable Two-Factor Authentication
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-(--muted-foreground)">
                       Add an extra layer of security to your account
                     </p>
                   </div>
@@ -394,7 +391,7 @@ export default function SecurityPage() {
 
             <div className="space-y-6">
               <div className="flex justify-center">
-                <div className="rounded-2xl border-2 border-border bg-surface p-6 shadow-lg">
+                <div className="rounded-2xl border-2 border-(--border) bg-(--surface) p-6 shadow-lg">
                   <QRCode
                     value={(() => {
                       if (!otpData?.otp_secret) return "invalid-secret";
@@ -427,7 +424,7 @@ export default function SecurityPage() {
                   Manual Entry Key
                 </Label>
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 overflow-x-auto whitespace-nowrap rounded-xl border-2 border-border bg-muted px-4 py-3 font-mono text-sm tracking-wider">
+                  <div className="flex-1 overflow-x-auto whitespace-nowrap rounded-xl border-2 border-(--border) bg-(--muted) px-4 py-3 font-mono text-sm tracking-wider">
                     {otpData?.otp_secret}
                   </div>
                   <Button
@@ -443,7 +440,7 @@ export default function SecurityPage() {
                     <FontAwesomeIcon icon={faCopy} className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-(--muted-foreground)">
                   If you can&apos;t scan the QR code, enter this key manually in
                   your authenticator app
                 </p>
@@ -472,10 +469,10 @@ export default function SecurityPage() {
 
             <div className="space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-surface-muted rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-(--surface-muted) rounded-full flex items-center justify-center">
                   <FontAwesomeIcon
                     icon={faLock}
-                    className="w-8 h-8 text-primary"
+                    className="w-8 h-8 text-(--primary)"
                   />
                 </div>
               </div>
@@ -506,7 +503,7 @@ export default function SecurityPage() {
 
                 <p
                   id="code-help"
-                  className="text-sm text-muted-foreground text-center"
+                  className="text-sm text-(--muted-foreground) text-center"
                 >
                   Open your authenticator app and enter the 6-digit code
                 </p>
@@ -529,7 +526,7 @@ export default function SecurityPage() {
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-card-foreground border-t-transparent rounded-full animate-spin mr-2" />
+                      <div className="w-4 h-4 border-2 border-(--card-foreground) border-t-transparent rounded-full animate-spin mr-2" />
                       Verifying...
                     </>
                   ) : (

@@ -1,18 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import App from "@/components/(app)";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
-import { Badge } from "@/components/ui/badge";
 import { toastError } from "@/utils/index.utils";
 import { getApiHeaders } from "@/utils/api.utils";
-import { Card, CardContent } from "@/components/ui/card";
+import UserHoverCard from "@/components/common/UserHoverCard";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { UserFollow } from "@/interfaces/connections.interfaces";
-import UserHoverCard from "@/components/common/UserHoverCard";
 
 export default function PageFollow() {
   const [page, setPage] = useState(0);
@@ -102,7 +99,7 @@ export default function PageFollow() {
         onScrollViewport={handleScroll}
       >
         <div className="flex flex-col h-full">
-          <div className="sticky top-0 z-10 bg-card border-b border-border p-4">
+          <div className="sticky top-0 z-10 bg-(--card) border-b border-(--border) p-4">
             <App.PageHeader
               title={`${tab.charAt(0).toUpperCase() + tab.slice(1)}`}
               description={`Your ${tab}`}
@@ -114,7 +111,7 @@ export default function PageFollow() {
             {!loading && (
               <div className="flex flex-col gap-3">
                 {userFollow.length === 0 && (
-                  <div className="text-muted-foreground text-sm mt-2">
+                  <div className="text-(--muted-foreground) text-sm mt-2">
                     No connections found
                   </div>
                 )}
@@ -129,7 +126,7 @@ export default function PageFollow() {
                   ))}
 
                 {loadingMore && (
-                  <div className="p-3 text-center text-xs text-muted-foreground">
+                  <div className="p-3 text-center text-xs text-(--muted-foreground)">
                     Loading more...
                   </div>
                 )}
@@ -137,11 +134,11 @@ export default function PageFollow() {
             )}
           </div>
 
-          <div className="sticky bottom-0 z-10 bg-card border-t border-border p-4">
+          <div className="sticky bottom-0 z-10 bg-(--card) border-t border-(--border) p-4">
             {endOfData ? (
-              <p className="text-muted-foreground text-sm">End of data</p>
+              <p className="text-(--muted-foreground) text-sm">End of data</p>
             ) : (
-              <p className="text-muted-foreground text-sm">
+              <p className="text-(--muted-foreground) text-sm">
                 Current page: {page}
               </p>
             )}

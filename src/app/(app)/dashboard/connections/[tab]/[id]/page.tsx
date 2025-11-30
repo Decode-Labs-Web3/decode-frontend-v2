@@ -188,10 +188,10 @@ export default function Page() {
 
       {userData && (
         <div className="flex flex-col gap-6">
-          <Card className="bg-card border border-border rounded-lg">
+          <Card className="bg-(--card) border border-(--border) rounded-lg">
             <CardContent className="p-6">
               <div className="flex items-center gap-6">
-                <Avatar className="w-20 h-20 border border-border">
+                <Avatar className="w-20 h-20 border border-(--border)">
                   <AvatarImage
                     src={
                       userData.avatar_ipfs_hash
@@ -217,8 +217,8 @@ export default function Page() {
                         icon={faCircle}
                         className={`ml-3 ${
                           userData.is_online
-                            ? "text-success"
-                            : "text-muted-foreground-2"
+                            ? "text-(--success)"
+                            : "text-(--muted-foreground-2)"
                         }`}
                         title={userData.is_online ? "Online" : "Offline"}
                         aria-hidden={false}
@@ -228,26 +228,26 @@ export default function Page() {
                       {userData.role}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground truncate mb-1">
+                  <p className="text-sm text-(--muted-foreground) truncate mb-1">
                     @{userData.username}
                   </p>
                   {userData.primary_wallet?.address && (
-                    <p className="text-sm text-muted-foreground truncate mb-3">
+                    <p className="text-sm text-(--muted-foreground) truncate mb-3">
                       Wallet: {userData.primary_wallet.address.slice(0, 6)}...
                       {userData.primary_wallet.address.slice(-4)}
                     </p>
                   )}
-                  <div className="flex gap-3 text-xs text-muted-foreground">
+                  <div className="flex gap-3 text-xs text-(--muted-foreground)">
                     <Link
                       href={`/dashboard/connections/${tab}/${id}/followers`}
-                      className="hover:text-foreground transition-colors"
+                      className="hover:text-(--foreground) transition-colors"
                     >
                       <span>{userData.followers_number} followers</span>
                     </Link>
                     <span>•</span>
                     <Link
                       href={`/dashboard/connections/${tab}/${id}/followings`}
-                      className="hover:text-foreground transition-colors"
+                      className="hover:text-(--foreground) transition-colors"
                     >
                       <span>{userData.following_number} following</span>
                     </Link>
@@ -302,7 +302,7 @@ export default function Page() {
           <SnapshotChart userId={id} />
 
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-semibold text-(--foreground)">
               Mutual followers
             </h2>
             {typeof userData.mutual_followers_number === "number" && (
@@ -313,9 +313,9 @@ export default function Page() {
           </div>
 
           {userData.mutual_followers_list.length === 0 ? (
-            <Card className="bg-card border border-border rounded-lg">
+            <Card className="bg-(--card) border border-(--border) rounded-lg">
               <CardContent className="flex items-center justify-center py-12">
-                <p className="text-muted-foreground text-sm">
+                <p className="text-(--muted-foreground) text-sm">
                   No mutual followers
                 </p>
               </CardContent>

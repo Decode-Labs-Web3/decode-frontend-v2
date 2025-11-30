@@ -76,7 +76,7 @@ export default function DeleteAccountModal({
             Cancel
           </Button>
           <Button
-            className="bg-destructive text-destructive-foreground shadow-sm hover:opacity-90"
+            className="bg-(--destructive) text-(--destructive-foreground) shadow-sm hover:opacity-90"
             onClick={handleDeleteAccount}
             disabled={loading}
           >

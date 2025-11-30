@@ -202,7 +202,7 @@ export default function BlogPostPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="image-upload">Featured Image</Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-foreground/30 transition-colors bg-muted/50">
+              <div className="border-2 border-dashed border-(--border) rounded-lg p-6 text-center hover:border-(--foreground)/30 transition-colors bg-(--muted)/50">
                 {imagePreview ? (
                   <div className="relative">
                     <Image
@@ -215,7 +215,7 @@ export default function BlogPostPage() {
                     {uploadingImage && (
                       <FontAwesomeIcon
                         icon={faSpinner}
-                        className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin"
+                        className="w-12 h-12 text-(--muted-foreground) mx-auto mb-4 animate-spin"
                       />
                     )}
                     {formData.post_ipfs_hash && !uploadingImage && (
@@ -237,9 +237,9 @@ export default function BlogPostPage() {
                   <div>
                     <FontAwesomeIcon
                       icon={faImage}
-                      className="w-12 h-12 text-muted-foreground mx-auto mb-4"
+                      className="w-12 h-12 text-(--muted-foreground) mx-auto mb-4"
                     />
-                    <p className="text-muted-foreground mb-2">
+                    <p className="text-(--muted-foreground) mb-2">
                       Click to upload an image
                     </p>
                     <input

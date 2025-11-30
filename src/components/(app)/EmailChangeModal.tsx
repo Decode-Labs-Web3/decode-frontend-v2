@@ -253,7 +253,7 @@ export default function EmailChangeModal({
               <h3 className="text-lg font-semibold mb-1">
                 Step 1: Verify your current email
               </h3>
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-(--muted-foreground) mb-3">
                 Enter the verification code sent to your current email address.
               </p>
             </div>
@@ -286,7 +286,7 @@ export default function EmailChangeModal({
                 Send Code
               </Button>
               <Button
-                className="bg-primary text-primary-foreground min-w-[140px]"
+                className="bg-(--primary) text-(--primary-foreground) min-w-[140px]"
                 onClick={() => handleVerifyCodeOldEmail(emailChange.old_code)}
                 disabled={!emailChange.old_code}
               >
@@ -302,7 +302,7 @@ export default function EmailChangeModal({
               <h3 className="text-lg font-semibold mb-1">
                 Step 2: Enter your new email
               </h3>
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-(--muted-foreground) mb-3">
                 Enter the new email address you want to use.
               </p>
             </div>
@@ -336,7 +336,7 @@ export default function EmailChangeModal({
                 Back
               </Button>
               <Button
-                className="bg-primary text-primary-foreground min-w-[140px]"
+                className="bg-(--primary) text-(--primary-foreground) min-w-[140px]"
                 onClick={() => handleSendCodeNewEmail(emailChange.new_email)}
               >
                 Send verification code
@@ -351,7 +351,7 @@ export default function EmailChangeModal({
               <h3 className="text-lg font-semibold mb-1">
                 Step 3: Verify your new email
               </h3>
-              <p className="text-sm text-muted-foreground mb-3">
+              <p className="text-sm text-(--muted-foreground) mb-3">
                 Enter the verification code sent to your new email address.
               </p>
             </div>
@@ -389,7 +389,7 @@ export default function EmailChangeModal({
                 Back
               </Button>
               <Button
-                className="bg-primary text-primary-foreground min-w-[140px]"
+                className="bg-(--primary) text-(--primary-foreground) min-w-[140px]"
                 onClick={() => handleVerifyCodeNewEmail(emailChange.new_code)}
               >
                 Complete change

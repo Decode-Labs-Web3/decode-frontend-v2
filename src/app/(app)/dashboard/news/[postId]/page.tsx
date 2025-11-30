@@ -411,10 +411,10 @@ export default function NewsPage() {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FontAwesomeIcon
               icon={faNewspaper}
-              className="w-16 h-16 text-muted-foreground mb-4"
+              className="w-16 h-16 text-(--muted-foreground) mb-4"
             />
             <h3 className="text-lg font-semibold mb-2">Post Not Found</h3>
-            <p className="text-muted-foreground text-center mb-4">
+            <p className="text-(--muted-foreground) text-center mb-4">
               The post you&apos;re looking for doesn&apos;t exist or has been
               removed.
             </p>
@@ -473,7 +473,7 @@ export default function NewsPage() {
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
                   <CardTitle className="text-2xl">{postDetail.title}</CardTitle>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-3 text-sm text-(--muted-foreground)">
                     <Avatar className="w-8 h-8">
                       <AvatarImage
                         src={
@@ -502,7 +502,7 @@ export default function NewsPage() {
 
             {postDetail.post_ipfs_hash && (
               <CardContent className="p-0">
-                <div className="relative aspect-video overflow-hidden bg-muted">
+                <div className="relative aspect-video overflow-hidden bg-(--muted)">
                   <Image
                     src={getImageUrl(postDetail)}
                     alt={postDetail.title}
@@ -531,8 +531,7 @@ export default function NewsPage() {
                     handleReacttion("like");
                   } else if (postDetail.userReaction === "like") {
                     handleDeleteReaction();
-                  }
-                  else {
+                  } else {
                     handleEditReaction("like");
                   }
                 }}
@@ -644,7 +643,7 @@ export default function NewsPage() {
                           <span className="font-medium">
                             {comment.author?.display_name}
                           </span>
-                          <span className="text-muted-foreground">
+                          <span className="text-(--muted-foreground)">
                             {new Date(comment.createdAt).toLocaleString()}
                           </span>
                         </div>
@@ -716,7 +715,7 @@ export default function NewsPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-muted-foreground text-center py-4">
+                <p className="text-(--muted-foreground) text-center py-4">
                   No comments yet. Be the first to comment!
                 </p>
               )}

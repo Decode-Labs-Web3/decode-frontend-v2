@@ -1,35 +1,35 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toastError } from "@/utils/index.utils";
 import { useSearchParams } from "next/navigation";
 import { getApiHeaders } from "@/utils/api.utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect, useCallback } from "react";
+import UserHoverCard from "@/components/common/UserHoverCard";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { toastError } from "@/utils/index.utils";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import InterestModal, { type Interest } from "@/components/(app)/Interest";
 import type {
   UserSuggestion,
   UserKeyword,
   UserSearchProps,
 } from "@/interfaces/connections.interfaces";
-import UserHoverCard from "@/components/common/UserHoverCard";
 
 export default function ConnectionsIndex() {
   const searchParams = useSearchParams();
+  const [page, setPage] = useState(0);
   const { fingerprintHash } = useFingerprint();
   const query = searchParams.get("name") ?? "";
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [endOfData, setEndOfData] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [interests, setInterests] = useState<Interest[]>([]);
-  const [userSuggest, setUserSuggest] = useState<UserSuggestion[]>([]);
   const [userKeyword, setUserKeyword] = useState<UserKeyword[]>([]);
+  const [userSuggest, setUserSuggest] = useState<UserSuggestion[]>([]);
   const [searchResults, setSearchResults] = useState<UserSearchProps[]>([]);
 
   const handleSearch = useCallback(
@@ -195,19 +195,37 @@ export default function ConnectionsIndex() {
     }
   }, [fingerprintHash, handleGetInterest]);
 
-  console.log("User Suggestion:", userSuggest);
-
   useEffect(() => {
     handleGetSuggest();
   }, [handleGetSuggest]);
 
+  const prevScrollHeightRef = useRef(0);
+  const handleScroll = useCallback(() => {
+    const element = containerRef.current;
+    if (!element || endOfData || loadingMore) return;
+    if (element.scrollTop + element.clientHeight === element.scrollHeight) {
+      prevScrollHeightRef.current = element.scrollHeight;
+      setLoadingMore(true);
+      setPage((p) => p + 1);
+    }
+  }, [endOfData, loadingMore]);
+
+  useEffect(() => {
+    if (page === 0) return;
+    const element = containerRef.current;
+    if (element) {
+      element.scrollTop = prevScrollHeightRef.current - element.clientHeight;
+      prevScrollHeightRef.current = element.scrollHeight;
+    }
+  }, [, page]);
+
   return (
     <main className="p-6 space-y-6 max-w-4xl mx-auto">
-      <Card className="bg-card border border-border rounded-lg">
+      <Card className="bg-(--card) border border-(--border) rounded-lg">
         <CardContent className="p-4">
           <form className="flex flex-col sm:flex-row gap-3 items-center">
             <Input
-              className="flex-1 min-w-0 px-3 py-2 rounded-md bg-input text-foreground border border-transparent focus:border-ring"
+              className="flex-1 min-w-0 px-3 py-2 rounded-md bg-(--input) text-(--foreground) border border-transparent focus:border-(--ring)"
               type="text"
               name="name"
               placeholder="Search users by name or username"
@@ -216,7 +234,7 @@ export default function ConnectionsIndex() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-4 py-2 rounded-md bg-primary text-primary-foreground shadow-sm"
+              className="w-full sm:w-auto px-4 py-2 rounded-md bg-(--primary) text-(--primary-foreground) shadow-sm"
             >
               {loading ? "Searching..." : "Search"}
             </Button>
@@ -225,8 +243,8 @@ export default function ConnectionsIndex() {
       </Card>
       {loading && (
         <div className="flex flex-col justify-center items-center py-6 gap-2">
-          <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></span>
-          <span className="text-foreground">Loading...</span>
+          <span className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-(--primary)"></span>
+          <span className="text-(--foreground)">Loading...</span>
         </div>
       )}
       {searchResults.length > 0 && (
@@ -241,13 +259,14 @@ export default function ConnectionsIndex() {
           ))}
         </div>
       )}
+
       {!loading && searchResults.length === 0 && query && (
-        <Card className="bg-card border border-border rounded-lg">
+        <Card className="bg-(--card) border border-(--border) rounded-lg">
           <CardContent className="text-center py-8">
-            <div className="text-muted-foreground text-lg mb-2">
+            <div className="text-(--muted-foreground) text-lg mb-2">
               No users found
             </div>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-(--muted-foreground) text-sm">
               Try searching with a different username
             </p>
           </CardContent>
@@ -268,35 +287,49 @@ export default function ConnectionsIndex() {
           <div>
             {userSuggest.length > 0 ? (
               <>
-                <h2 className="text-foreground text-xl font-semibold mb-4">
+                <h2 className="text-(--foreground) text-xl font-semibold mb-4">
                   Suggested Users
                 </h2>
-                <div className="space-y-3">
-                  {userSuggest.map((user) => (
-                    <UserHoverCard
-                      key={user.user_id}
-                      user={user}
-                      href={`/dashboard/connections/followings/${user.user_id}`}
-                      avatarSize="w-14 h-14"
-                    />
-                  ))}
-                </div>
+                <ScrollArea
+                  className="h-full"
+                  ref={containerRef}
+                  onScrollViewport={handleScroll}
+                >
+                  <div className="space-y-3">
+                    {userSuggest.map((user) => (
+                      <UserHoverCard
+                        key={user.user_id}
+                        user={user}
+                        href={`/dashboard/connections/followings/${user.user_id}`}
+                        avatarSize="w-14 h-14"
+                      />
+                    ))}
+                  </div>
+                  <ScrollBar orientation="vertical" />
+                </ScrollArea>
               </>
             ) : (
               <>
-                <h2 className="text-foreground text-xl font-semibold mb-4">
+                <h2 className="text-(--foreground) text-xl font-semibold mb-4">
                   User Suggestions
                 </h2>
-                <div className="space-y-3">
-                  {userKeyword.map((user) => (
-                    <UserHoverCard
-                      key={user.user_id}
-                      user={user}
-                      href={`/dashboard/connections/followings/${user.user_id}`}
-                      avatarSize="w-14 h-14"
-                    />
-                  ))}
-                </div>
+                <ScrollArea
+                  className="h-full"
+                  ref={containerRef}
+                  onScrollViewport={handleScroll}
+                >
+                  <div className="space-y-3">
+                    {userKeyword.map((user) => (
+                      <UserHoverCard
+                        key={user.user_id}
+                        user={user}
+                        href={`/dashboard/connections/followings/${user.user_id}`}
+                        avatarSize="w-14 h-14"
+                      />
+                    ))}
+                  </div>
+                  <ScrollBar orientation="vertical" />
+                </ScrollArea>
               </>
             )}
           </div>

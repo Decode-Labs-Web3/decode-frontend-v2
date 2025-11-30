@@ -14,7 +14,6 @@ import DeleteAccountModal from "@/components/(app)/DeleteAccountModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-
 export default function PersonalPage() {
   const { user } = useUser();
   const [modal, setModal] = useState({
@@ -32,7 +31,7 @@ export default function PersonalPage() {
               <CardTitle className="text-lg mb-1">
                 Profile Information
               </CardTitle>
-              <p className="font-mono text-sm text-muted-foreground">
+              <p className="font-mono text-sm text-(--muted-foreground)">
                 User ID: {user._id}
               </p>
             </div>
@@ -55,7 +54,7 @@ export default function PersonalPage() {
         <CardContent>
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="flex flex-col items-center lg:items-start">
-              <Avatar className="w-32 h-32 rounded-2xl border-2 border-border overflow-hidden shadow-xl">
+              <Avatar className="w-32 h-32 rounded-2xl border-2 border-(--border) overflow-hidden shadow-xl">
                 <AvatarImage
                   src={
                     user?.avatar_ipfs_hash
@@ -75,15 +74,13 @@ export default function PersonalPage() {
                   <h2 className="text-3xl font-bold">
                     {user.display_name || user.username || "Your name"}
                   </h2>
-                  {user.role && (
-                    <Badge className="bg-secondary text-secondary-foreground">
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </Badge>
-                  )}
+                  <Badge className="bg-(--secondary) text-(--secondary-foreground)">
+                    {user.role.charAt(0).toLowerCase() + user.role.slice(1)}
+                  </Badge>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-border">
+              <div className="pt-6 border-t border-(--border)">
                 <div className="space-y-3">
                   <h4 className="text-lg font-semibold">About me</h4>
                   <Card className="hover-card">
@@ -101,14 +98,14 @@ export default function PersonalPage() {
       <SnapshotChart userId={user?._id} />
 
       <Button
-        className="w-full mt-4 bg-rose-500 text-destructive-foreground shadow-sm hover:opacity-90"
+        className="w-full mt-4 bg-rose-500 text-(--destructive-foreground) shadow-sm hover:opacity-90"
         onClick={() => setModal((prev) => ({ ...prev, delete: true }))}
       >
         Delete Account
       </Button>
 
       <Button
-        className="w-full mt-4 bg-rose-500 text-destructive-foreground shadow-sm hover:opacity-90"
+        className="w-full mt-4 bg-rose-500 text-(--destructive-foreground) shadow-sm hover:opacity-90"
         onClick={() => {
           setModal((prev) => ({ ...prev, email: true }));
         }}

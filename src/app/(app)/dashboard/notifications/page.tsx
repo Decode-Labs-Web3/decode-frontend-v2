@@ -157,7 +157,7 @@ export default function NotificationsPage() {
         onScrollViewport={handleScroll}
       >
         <div className="flex flex-col h-full">
-          <div className="sticky top-0 z-10 bg-card border-b border-border p-2">
+          <div className="sticky top-0 z-10 bg-(--card) border-b border-(--border) p-2">
             <Button onClick={() => markAllAsRead()} className="w-40">
               Mark all as read
             </Button>
@@ -169,7 +169,7 @@ export default function NotificationsPage() {
               notifications.map((notification) => (
                 <Card
                   key={notification._id}
-                  className="bg-card border border-border rounded-lg"
+                  className="bg-(--card) border border-(--border) rounded-lg"
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -177,18 +177,18 @@ export default function NotificationsPage() {
                         {notification.read ? (
                           <FontAwesomeIcon
                             icon={faCircleCheck}
-                            className="text-success"
+                            className="text-(--success)"
                           />
                         ) : (
                           <FontAwesomeIcon
                             icon={faBell}
-                            className="text-warning"
+                            className="text-(--warning)"
                           />
                         )}
 
                         <div>
                           <p className="text-sm">{notification.title}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-(--muted-foreground)">
                             {notification.createdAt}
                           </p>
                         </div>
@@ -207,17 +207,17 @@ export default function NotificationsPage() {
                 </Card>
               ))}
             {loadingMore && (
-              <div className="p-3 text-center text-xs text-muted-foreground">
+              <div className="p-3 text-center text-xs text-(--muted-foreground)">
                 Loading more...
               </div>
             )}
           </div>
 
-          <div className="sticky bottom-0 z-10 bg-card border-t border-border p-2">
+          <div className="sticky bottom-0 z-10 bg-(--card) border-t border-(--border) p-2">
             {endOfData ? (
-              <p className="text-muted-foreground text-sm">End of data</p>
+              <p className="text-(--muted-foreground) text-sm">End of data</p>
             ) : (
-              <p className="text-muted-foreground text-sm">
+              <p className="text-(--muted-foreground) text-sm">
                 Current page: {page}
               </p>
             )}

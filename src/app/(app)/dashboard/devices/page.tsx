@@ -215,7 +215,7 @@ export default function DevicesPage() {
               <CardHeader className="pb-4 relative">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-(--muted) flex items-center justify-center shrink-0">
                       <FontAwesomeIcon
                         icon={
                           fingerprint.device === "iOS" ||
@@ -225,14 +225,14 @@ export default function DevicesPage() {
                             ? faTablet
                             : faLaptop
                         }
-                        className="text-muted-foreground text-sm"
+                        className="text-(--muted-foreground) text-sm"
                       />
                     </div>
                     <div>
                       <CardTitle className="text-base sm:text-lg">
                         <div className="text-xs sm:text-sm font-medium mb-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                           <span className="truncate">{fingerprint.device}</span>
-                          <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-muted-foreground"></span>
+                          <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-(--muted-foreground)"></span>
                           <span className="truncate">
                             {fingerprint.browser}
                           </span>
@@ -262,10 +262,10 @@ export default function DevicesPage() {
                     fingerprint.sessions.map((session: Session) => (
                       <div
                         key={session._id}
-                        className="bg-muted border rounded-lg p-3 sm:p-4 hover:bg-background transition-colors relative"
+                        className="bg-(--muted) border rounded-lg p-3 sm:p-4 hover:bg-(--background) transition-colors relative"
                       >
                         <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-background border flex items-center justify-center shrink-0 overflow-hidden">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-(--background) border flex items-center justify-center shrink-0 overflow-hidden">
                             <Image
                               src={getAppLogoSrc(session.app)}
                               alt={`${session.app} logo`}
@@ -290,7 +290,7 @@ export default function DevicesPage() {
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground truncate">
+                            <p className="text-xs text-(--muted-foreground) truncate">
                               {new Date(session.last_used_at).toLocaleString()}
                             </p>
                           </div>
@@ -298,7 +298,7 @@ export default function DevicesPage() {
                             onClick={() => handleRevokeSession(session._id)}
                             variant="ghost"
                             size="sm"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            className="text-(--destructive) hover:text-(--destructive) hover:bg-(--destructive)/10"
                           >
                             Revoke
                           </Button>

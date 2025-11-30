@@ -82,7 +82,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="fixed top-16 left-0 bottom-0 w-64 bg-surface-muted backdrop-blur-xl border-r border-border hidden md:flex flex-col">
+      <aside className="fixed top-16 left-0 bottom-0 w-64 bg-(--surface-muted) backdrop-blur-xl border-r border-(--border) hidden md:flex flex-col">
         <nav className="p-3 space-y-1">
           {items.map((item) => {
             if (item.key === "post" && user?.role !== "admin") return null;
@@ -96,7 +96,7 @@ export default function Sidebar() {
                 }}
                 variant={active === item.key ? "secondary" : "ghost"}
                 className={`w-full justify-start gap-3 px-3 py-2 h-auto ${
-                  active === item.key ? "border-l-4 border-primary" : ""
+                  active === item.key ? "border-l-4 border-(--primary)" : ""
                 }`}
               >
                 <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
@@ -128,7 +128,7 @@ export default function Sidebar() {
                   }}
                   variant={active === item.key ? "secondary" : "ghost"}
                   className={`w-full justify-start gap-3 px-3 py-2 h-auto ${
-                    active === item.key ? "border-l-4 border-primary" : ""
+                    active === item.key ? "border-l-4 border-(--primary)" : ""
                   }`}
                 >
                   <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />

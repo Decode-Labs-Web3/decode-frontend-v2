@@ -224,7 +224,7 @@ export default function WalletsPage() {
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <h2 className="text-xl font-semibold">Wallets</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-(--muted-foreground)">
             Link multiple wallets and set a primary wallet for your account.
           </p>
         </div>
@@ -242,7 +242,7 @@ export default function WalletsPage() {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-col">
                   <p className="text-sm font-medium">No primary wallet set</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-(--muted-foreground)">
                     Add your primary wallet to unlock more features.
                   </p>
                 </div>
@@ -290,7 +290,7 @@ export default function WalletsPage() {
                   return (
                     <div
                       key={wallet._id}
-                      className="group flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 hover:bg-accent transition-colors"
+                      className="group flex items-center justify-between gap-3 rounded-md border bg-(--background) px-3 py-2 hover:bg-(--accent) transition-colors"
                     >
                       <span className="font-mono text-sm truncate">
                         {wallet.address || "-"}
@@ -312,7 +312,7 @@ export default function WalletsPage() {
       ) : (
         <Card>
           <CardContent className="p-8 text-center">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-(--muted-foreground)">
               No wallets linked yet. Click
               <Badge variant="outline" className="mx-1 gap-1">
                 <FontAwesomeIcon icon={faPlus} />

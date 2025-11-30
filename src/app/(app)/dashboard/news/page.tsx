@@ -74,7 +74,7 @@ export default function NewsPage() {
         <div>
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Latest News</h1>
-            <p className="text-muted-foreground">
+            <p className="text-(--muted-foreground)">
               Stay updated with the latest posts from our community.
             </p>
           </div>
@@ -82,10 +82,10 @@ export default function NewsPage() {
             <div className="text-center py-12">
               <FontAwesomeIcon
                 icon={faNewspaper}
-                className="w-16 h-16 text-muted-foreground mx-auto mb-4"
+                className="w-16 h-16 text-(--muted-foreground) mx-auto mb-4"
               />
               <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
-              <p className="text-muted-foreground">
+              <p className="text-(--muted-foreground)">
                 Be the first to share something amazing!
               </p>
             </div>
@@ -97,7 +97,7 @@ export default function NewsPage() {
                   onClick={() => router.push(`/dashboard/news/${post._id}`)}
                   className="overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  <div className="relative aspect-video overflow-hidden bg-muted">
+                  <div className="relative aspect-video overflow-hidden bg-(--muted)">
                     <Image
                       src={getImageUrl(post)}
                       alt={post.title}
@@ -111,7 +111,7 @@ export default function NewsPage() {
                   </div>
 
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                    <div className="flex items-center gap-2 text-xs text-(--muted-foreground) mb-3">
                       <Avatar className="w-8 h-8">
                         <AvatarImage
                           src={
@@ -133,7 +133,7 @@ export default function NewsPage() {
                     <h3 className="text-lg font-semibold leading-snug mb-2 line-clamp-2">
                       {post.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
+                    <p className="text-sm text-(--muted-foreground) line-clamp-3 mb-3">
                       {post.content}
                     </p>
                     {post.keyword && (
@@ -146,12 +146,12 @@ export default function NewsPage() {
                   </CardContent>
 
                   <CardFooter className="px-4 pb-4 pt-0">
-                    <div className="flex items-center justify-between w-full border-t border-border pt-3">
-                      <div className="flex items-center gap-4 text-muted-foreground">
+                    <div className="flex items-center justify-between w-full border-t border-(--border) pt-3">
+                      <div className="flex items-center gap-4 text-(--muted-foreground)">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-auto p-0 text-xs hover:text-foreground"
+                          className="h-auto p-0 text-xs hover:text-(--foreground)"
                         >
                           <FontAwesomeIcon
                             icon={faThumbsUp}
@@ -162,7 +162,7 @@ export default function NewsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-auto p-0 text-xs hover:text-foreground"
+                          className="h-auto p-0 text-xs hover:text-(--foreground)"
                         >
                           <FontAwesomeIcon
                             icon={faThumbsDown}
@@ -173,7 +173,7 @@ export default function NewsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-auto p-0 text-xs hover:text-foreground"
+                          className="h-auto p-0 text-xs hover:text-(--foreground)"
                         >
                           <FontAwesomeIcon
                             icon={faComment}

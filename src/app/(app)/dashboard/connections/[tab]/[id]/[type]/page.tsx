@@ -1,20 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import Loading from "@/components/(loading)";
-import { Badge } from "@/components/ui/badge";
 import { getApiHeaders } from "@/utils/api.utils";
-import { Card, CardContent } from "@/components/ui/card";
+import UserHoverCard from "@/components/common/UserHoverCard";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { toastSuccess, toastError } from "@/utils/index.utils";
+import { UserFollow } from "@/interfaces/connections.interfaces";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import type {
-  UserFollow,
-  MutualFollower,
-} from "@/interfaces/connections.interfaces";
-import UserHoverCard from "@/components/common/UserHoverCard";
 
 export default function Page() {
   const [page, setPage] = useState(0);
@@ -120,17 +114,17 @@ export default function Page() {
             ))}
 
           {loadingMore && (
-            <div className="p-3 text-center text-xs text-muted-foreground">
+            <div className="p-3 text-center text-xs text-(--muted-foreground)">
               Loading more...
             </div>
           )}
 
           {endOfData ? (
-            <div className="text-muted-foreground text-sm mt-2">
+            <div className="text-(--muted-foreground) text-sm mt-2">
               End of data
             </div>
           ) : (
-            <div className="text-muted-foreground text-sm mt-2">
+            <div className="text-(--muted-foreground) text-sm mt-2">
               Current page: {page}
             </div>
           )}
