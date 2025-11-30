@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import InterestModal, { type Interest } from "@/components/(app)/Interest";
 import type {
   UserSuggestion,
+  UserKeyword,
   UserSearchProps,
 } from "@/interfaces/connections.interfaces";
 
@@ -27,6 +28,7 @@ export default function ConnectionsIndex() {
   const [modalOpen, setModalOpen] = useState(false);
   const [interests, setInterests] = useState<Interest[]>([]);
   const [userSuggest, setUserSuggest] = useState<UserSuggestion[]>([]);
+  const [userKeyword, setUserKeyword] = useState<UserKeyword[]>([]);
   const [searchResults, setSearchResults] = useState<UserSearchProps[]>([]);
 
   const handleSearch = useCallback(
@@ -89,7 +91,7 @@ export default function ConnectionsIndex() {
       }
 
       console.log("Response from suggest", response.data.users);
-      setUserSuggest(response.data.users);
+      setUserKeyword(response.data.users);
     } catch (error) {
       console.error("Fetch interests error:", error);
       toastError("Failed to fetch interests");
@@ -148,7 +150,7 @@ export default function ConnectionsIndex() {
           return;
         }
         console.error(response);
-        toastError("Failed to fetch interests");
+        toastError("Failed to fetch interests nha");
         return;
       }
 
@@ -163,9 +165,40 @@ export default function ConnectionsIndex() {
     }
   }, [handleUserSuggestSameInterest, fingerprintHash]);
 
+  const handleGetSuggest = useCallback(async () => {
+    try {
+      const apiResponse = await fetch("/api/interest/get-suggestion", {
+        method: "GET",
+        headers: getApiHeaders(fingerprintHash),
+        cache: "no-cache",
+        signal: AbortSignal.timeout(10000),
+      });
+      const response = await apiResponse.json();
+
+      if (!apiResponse.ok) {
+        console.error(response);
+        handleGetInterest();
+        toastError("Failed to fetch suggestions failed");
+        return;
+      }
+      if (response.statusCode === 200) {
+        if (response.data.users.length === 0) {
+          handleGetInterest();
+          return;
+        }
+        setUserSuggest(response.data.users);
+      }
+    } catch (error) {
+      console.error("Fetch suggestions error:", error);
+      toastError("Failed to fetch suggestions");
+    }
+  }, [fingerprintHash, handleGetInterest]);
+
+  console.log("User Suggestion:", userSuggest);
+
   useEffect(() => {
-    handleGetInterest();
-  }, [handleGetInterest]);
+    handleGetSuggest();
+  }, [handleGetSuggest]);
 
   return (
     <main className="p-6 space-y-6 max-w-4xl mx-auto">
@@ -272,103 +305,175 @@ export default function ConnectionsIndex() {
         handleInterest={handleInterest}
       />
 
-      {searchResults.length === 0 && !loading && userSuggest.length > 0 && (
-        <div>
-          <h2 className="text-foreground text-xl font-semibold mb-4">
-            User Suggestions
-          </h2>
-
-          <div className="space-y-3">
-            {userSuggest.map((user) => (
-              <Card
-                key={user.user_id}
-                className="bg-card border border-border rounded-lg hover:shadow-sm"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
-                        <Image
-                          src={
-                            user.avatar_ipfs_hash
-                              ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                          }
-                          alt={user.username || "Avatar"}
-                          width={56}
-                          height={56}
-                          className="w-full h-full object-cover"
-                          unoptimized
-                        />
-                      </div>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-0">
-                          <span className="font-semibold text-foreground truncate text-base">
-                            {user.display_name || user.username}
-                          </span>
-                          {user.is_following && (
-                            <Badge variant="secondary">Following</Badge>
-                          )}
-                          <FontAwesomeIcon
-                            icon={faCircle}
-                            className={`ml-2 ${
-                              user.is_online
-                                ? "text-success"
-                                : "text-muted-foreground-2"
-                            } text-xs`}
-                            title={user.is_online ? "Online" : "Offline"}
-                            aria-hidden={false}
-                          />
-                        </div>
-                        <span className="text-sm text-muted-foreground truncate">
-                          @{user.username}
-                        </span>
-                        <div className="flex items-center gap-3 mt-2 text-xs">
-                          <span className="text-primary">
-                            {user.shared_interests_count} shared
-                          </span>
-                          <span className="text-muted-foreground">
-                            {user.followers_number} followers
-                          </span>
-                        </div>
-                        {user.shared_interests.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {user.shared_interests
-                              .slice(0, 3)
-                              .map((interest) => (
-                                <Badge
-                                  key={interest}
-                                  variant="outline"
-                                  className="text-xs"
-                                >
-                                  {interest.replace(/_/g, " ")}
-                                </Badge>
-                              ))}
-                            {user.shared_interests.length > 3 && (
-                              <span className="text-xs text-muted-foreground">
-                                +{user.shared_interests.length - 3} more
+      {searchResults.length === 0 &&
+        !loading &&
+        (userSuggest.length > 0 || userKeyword.length > 0) && (
+          <div>
+            {userSuggest.length > 0 ? (
+              <>
+                <h2 className="text-foreground text-xl font-semibold mb-4">
+                  Suggested Users
+                </h2>
+                <div className="space-y-3">
+                  {userSuggest.map((user) => (
+                    <Card
+                      key={user.user_id}
+                      className="bg-card border border-border rounded-lg hover:shadow-sm"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
+                              <Image
+                                src={
+                                  user.avatar_ipfs_hash
+                                    ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
+                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                }
+                                alt={user.username || "Avatar"}
+                                width={56}
+                                height={56}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                              />
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-0">
+                                <span className="font-semibold text-foreground truncate text-base">
+                                  {user.display_name || user.username}
+                                </span>
+                                {user.is_following && (
+                                  <Badge variant="secondary">Following</Badge>
+                                )}
+                              </div>
+                              <span className="text-sm text-muted-foreground truncate">
+                                @{user.username}
                               </span>
-                            )}
+                              <div className="flex items-center gap-3 mt-2 text-xs">
+                                <span className="text-muted-foreground">
+                                  {user.followers_number} followers
+                                </span>
+                              </div>
+                              {user.suggestion_reason && (
+                                <p className="text-sm text-foreground/90 mt-2">
+                                  {user.suggestion_reason}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 ml-2">
-                      <Button asChild>
-                        <Link
-                          href={`/dashboard/connections/followings/${user.user_id}`}
-                        >
-                          View
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                          <div className="flex flex-col items-end gap-2 ml-2">
+                            <Button asChild>
+                              <Link
+                                href={`/dashboard/connections/followings/${user.user_id}`}
+                              >
+                                View
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-foreground text-xl font-semibold mb-4">
+                  User Suggestions
+                </h2>
+                <div className="space-y-3">
+                  {userKeyword.map((user) => (
+                    <Card
+                      key={user.user_id}
+                      className="bg-card border border-border rounded-lg hover:shadow-sm"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
+                              <Image
+                                src={
+                                  user.avatar_ipfs_hash
+                                    ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
+                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
+                                }
+                                alt={user.username || "Avatar"}
+                                width={56}
+                                height={56}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                              />
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-0">
+                                <span className="font-semibold text-foreground truncate text-base">
+                                  {user.display_name || user.username}
+                                </span>
+                                {user.is_following && (
+                                  <Badge variant="secondary">Following</Badge>
+                                )}
+                                <FontAwesomeIcon
+                                  icon={faCircle}
+                                  className={`ml-2 ${
+                                    user.is_online
+                                      ? "text-success"
+                                      : "text-muted-foreground-2"
+                                  } text-xs`}
+                                  title={user.is_online ? "Online" : "Offline"}
+                                  aria-hidden={false}
+                                />
+                              </div>
+                              <span className="text-sm text-muted-foreground truncate">
+                                @{user.username}
+                              </span>
+                              <div className="flex items-center gap-3 mt-2 text-xs">
+                                <span className="text-primary">
+                                  {user.shared_interests_count} shared
+                                </span>
+                                <span className="text-muted-foreground">
+                                  {user.followers_number} followers
+                                </span>
+                              </div>
+                              {user.shared_interests.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {user.shared_interests
+                                    .slice(0, 3)
+                                    .map((interest) => (
+                                      <Badge
+                                        key={interest}
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {interest.replace(/_/g, " ")}
+                                      </Badge>
+                                    ))}
+                                  {user.shared_interests.length > 3 && (
+                                    <span className="text-xs text-muted-foreground">
+                                      +{user.shared_interests.length - 3} more
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2 ml-2">
+                            <Button asChild>
+                              <Link
+                                href={`/dashboard/connections/followings/${user.user_id}`}
+                              >
+                                View
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      )}
+        )}
     </main>
   );
 }

@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     }
 
     const backendRes = await fetch(
-      `${process.env.BACKEND_BASE_URL}/relationship/interest/list`,
+      `${process.env.BACKEND_BASE_URL}/relationship/suggest?page=0&limit=20`,
       {
         method: "GET",
         headers: {
@@ -79,12 +79,12 @@ export async function GET(req: Request) {
     }
 
     const response = await backendRes.json();
-    console.log(`${pathname} :`, response);
+    // console.log(`${pathname} :`, response);
     return NextResponse.json(
       {
         success: true,
         statusCode: response.statusCode || httpStatus.OK,
-        message: response.message || "User interests fetched successfully",
+        message: response.message || "Suggestions fetched successfully",
         data: response.data,
       },
       { status: response.statusCode || httpStatus.OK }

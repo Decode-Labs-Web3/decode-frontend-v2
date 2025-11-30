@@ -49,7 +49,7 @@ export interface UserData {
   is_online: boolean;
 }
 
-export interface UserSuggestion {
+export interface UserKeyword {
   user_id: string;
   username: string;
   role: string;
@@ -66,6 +66,31 @@ export interface UserSuggestion {
   mutual_followers_list: MutualFollower[];
   mutual_followers_number: number;
   is_online: boolean;
+}
+
+export interface UserSuggestion {
+  followers_number: number;
+  avatar_ipfs_hash: string;
+  role: string;
+  user_id: string;
+  display_name: string;
+  username: string;
+  following_number: number;
+  suggestion_priority: {
+    low: number;
+    high: number;
+  };
+  mutual_connections_count: {
+    low: number;
+    high: number;
+  };
+  suggestion_reason: string;
+  is_following: boolean;
+  is_follower: boolean;
+  is_blocked: boolean;
+  is_blocked_by: boolean;
+  mutual_followers_list: MutualFollower[];
+  mutual_followers_number: number;
 }
 
 export interface UserSearchProps {
