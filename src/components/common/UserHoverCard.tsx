@@ -20,7 +20,12 @@ import {
 } from "@/interfaces/connections.interfaces";
 
 interface UserHoverCardProps {
-  user: MutualFollower | UserFollow | UserSuggestion | UserKeyword | UserSearchProps;
+  user:
+    | MutualFollower
+    | UserFollow
+    | UserSuggestion
+    | UserKeyword
+    | UserSearchProps;
   href: string;
   avatarSize?: string;
 }
@@ -30,12 +35,13 @@ const UserHoverCard: React.FC<UserHoverCardProps> = ({
   href,
   avatarSize = "w-10 h-10",
 }) => {
-  const hasStats = 'following_number' in user && 'followers_number' in user;
-  const hasMutual = 'mutual_followers_number' in user && user.mutual_followers_number > 0;
-  const hasBio = 'bio' in user;
-  const hasSuggestionReason = 'suggestion_reason' in user;
-  const hasSharedInterests = 'shared_interests' in user;
-  const hasOnlineStatus = 'is_online' in user;
+  const hasStats = "following_number" in user && "followers_number" in user;
+  const hasMutual =
+    "mutual_followers_number" in user && user.mutual_followers_number > 0;
+  const hasBio = "bio" in user;
+  const hasSuggestionReason = "suggestion_reason" in user;
+  const hasSharedInterests = "shared_interests" in user;
+  const hasOnlineStatus = "is_online" in user;
 
   return (
     <Card className="hover:shadow-md cursor-pointer">
@@ -43,7 +49,10 @@ const UserHoverCard: React.FC<UserHoverCardProps> = ({
         <HoverCard>
           <HoverCardTrigger asChild>
             <div className="flex items-center justify-between gap-4">
-              <Link href={href} className="flex items-center gap-3 min-w-0 flex-1">
+              <Link
+                href={href}
+                className="flex items-center gap-3 min-w-0 flex-1"
+              >
                 <Avatar className={`${avatarSize} border border-border`}>
                   <AvatarImage
                     src={
@@ -65,7 +74,7 @@ const UserHoverCard: React.FC<UserHoverCardProps> = ({
                     <p className="truncate text-sm font-medium text-foreground">
                       {user.display_name || user.username}
                     </p>
-                    {'is_following' in user && user.is_following && (
+                    {"is_following" in user && user.is_following && (
                       <Badge variant="secondary">Following</Badge>
                     )}
                   </div>
@@ -127,7 +136,7 @@ const UserHoverCard: React.FC<UserHoverCardProps> = ({
                     <p className="font-medium text-foreground truncate">
                       {user.display_name || user.username}
                     </p>
-                    {'role' in user && user.role && (
+                    {"role" in user && user.role && (
                       <Badge variant="outline" className="text-xs">
                         {user.role}
                       </Badge>
@@ -195,11 +204,7 @@ const UserHoverCard: React.FC<UserHoverCardProps> = ({
               {hasSharedInterests && user.shared_interests.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {user.shared_interests.slice(0, 3).map((interest) => (
-                    <Badge
-                      key={interest}
-                      variant="outline"
-                      className="text-xs"
-                    >
+                    <Badge key={interest} variant="outline" className="text-xs">
                       {interest.replace(/_/g, " ")}
                     </Badge>
                   ))}
@@ -212,12 +217,16 @@ const UserHoverCard: React.FC<UserHoverCardProps> = ({
               )}
 
               {hasMutual &&
-                (user as UserFollow | UserSuggestion | UserKeyword).mutual_followers_list &&
-                (user as UserFollow | UserSuggestion | UserKeyword).mutual_followers_list.length > 0 && (
+                (user as UserFollow | UserSuggestion | UserKeyword)
+                  .mutual_followers_list &&
+                (user as UserFollow | UserSuggestion | UserKeyword)
+                  .mutual_followers_list.length > 0 && (
                   <div className="flex items-center gap-2 min-w-0">
                     <p className="text-xs text-muted-foreground">Followed by</p>
                     <div className="flex -space-x-2">
-                      {(user as UserFollow | UserSuggestion | UserKeyword).mutual_followers_list
+                      {(
+                        user as UserFollow | UserSuggestion | UserKeyword
+                      ).mutual_followers_list
                         .slice(0, 3)
                         .map((mutual) => (
                           <Avatar
@@ -242,15 +251,22 @@ const UserHoverCard: React.FC<UserHoverCardProps> = ({
                         ))}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">
-                      {(user as UserFollow | UserSuggestion | UserKeyword).mutual_followers_list
+                      {(
+                        user as UserFollow | UserSuggestion | UserKeyword
+                      ).mutual_followers_list
                         .slice(0, 2)
                         .map((m) => m.display_name)
                         .join(", ")}
-                      {(user as UserFollow | UserSuggestion | UserKeyword).mutual_followers_number > 2 &&
+                      {(user as UserFollow | UserSuggestion | UserKeyword)
+                        .mutual_followers_number > 2 &&
                         ` and ${
-                          (user as UserFollow | UserSuggestion | UserKeyword).mutual_followers_number - 2
+                          (user as UserFollow | UserSuggestion | UserKeyword)
+                            .mutual_followers_number - 2
                         } other${
-                          (user as UserFollow | UserSuggestion | UserKeyword).mutual_followers_number - 2 > 1
+                          (user as UserFollow | UserSuggestion | UserKeyword)
+                            .mutual_followers_number -
+                            2 >
+                          1
                             ? "s"
                             : ""
                         }`}

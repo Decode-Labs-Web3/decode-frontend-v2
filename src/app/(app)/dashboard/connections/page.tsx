@@ -19,7 +19,7 @@ import type {
   UserKeyword,
   UserSearchProps,
 } from "@/interfaces/connections.interfaces";
-import UserHoverCard from '@/components/common/UserHoverCard';
+import UserHoverCard from "@/components/common/UserHoverCard";
 
 export default function ConnectionsIndex() {
   const searchParams = useSearchParams();
