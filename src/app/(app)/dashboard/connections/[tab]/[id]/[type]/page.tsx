@@ -9,19 +9,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type {
   UserFollow,
   MutualFollower,
 } from "@/interfaces/connections.interfaces";
-
-// Interfaces moved to src/interfaces/connections.interfaces.ts
+import UserHoverCard from "@/components/common/UserHoverCard";
 
 export default function Page() {
   const [page, setPage] = useState(0);
@@ -118,165 +111,12 @@ export default function Page() {
 
           {userFollow.length > 0 &&
             userFollow.map((user) => (
-              <HoverCard key={user.user_id}>
-                <HoverCardTrigger asChild>
-                  <Card className="hover-card cursor-pointer">
-                    <CardContent className="p-4">
-                      <Link
-                        href={`/dashboard/connections/followings/${user.user_id}`}
-                        className="flex items-center gap-3 min-w-0"
-                      >
-                        <Avatar className="w-14 h-14 border-2 border-border">
-                          <AvatarImage
-                            src={
-                              user.avatar_ipfs_hash
-                                ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                                : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                            }
-                            alt={user.display_name || "Avatar"}
-                            className="object-contain"
-                          />
-                          <AvatarFallback>
-                            {user.display_name?.charAt(0) ||
-                              user.username?.charAt(0) ||
-                              "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-foreground truncate font-medium">
-                              {user.display_name}
-                            </h3>
-                            {user.role && (
-                              <Badge variant="outline" className="text-xs">
-                                {user.role}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate">
-                            @{user.username}
-                          </p>
-                        </div>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                </HoverCardTrigger>
-                <HoverCardContent
-                  className="w-80 p-4"
-                  side="bottom"
-                  align="start"
-                >
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-start gap-3">
-                      <Avatar className="w-16 h-16 border-2 border-border">
-                        <AvatarImage
-                          src={
-                            user.avatar_ipfs_hash
-                              ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                              : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                          }
-                          alt={user.display_name || "Avatar"}
-                          className="object-contain"
-                        />
-                        <AvatarFallback>
-                          {user.display_name?.charAt(0) ||
-                            user.username?.charAt(0) ||
-                            "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-foreground truncate">
-                            {user.display_name}
-                          </p>
-                          {user.role && (
-                            <Badge variant="outline" className="text-xs">
-                              {user.role}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          @{user.username}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <Card>
-                        <CardContent className="p-3">
-                          <p className="text-xs text-muted-foreground">
-                            Following
-                          </p>
-                          <p className="text-sm font-medium text-foreground">
-                            {user.following_number}
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="p-3">
-                          <p className="text-xs text-muted-foreground">
-                            Followers
-                          </p>
-                          <p className="text-sm font-medium text-foreground">
-                            {user.followers_number}
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="p-3">
-                          <p className="text-xs text-muted-foreground">
-                            Mutual
-                          </p>
-                          <p className="text-sm font-medium text-foreground">
-                            {user.mutual_followers_number}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {user.mutual_followers_number > 0 && (
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="flex -space-x-2">
-                          {user.mutual_followers_list
-                            .slice(0, 3)
-                            .map((mutualFollower) => (
-                              <Avatar
-                                key={mutualFollower.user_id}
-                                className="w-5 h-5 border border-border"
-                              >
-                                <AvatarImage
-                                  src={
-                                    mutualFollower.avatar_ipfs_hash
-                                      ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                      : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                                  }
-                                  alt={mutualFollower.display_name || "Avatar"}
-                                  className="object-contain"
-                                />
-                                <AvatarFallback className="text-xs">
-                                  {mutualFollower.display_name?.charAt(0) ||
-                                    mutualFollower.username?.charAt(0) ||
-                                    "?"}
-                                </AvatarFallback>
-                              </Avatar>
-                            ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          Followed by{" "}
-                          {user.mutual_followers_list
-                            .slice(0, 2)
-                            .map((m) => m.display_name)
-                            .join(", ")}
-                          {user.mutual_followers_number - 2 > 0 &&
-                            ` and ${user.mutual_followers_number - 2} other${
-                              user.mutual_followers_number - 2 > 1 ? "s" : ""
-                            }`}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
+              <UserHoverCard
+                key={user.user_id}
+                user={user}
+                href={`/dashboard/connections/followings/${user.user_id}`}
+                avatarSize="w-14 h-14"
+              />
             ))}
 
           {loadingMore && (

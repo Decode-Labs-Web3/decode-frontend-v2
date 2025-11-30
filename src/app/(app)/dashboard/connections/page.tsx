@@ -19,6 +19,7 @@ import type {
   UserKeyword,
   UserSearchProps,
 } from "@/interfaces/connections.interfaces";
+import UserHoverCard from '@/components/common/UserHoverCard';
 
 export default function ConnectionsIndex() {
   const searchParams = useSearchParams();
@@ -231,56 +232,12 @@ export default function ConnectionsIndex() {
       {searchResults.length > 0 && (
         <div className="space-y-4">
           {searchResults.map((user) => (
-            <Card
+            <UserHoverCard
               key={user._id}
-              className="bg-card border border-border rounded-lg hover:shadow-md"
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
-                      <Image
-                        src={
-                          user.avatar_ipfs_hash
-                            ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                            : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                        }
-                        alt={user.username || "Avatar"}
-                        width={56}
-                        height={56}
-                        className="w-full h-full object-cover"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-0">
-                        <span className="font-semibold text-foreground truncate text-base">
-                          {user.display_name || user.username}
-                        </span>
-                      </div>
-                      <span className="text-sm text-muted-foreground truncate">
-                        @{user.username}
-                      </span>
-
-                      {user.bio && (
-                        <p className="text-sm text-foreground/90 mt-2 line-clamp-2">
-                          {user.bio}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2 ml-2">
-                    <Button asChild>
-                      <Link
-                        href={`/dashboard/connections/followings/${user._id}`}
-                      >
-                        View
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              user={user}
+              href={`/dashboard/connections/followings/${user._id}`}
+              avatarSize="w-14 h-14"
+            />
           ))}
         </div>
       )}
@@ -316,63 +273,12 @@ export default function ConnectionsIndex() {
                 </h2>
                 <div className="space-y-3">
                   {userSuggest.map((user) => (
-                    <Card
+                    <UserHoverCard
                       key={user.user_id}
-                      className="bg-card border border-border rounded-lg hover:shadow-sm"
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
-                              <Image
-                                src={
-                                  user.avatar_ipfs_hash
-                                    ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                                }
-                                alt={user.username || "Avatar"}
-                                width={56}
-                                height={56}
-                                className="w-full h-full object-cover"
-                                unoptimized
-                              />
-                            </div>
-                            <div className="flex flex-col min-w-0 flex-1">
-                              <div className="flex items-center gap-2 mb-0">
-                                <span className="font-semibold text-foreground truncate text-base">
-                                  {user.display_name || user.username}
-                                </span>
-                                {user.is_following && (
-                                  <Badge variant="secondary">Following</Badge>
-                                )}
-                              </div>
-                              <span className="text-sm text-muted-foreground truncate">
-                                @{user.username}
-                              </span>
-                              <div className="flex items-center gap-3 mt-2 text-xs">
-                                <span className="text-muted-foreground">
-                                  {user.followers_number} followers
-                                </span>
-                              </div>
-                              {user.suggestion_reason && (
-                                <p className="text-sm text-foreground/90 mt-2">
-                                  {user.suggestion_reason}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end gap-2 ml-2">
-                            <Button asChild>
-                              <Link
-                                href={`/dashboard/connections/followings/${user.user_id}`}
-                              >
-                                View
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      user={user}
+                      href={`/dashboard/connections/followings/${user.user_id}`}
+                      avatarSize="w-14 h-14"
+                    />
                   ))}
                 </div>
               </>
@@ -383,91 +289,12 @@ export default function ConnectionsIndex() {
                 </h2>
                 <div className="space-y-3">
                   {userKeyword.map((user) => (
-                    <Card
+                    <UserHoverCard
                       key={user.user_id}
-                      className="bg-card border border-border rounded-lg hover:shadow-sm"
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
-                              <Image
-                                src={
-                                  user.avatar_ipfs_hash
-                                    ? `https://ipfs.de-id.xyz/ipfs/${user.avatar_ipfs_hash}`
-                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                                }
-                                alt={user.username || "Avatar"}
-                                width={56}
-                                height={56}
-                                className="w-full h-full object-cover"
-                                unoptimized
-                              />
-                            </div>
-                            <div className="flex flex-col min-w-0 flex-1">
-                              <div className="flex items-center gap-2 mb-0">
-                                <span className="font-semibold text-foreground truncate text-base">
-                                  {user.display_name || user.username}
-                                </span>
-                                {user.is_following && (
-                                  <Badge variant="secondary">Following</Badge>
-                                )}
-                                <FontAwesomeIcon
-                                  icon={faCircle}
-                                  className={`ml-2 ${
-                                    user.is_online
-                                      ? "text-success"
-                                      : "text-muted-foreground-2"
-                                  } text-xs`}
-                                  title={user.is_online ? "Online" : "Offline"}
-                                  aria-hidden={false}
-                                />
-                              </div>
-                              <span className="text-sm text-muted-foreground truncate">
-                                @{user.username}
-                              </span>
-                              <div className="flex items-center gap-3 mt-2 text-xs">
-                                <span className="text-primary">
-                                  {user.shared_interests_count} shared
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {user.followers_number} followers
-                                </span>
-                              </div>
-                              {user.shared_interests.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                  {user.shared_interests
-                                    .slice(0, 3)
-                                    .map((interest) => (
-                                      <Badge
-                                        key={interest}
-                                        variant="outline"
-                                        className="text-xs"
-                                      >
-                                        {interest.replace(/_/g, " ")}
-                                      </Badge>
-                                    ))}
-                                  {user.shared_interests.length > 3 && (
-                                    <span className="text-xs text-muted-foreground">
-                                      +{user.shared_interests.length - 3} more
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end gap-2 ml-2">
-                            <Button asChild>
-                              <Link
-                                href={`/dashboard/connections/followings/${user.user_id}`}
-                              >
-                                View
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      user={user}
+                      href={`/dashboard/connections/followings/${user.user_id}`}
+                      avatarSize="w-14 h-14"
+                    />
                   ))}
                 </div>
               </>

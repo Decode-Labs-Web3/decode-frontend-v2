@@ -11,14 +11,10 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import SnapshotChart from "@/components/(app)/SnapshotChart";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import UserHoverCard from "@/components/common/UserHoverCard";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import type {
   UserData,
   MutualFollower,
@@ -328,105 +324,11 @@ export default function Page() {
             <div className="space-y-3">
               {userData.mutual_followers_list.map(
                 (mutualFollower: MutualFollower) => (
-                  <HoverCard key={mutualFollower.user_id}>
-                    <HoverCardTrigger asChild>
-                      <Card className="hover:shadow-md cursor-pointer">
-                        <CardContent className="p-4">
-                          <Link
-                            href={`/dashboard/connections/followings/${mutualFollower.user_id}`}
-                            className="flex items-center gap-3 min-w-0"
-                          >
-                            <Avatar className="w-10 h-10 border border-border">
-                              <AvatarImage
-                                src={
-                                  mutualFollower.avatar_ipfs_hash
-                                    ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                    : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                                }
-                                alt={mutualFollower.display_name || "Avatar"}
-                                className="object-contain"
-                              />
-                              <AvatarFallback className="text-xs">
-                                {mutualFollower.display_name?.charAt(0) ||
-                                  mutualFollower.username?.charAt(0) ||
-                                  "?"}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-foreground">
-                                {mutualFollower.display_name}
-                              </p>
-                              <p className="truncate text-xs text-muted-foreground">
-                                @{mutualFollower.username}
-                              </p>
-                            </div>
-                          </Link>
-                        </CardContent>
-                      </Card>
-                    </HoverCardTrigger>
-                    <HoverCardContent
-                      className="w-80 p-4"
-                      side="bottom"
-                      align="start"
-                    >
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-start gap-3">
-                          <Avatar className="w-16 h-16 border border-border">
-                            <AvatarImage
-                              src={
-                                mutualFollower.avatar_ipfs_hash
-                                  ? `https://ipfs.de-id.xyz/ipfs/${mutualFollower.avatar_ipfs_hash}`
-                                  : "https://ipfs.de-id.xyz/ipfs/bafkreibmridohwxgfwdrju5ixnw26awr22keihoegdn76yymilgsqyx4le"
-                              }
-                              alt={mutualFollower.display_name || "Avatar"}
-                              className="object-contain"
-                            />
-                            <AvatarFallback>
-                              {mutualFollower.display_name?.charAt(0) ||
-                                mutualFollower.username?.charAt(0) ||
-                                "?"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-medium text-foreground truncate">
-                                {mutualFollower.display_name}
-                              </p>
-                              <Badge variant="outline" className="text-xs">
-                                {mutualFollower.role}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground truncate">
-                              @{mutualFollower.username}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 text-center">
-                          <Card className="bg-card border border-border">
-                            <CardContent className="p-3">
-                              <p className="text-xs text-muted-foreground">
-                                Following
-                              </p>
-                              <p className="text-sm font-medium text-foreground">
-                                {mutualFollower.following_number}
-                              </p>
-                            </CardContent>
-                          </Card>
-                          <Card className="bg-card border border-border">
-                            <CardContent className="p-3">
-                              <p className="text-xs text-muted-foreground">
-                                Followers
-                              </p>
-                              <p className="text-sm font-medium text-foreground">
-                                {mutualFollower.followers_number}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
+                  <UserHoverCard
+                    key={mutualFollower.user_id}
+                    user={mutualFollower}
+                    href={`/dashboard/connections/followings/${mutualFollower.user_id}`}
+                  />
                 )
               )}
             </div>
