@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
 import { useUser } from "@/hooks/useUser";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { getApiHeaders } from "@/utils/api.utils";
+import { useRef, useState, useCallback } from "react";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
 import { toastSuccess, toastError } from "@/utils/index.utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -41,15 +41,18 @@ export default function ProfileEditModal({
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleUserInfoChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setUpdateUserInfo((prev) => ({
-        ...prev,
-        [event.target.name]: event.target.value,
-      }));
-    },
-    []
-  );
+  const handleUserInfoChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    let newValue = event.target.value;
+    if (event.target.name === "display_name") {
+      newValue = newValue.replace(/[^a-zA-Z0-9\s\-_]/g, "");
+    }
+    setUpdateUserInfo((prev) => ({
+      ...prev,
+      [event.target.name]: newValue,
+    }));
+  };
 
   const openFilePicker = useCallback(() => fileInputRef.current?.click(), []);
 

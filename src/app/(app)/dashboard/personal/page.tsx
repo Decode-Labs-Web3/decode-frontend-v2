@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useUser } from "@/hooks/useUser";
 import { useState, Suspense } from "react";
 import { Badge } from "@/components/ui/badge";

@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { getApiHeaders } from "@/utils/api.utils";
 import { useState, useEffect, useCallback } from "react";
 import { useFingerprint } from "@/hooks/useFingerprint.hooks";
-import { toastSuccess, toastError } from "@/utils/toast.utils";
+import { toastError } from "@/utils/toast.utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faQrcode,
@@ -76,28 +76,20 @@ export default function SecurityPage() {
       // console.log("this is response from 2fa", response);
       if (!response.ok && response.message === "OTP not found") {
         setSetup(true);
-        toastSuccess(response.message);
         return;
       } else {
         if (response.message === "OTP enabled successfully") {
           setSetup(false);
           setEnabled(true);
-          toastSuccess(response.message);
           return;
         }
 
         if (response.message === "OTP is not enabled for this user") {
           setSetup(false);
           setEnabled(false);
-          toastSuccess(response.message);
           return;
         }
       }
-
-      toastSuccess(
-        response?.message ||
-          "Followers snapshot data last month fetched successfully"
-      );
     } catch (error) {
       console.error(error);
       toastError("Fetch error");
@@ -174,7 +166,6 @@ export default function SecurityPage() {
       setModalOpen(false);
       setCodeModalOpen(false);
       handleStatus();
-      toastSuccess(response?.message || "2FA enabled");
     } catch (error) {
       console.error(error);
       toastError("Fetch error");
@@ -209,7 +200,6 @@ export default function SecurityPage() {
       // console.log("this is api response from 2fa disable", apiResponse);
       // console.log("this is response from 2fa disable", response);
       setEnabled(false);
-      toastSuccess(response.message);
     } catch (error) {
       console.error(error);
       toastError("Fetch error");
@@ -383,13 +373,13 @@ export default function SecurityPage() {
 
         {/* QR Modal */}
         <Dialog open={modalOpen && !!otpData} onOpenChange={setModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Scan QR Code</DialogTitle>
               <DialogDescription>Use your authenticator app</DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6">
+            <div className="ml-4 w-3/4">
               <div className="flex justify-center">
                 <div className="rounded-2xl border-2 border-(--border) bg-(--surface) p-6 shadow-lg">
                   <QRCode
@@ -411,7 +401,7 @@ export default function SecurityPage() {
                         issuer
                       )}`;
                     })()}
-                    size={280}
+                    size={200}
                     bgColor="#ffffff"
                     fgColor="#000000"
                     style={{ background: "#ffffff", padding: 12 }}
@@ -430,7 +420,6 @@ export default function SecurityPage() {
                   <Button
                     onClick={() => {
                       navigator.clipboard.writeText(otpData!.otp_secret);
-                      toastSuccess("Secret copied to clipboard");
                     }}
                     variant="outline"
                     size="icon"
@@ -441,7 +430,7 @@ export default function SecurityPage() {
                   </Button>
                 </div>
                 <p className="text-xs text-(--muted-foreground)">
-                  If you can&apos;t scan the QR code, enter this key manually in
+                  Scan the QR code or enter this key manually in
                   your authenticator app
                 </p>
               </div>
