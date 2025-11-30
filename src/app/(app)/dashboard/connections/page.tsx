@@ -24,13 +24,16 @@ export default function ConnectionsIndex() {
   const query = searchParams.get("name") ?? "";
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [endOfData, setEndOfData] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [interests, setInterests] = useState<Interest[]>([]);
   const [userKeyword, setUserKeyword] = useState<UserKeyword[]>([]);
-  const [userSuggest, setUserSuggest] = useState<UserSuggestion[]>([]);
   const [searchResults, setSearchResults] = useState<UserSearchProps[]>([]);
+  const [suggestions, setSuggestions] = useState<UserSuggestion[]>([]);
+  const [suggestionsEndOfData, setSuggestionsEndOfData] = useState(false);
+  const [loadingMoreSuggestions, setLoadingMoreSuggestions] = useState(false);
+  const fetchingRef = useRef(false);
+  const prevScrollHeightRef = useRef(0);
+  const restoreOnNextRenderRef = useRef(false);
 
   const handleSearch = useCallback(
     async (searchQuery?: string) => {
@@ -166,58 +169,84 @@ export default function ConnectionsIndex() {
     }
   }, [handleUserSuggestSameInterest, fingerprintHash]);
 
-  const handleGetSuggest = useCallback(async () => {
-    try {
-      const apiResponse = await fetch("/api/interest/get-suggestion", {
-        method: "GET",
-        headers: getApiHeaders(fingerprintHash),
-        cache: "no-cache",
-        signal: AbortSignal.timeout(10000),
-      });
-      const response = await apiResponse.json();
-
-      if (!apiResponse.ok) {
-        console.error(response);
-        handleGetInterest();
-        toastError("Failed to fetch suggestions failed");
-        return;
-      }
-      if (response.statusCode === 200) {
-        if (response.data.users.length === 0) {
-          handleGetInterest();
+  const fetchSuggestions = useCallback(
+    async (currentPage: number) => {
+      if (suggestionsEndOfData || fetchingRef.current) return;
+      fetchingRef.current = true;
+      if (currentPage === 0) setLoading(true);
+      else setLoadingMoreSuggestions(true);
+      try {
+        const apiResponse = await fetch("/api/interest/get-suggestion", {
+          method: "POST",
+          headers: getApiHeaders(fingerprintHash, {
+            "Content-Type": "application/json",
+          }),
+          body: JSON.stringify({ page: currentPage }),
+          cache: "no-cache",
+          signal: AbortSignal.timeout(10000),
+        });
+        const response = await apiResponse.json();
+        if (!apiResponse.ok) {
+          console.error(response);
+          if (currentPage === 0) handleGetInterest();
+          toastError("Failed to fetch suggestions");
           return;
         }
-        setUserSuggest(response.data.users);
+        if (response.statusCode === 200) {
+          if (currentPage === 0) {
+            setSuggestions(response.data.users);
+            if (response.data.users.length === 0) {
+              handleGetInterest();
+              return;
+            }
+          } else {
+            setSuggestions((prev) => [...prev, ...response.data.users]);
+          }
+          setSuggestionsEndOfData(response.data.meta?.is_last_page || false);
+        }
+      } catch (error) {
+        console.error("Fetch suggestions error:", error);
+        toastError("Failed to fetch suggestions");
+      } finally {
+        if (currentPage === 0) setLoading(false);
+        setLoadingMoreSuggestions(false);
+        fetchingRef.current = false;
       }
-    } catch (error) {
-      console.error("Fetch suggestions error:", error);
-      toastError("Failed to fetch suggestions");
-    }
-  }, [fingerprintHash, handleGetInterest]);
+    },
+    [fingerprintHash, handleGetInterest, suggestionsEndOfData]
+  );
 
   useEffect(() => {
-    handleGetSuggest();
-  }, [handleGetSuggest]);
+    fetchSuggestions(0);
+  }, [fetchSuggestions]);
 
-  const prevScrollHeightRef = useRef(0);
+  useEffect(() => {
+    if (page > 0) {
+      fetchSuggestions(page);
+    }
+  }, [page, fetchSuggestions]);
+
   const handleScroll = useCallback(() => {
     const element = containerRef.current;
-    if (!element || endOfData || loadingMore) return;
+    if (!element || suggestionsEndOfData || loadingMoreSuggestions) return;
     if (element.scrollTop + element.clientHeight === element.scrollHeight) {
       prevScrollHeightRef.current = element.scrollHeight;
-      setLoadingMore(true);
+      restoreOnNextRenderRef.current = true;
+      setLoadingMoreSuggestions(true);
       setPage((p) => p + 1);
     }
-  }, [endOfData, loadingMore]);
+  }, [suggestionsEndOfData, loadingMoreSuggestions]);
 
   useEffect(() => {
     if (page === 0) return;
+    if (!restoreOnNextRenderRef.current) return;
     const element = containerRef.current;
     if (element) {
       element.scrollTop = prevScrollHeightRef.current - element.clientHeight;
       prevScrollHeightRef.current = element.scrollHeight;
     }
-  }, [, page]);
+    restoreOnNextRenderRef.current = false;
+  }, [suggestions, page]);
 
   return (
     <main className="p-6 space-y-6 max-w-4xl mx-auto">
@@ -283,20 +312,20 @@ export default function ConnectionsIndex() {
 
       {searchResults.length === 0 &&
         !loading &&
-        (userSuggest.length > 0 || userKeyword.length > 0) && (
+        (suggestions.length > 0 || userKeyword.length > 0) && (
           <div>
-            {userSuggest.length > 0 ? (
+            {suggestions.length > 0 ? (
               <>
                 <h2 className="text-(--foreground) text-xl font-semibold mb-4">
                   Suggested Users
                 </h2>
                 <ScrollArea
-                  className="h-full"
+                  className="h-screen"
                   ref={containerRef}
                   onScrollViewport={handleScroll}
                 >
                   <div className="space-y-3">
-                    {userSuggest.map((user) => (
+                    {suggestions.map((user) => (
                       <UserHoverCard
                         key={user.user_id}
                         user={user}
@@ -305,6 +334,16 @@ export default function ConnectionsIndex() {
                       />
                     ))}
                   </div>
+                  {loadingMoreSuggestions && (
+                    <div className="p-3 text-center text-xs text-(--muted-foreground)">
+                      Loading more...
+                    </div>
+                  )}
+                  {suggestionsEndOfData && suggestions.length > 0 && (
+                    <div className="p-3 text-center text-xs text-(--muted-foreground)">
+                      End of data
+                    </div>
+                  )}
                   <ScrollBar orientation="vertical" />
                 </ScrollArea>
               </>
@@ -313,23 +352,16 @@ export default function ConnectionsIndex() {
                 <h2 className="text-(--foreground) text-xl font-semibold mb-4">
                   User Suggestions
                 </h2>
-                <ScrollArea
-                  className="h-full"
-                  ref={containerRef}
-                  onScrollViewport={handleScroll}
-                >
-                  <div className="space-y-3">
-                    {userKeyword.map((user) => (
-                      <UserHoverCard
-                        key={user.user_id}
-                        user={user}
-                        href={`/dashboard/connections/followings/${user.user_id}`}
-                        avatarSize="w-14 h-14"
-                      />
-                    ))}
-                  </div>
-                  <ScrollBar orientation="vertical" />
-                </ScrollArea>
+                <div className="space-y-3">
+                  {userKeyword.map((user) => (
+                    <UserHoverCard
+                      key={user.user_id}
+                      user={user}
+                      href={`/dashboard/connections/followings/${user.user_id}`}
+                      avatarSize="w-14 h-14"
+                    />
+                  ))}
+                </div>
               </>
             )}
           </div>

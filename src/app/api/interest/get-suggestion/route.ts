@@ -7,7 +7,7 @@ import {
   guardInternal,
 } from "@/utils/index.utils";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   const requestId = generateRequestId();
   const pathname = apiPathName(req);
   const denied = guardInternal(req);
@@ -28,6 +28,8 @@ export async function GET(req: Request) {
     }
 
     const fingerprint = req.headers.get("X-Fingerprint-Hashed");
+    const body = await req.json();
+    const { page } = body;
 
     if (!fingerprint) {
       return NextResponse.json(
@@ -41,7 +43,7 @@ export async function GET(req: Request) {
     }
 
     const backendRes = await fetch(
-      `${process.env.BACKEND_BASE_URL}/relationship/suggest?page=0&limit=20`,
+      `${process.env.BACKEND_BASE_URL}/relationship/suggest?page=${page}&limit=20`,
       {
         method: "GET",
         headers: {
